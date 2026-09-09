@@ -1,0 +1,16 @@
+# WebView2 runtime user data
+LeagueOfCustoms_WV2/
+EBWebView/
+
+# Temporary / Scratch files
+*.tmp
+*.log
+scratch/
+test_*.png
+test_*.js
+
+# IDE / Editor folders
+.vscode/
+.idea/
+*.suo
+*.user
