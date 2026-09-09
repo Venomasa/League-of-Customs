@@ -94,10 +94,14 @@ League-of-Customs/
 │
 ├── src/                     # Core application source code
 │   ├── index.html           # Hextech client UI (HTML5, CSS3, ES6)
-│   └── LeagueOfCustoms.cs   # Native C# WinForms host & direct LCU connector
+│   ├── LeagueOfCustoms.cs   # Native C# WinForms host & direct LCU connector
+│   └── Installer/           # Windows Installer & Uninstaller source
+│       ├── Setup.cs         # Hextech installer with shortcuts & registration
+│       └── Uninstall.cs     # Clean uninstaller
 │
 ├── LeagueOfCustoms.exe      # Standalone compiled portable executable
-├── build_exe.bat            # Fast build script (csc.exe)
+├── build_exe.bat            # Fast app build script (csc.exe)
+├── build_installer.py       # Full release packager (Installer + Portable ZIP)
 ├── README.md                # Project documentation
 ├── .gitignore               # Git ignore rules
 ├── Microsoft.Web.WebView2.Core.dll
@@ -107,16 +111,33 @@ League-of-Customs/
 
 ---
 
-## Quick Start / How to Run
+## Download & Installation
 
-No installation required. **League of Customs** is fully portable:
+You can get **League of Customs** in two ways:
 
-1. Download or clone this repository.
-2. Double-click:
-   **`LeagueOfCustoms.exe`**
-3. Open a League of Legends custom lobby and click **"Read from LoL Client"** (or paste your roster) and hit **"Randomize Teams"**!
+### Option A: Windows Installer (Recommended)
+Automatically sets up desktop and Start menu shortcuts and registers in Windows Add/Remove Programs:
+- 🚀 **[Download LeagueOfCustoms-Setup-v0.1.exe](https://github.com/Venomasa/League-of-Customs/releases/download/v0.1/LeagueOfCustoms-Setup-v0.1.exe)**
 
-> **Requirements**: Windows 10/11 with the standard [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (pre-installed on modern Windows).
+### Option B: Portable ZIP (No Installation Required)
+Extract anywhere and run directly from the folder:
+- 📦 **[Download LeagueOfCustoms-v0.1-Portable.zip](https://github.com/Venomasa/League-of-Customs/releases/download/v0.1/LeagueOfCustoms-v0.1-Portable.zip)**
+
+> 📌 All releases and version changelogs are available on the **[GitHub Releases Page](https://github.com/Venomasa/League-of-Customs/releases/latest)**.
+
+---
+
+## How to Use
+
+1. Launch **League of Customs** (via shortcut or portable executable).
+2. Open a League of Legends custom lobby in the client.
+3. In League of Customs, click **"Read from LoL Client"** (or paste your custom lobby chat / summoner list).
+4. Select your mode (**Summoner's Rift** or **ARAM**).
+5. Click **"Randomize Teams"**!
+6. Click **"Copy Discord Format"** to share the balanced teams with your lobby or Discord channel.
+
+> **System Requirements**: Windows 10 or Windows 11 with the [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (already built into Windows 10/11).
+
 
 ---
 

@@ -2,6 +2,11 @@
 LeagueOfCustoms_WV2/
 EBWebView/
 
+# Build artifacts & releases
+dist/
+src/Installer/*.exe
+src/Installer/*.zip
+
 # Temporary / Scratch files
 *.tmp
 *.log
@@ -14,3 +19,4 @@ test_*.js
 .idea/
 *.suo
 *.user
+
