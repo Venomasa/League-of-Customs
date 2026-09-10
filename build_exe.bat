@@ -23,7 +23,7 @@ if %ERRORLEVEL% equ 0 (
     exit /b 1
 )
 
-"%CSC%" /nologo /optimize+ /target:winexe /win32icon:assets\app.ico /res:src\index.html,index.html /r:System.dll,System.Core.dll,System.Drawing.dll,System.Windows.Forms.dll,System.Web.Extensions.dll,Microsoft.Web.WebView2.Core.dll,Microsoft.Web.WebView2.WinForms.dll /out:LeagueOfCustoms.exe src\LeagueOfCustoms.cs
+"%CSC%" /nologo /optimize+ /target:winexe /win32icon:assets\app.ico /res:src\index.html,index.html /r:System.dll,System.Core.dll,System.Drawing.dll,System.Windows.Forms.dll,System.Web.Extensions.dll,System.Management.dll,Microsoft.Web.WebView2.Core.dll,Microsoft.Web.WebView2.WinForms.dll /out:LeagueOfCustoms.exe src\LeagueOfCustoms.cs
 
 if %ERRORLEVEL% equ 0 (
     echo [OK] Built successfully: LeagueOfCustoms.exe

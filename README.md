@@ -5,7 +5,7 @@
   # LEAGUE OF CUSTOMS
   ### Authentic League of Legends Hextech Companion & Team Randomizer
 
-  [![Version](https://img.shields.io/badge/version-v0.1-c89b3c.svg?style=for-the-badge)](https://github.com/Venomasa/League-of-Customs)
+  [![Version](https://img.shields.io/badge/version-v0.2-c89b3c.svg?style=for-the-badge)](https://github.com/Venomasa/League-of-Customs)
   [![Platform](https://img.shields.io/badge/platform-Windows-0ac8b9.svg?style=for-the-badge)](https://github.com/Venomasa/League-of-Customs)
   [![Framework](https://img.shields.io/badge/.NET-4.0+-785a28.svg?style=for-the-badge)](https://github.com/Venomasa/League-of-Customs)
   [![UI](https://img.shields.io/badge/Engine-WebView2-e84057.svg?style=for-the-badge)](https://github.com/Venomasa/League-of-Customs)
@@ -73,6 +73,22 @@
 Bench: PlayerEleven
 ```
 
+### 7. Live Summoner Profile & Ranked Stats
+- Search any Summoner Riot ID (`Name` + `#Tag`) across 11 global regions (EUNE, EUW, NA, KR, LAN, LAS, OCE, TR, RU, BR, JP).
+- Live identity banner with profile icon, summoner level badge, and region tag.
+- Live Ranked Solo/Duo & Ranked Flex tiers, divisions, LP, and win rates with official Riot medal emblems.
+- Top played champions in ranked with games count, KDA, and win rates.
+- One-click "View on OP.GG" button to open the full match history in your browser.
+
+### 8. Champion Mastery Showcase
+- Auto-fetches live champion masteries directly upon profile lookup.
+- Displays top champion masteries with high-resolution Riot champion portraits.
+- Hextech-styled mastery level badges (Gold for Level 7+, Hextech Teal for 5-6, Slate for 1-4) and formatted mastery points.
+
+### 9. Multi-Tab Navigation
+- LoL client-style top navigation bar with tabs: **Profile** (default landing), **Match History**, and **Team Randomizer**.
+- Smooth switching between tools while preserving all active state and matches.
+
 ---
 
 ## Project Structure
@@ -117,11 +133,11 @@ You can get **League of Customs** in two ways:
 
 ### Option A: Windows Installer (Recommended)
 Automatically sets up desktop and Start menu shortcuts and registers in Windows Add/Remove Programs:
-- 🚀 **[Download LeagueOfCustoms-Setup-v0.1.exe](https://github.com/Venomasa/League-of-Customs/releases/download/v0.1/LeagueOfCustoms-Setup-v0.1.exe)**
+- 🚀 **[Download LeagueOfCustoms-Setup-v0.2.exe](https://github.com/Venomasa/League-of-Customs/releases/download/v0.2/LeagueOfCustoms-Setup-v0.2.exe)**
 
 ### Option B: Portable ZIP (No Installation Required)
 Extract anywhere and run directly from the folder:
-- 📦 **[Download LeagueOfCustoms-v0.1-Portable.zip](https://github.com/Venomasa/League-of-Customs/releases/download/v0.1/LeagueOfCustoms-v0.1-Portable.zip)**
+- 📦 **[Download LeagueOfCustoms-v0.2-Portable.zip](https://github.com/Venomasa/League-of-Customs/releases/download/v0.2/LeagueOfCustoms-v0.2-Portable.zip)**
 
 > 📌 All releases and version changelogs are available on the **[GitHub Releases Page](https://github.com/Venomasa/League-of-Customs/releases/latest)**.
 

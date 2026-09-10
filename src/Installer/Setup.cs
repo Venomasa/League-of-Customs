@@ -35,7 +35,7 @@ namespace LeagueOfCustoms.Installer
 
         public SetupForm()
         {
-            this.Text = "League of Customs v0.1 Setup";
+            this.Text = "League of Customs v0.2 Setup";
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.StartPosition = FormStartPosition.CenterScreen;
@@ -101,7 +101,7 @@ namespace LeagueOfCustoms.Installer
 
             Label lblSub = new Label
             {
-                Text = "Version v0.1 — Custom Game Companion & Team Randomizer",
+                Text = "Version v0.2 — Custom Game Companion & Team Randomizer",
                 Font = new Font("Segoe UI", 8.75f, FontStyle.Regular),
                 ForeColor = Color.FromArgb(160, 155, 140),
                 Location = new Point(90, 44),
@@ -432,7 +432,7 @@ namespace LeagueOfCustoms.Installer
                     if (key != null)
                     {
                         key.SetValue("DisplayName", "League of Customs");
-                        key.SetValue("DisplayVersion", "0.1");
+                        key.SetValue("DisplayVersion", "0.2");
                         key.SetValue("Publisher", "Venomasa");
                         key.SetValue("DisplayIcon", iconPath);
                         key.SetValue("InstallLocation", installDir);
