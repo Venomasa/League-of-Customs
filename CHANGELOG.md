@@ -2,14 +2,17 @@
 
 All notable changes to **League of Customs** are documented here.
 
-## [v0.3] — In Development
+## [v0.3] — 2026-09-10
 
 ### Added
-- **Randomizer Sub-Pages**: Split the Randomizer into 3 dedicated sub-pages: **Custom Randomizer**, **Team Randomizer**, and **Solo Randomizer**.
-- **Custom Randomizer Champions**: Optional toggle to assign random, unique champions to each player in custom matches.
-- **Team Randomizer**: Dedicated 1–5 player squad randomizer for rolling roles/lanes, champions, or both with individual slot rerolls.
-- **Solo Randomizer (Ultimate Challenge)**: Full challenge generator for single players rolling Role, Champion, full Runes Reforged tree, Item build, and Summoner Spells.
-- **Offline & Dynamic Assets**: Comprehensive champion, rune, and item database powered by Riot Data Dragon with built-in offline fallbacks.
+- **Reorganized Solo Randomizer Layout**: Positioned Summoner Spells directly adjacent to Item Build in a combined equipment card beside the Champion, with Runes Reforged spanning full width cleanly underneath.
+- **Latest Data Dragon 16.18.1 Assets**: Updated to live Data Dragon `16.18.1` supporting all **173 champions** (including Smolder, Aurora, Ambessa, Mel) with verified lane mappings, S15/16 items, and current runes/shards.
+- **Match History in Profile**: Integrated recent match history directly inside the Profile page powered by OP.GG MCP (`lol_list_summoner_matches`), displaying Victory/Defeat, champion avatars, KDA, items, and game durations.
+- **Installer Smart Upgrade**: Enhanced `Setup.exe` with automatic detection of prior installations via registry, seamlessly switching to Update mode to upgrade older versions to v0.3.
+- **Role-Specific Champion Randomization**: Optional lane-appropriate champion assignment for Custom and Team Randomizers (Top to Top, Jungle to Jungle, Mid to Mid, ADC to ADC, Support to Support).
+- **Randomizer Sub-Pages**: Dedicated sub-navigation for Custom Randomizer (5v5), Team Randomizer (1–5 players), and Solo Randomizer (Ultimate Challenge).
+- **Instant Avatar Loading**: High-speed square champion avatars replacing heavy splash images in Solo challenge.
+- **Role Reroll & Mode Preservation**: Changing role or switching mode in Solo Randomizer adapts starter and spells without resetting champions, runes, or items.
 
 ---
 

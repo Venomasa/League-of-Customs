@@ -60,7 +60,7 @@ namespace LoLRandomizer
             ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
-            this.Text = "League of Customs v0.2";
+            this.Text = "League of Customs v0.3";
             this.FormBorderStyle = FormBorderStyle.None;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Size = new Size(1260, 860);
@@ -713,7 +713,7 @@ namespace LoLRandomizer
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://mcp-api.op.gg/mcp");
                 request.Method = "POST";
                 request.ContentType = "application/json";
-                request.UserAgent = "LeagueOfCustoms/0.2";
+                request.UserAgent = "LeagueOfCustoms/0.3";
                 request.Timeout = 15000;
                 request.ContentLength = bodyBytes.Length;
 
@@ -899,6 +899,121 @@ namespace LoLRandomizer
                     { "flexLose", flexLose },
                     { "champions", champList }
                 };
+
+                // 5. Recent Matches via lol_list_summoner_matches
+                var matchesList = new List<Dictionary<string, object>>();
+                try
+                {
+                    var matchesParams = new Dictionary<string, object>
+                    {
+                        { "name", "lol_list_summoner_matches" },
+                        { "arguments", new Dictionary<string, object> {
+                            { "game_name", gameName },
+                            { "tag_line", tagLine },
+                            { "region", region }
+                        }}
+                    };
+
+                    var matchesRpc = new Dictionary<string, object>
+                    {
+                        { "jsonrpc", "2.0" },
+                        { "id", 2 },
+                        { "method", "tools/call" },
+                        { "params", matchesParams }
+                    };
+
+                    byte[] mBytes = Encoding.UTF8.GetBytes(serializer.Serialize(matchesRpc));
+                    HttpWebRequest mRequest = (HttpWebRequest)WebRequest.Create("https://mcp-api.op.gg/mcp");
+                    mRequest.Method = "POST";
+                    mRequest.ContentType = "application/json";
+                    mRequest.UserAgent = "LeagueOfCustoms/0.3";
+                    mRequest.Timeout = 12000;
+                    mRequest.ContentLength = mBytes.Length;
+
+                    using (Stream mStream = mRequest.GetRequestStream())
+                    {
+                        mStream.Write(mBytes, 0, mBytes.Length);
+                    }
+
+                    string mRespText = null;
+                    using (HttpWebResponse mResponse = (HttpWebResponse)mRequest.GetResponse())
+                    using (StreamReader mReader = new StreamReader(mResponse.GetResponseStream(), Encoding.UTF8))
+                    {
+                        mRespText = mReader.ReadToEnd();
+                    }
+
+                    if (!string.IsNullOrEmpty(mRespText))
+                    {
+                        string[] gameBlocks = mRespText.Split(new string[] { "GameHistory(" }, StringSplitOptions.RemoveEmptyEntries);
+                        int mCount = 0;
+                        for (int i = 1; i < gameBlocks.Length && mCount < 10; i++)
+                        {
+                            string g = gameBlocks[i];
+                            var hMatch = Regex.Match(g, @"^""[^""]*"",\s*""([^""]*)"",\s*""([^""]*)"",\s*""([^""]*)"",\s*(\d+)");
+                            if (!hMatch.Success) continue;
+                            string createdAt = hMatch.Groups[1].Value;
+                            string gMap = hMatch.Groups[2].Value;
+                            string gType = hMatch.Groups[3].Value;
+                            int duration = 0; int.TryParse(hMatch.Groups[4].Value, out duration);
+
+                            var pMatch = Regex.Match(g, @"Participant\(Summoner\([^)]*\),\s*(\d+),\s*""([^""]*)"",\s*""([^""]*)"",\s*""([^""]*)"",\s*\[([^\]]*)\],\s*\[([^\]]*)\],\s*Rune\([^)]*\),\s*\[([^\]]*)\],\s*Stats\((\d+),\s*(\d+),\s*(\d+),[^,]+,[^,]+,[^,]+,[^,]+,\s*(\d+),\s*(\d+),\s*(\d+),[^,]+,[^,]+,\s*(\d+),[^,]+,[^,]+,[^,]+,[^,]+,[^,]+,\s*""([^""]*)""");
+                            if (pMatch.Success)
+                            {
+                                string mChampId = pMatch.Groups[1].Value;
+                                string mChampName = pMatch.Groups[2].Value;
+                                string mTeam = pMatch.Groups[3].Value;
+                                string mPos = pMatch.Groups[4].Value;
+                                string itemIdsStr = pMatch.Groups[5].Value;
+                                string itemNamesStr = pMatch.Groups[6].Value;
+                                int mLevel = 0; int.TryParse(pMatch.Groups[8].Value, out mLevel);
+                                int mKills = 0; int.TryParse(pMatch.Groups[11].Value, out mKills);
+                                int mDeaths = 0; int.TryParse(pMatch.Groups[12].Value, out mDeaths);
+                                int mAssists = 0; int.TryParse(pMatch.Groups[13].Value, out mAssists);
+                                int mCs = 0; int.TryParse(pMatch.Groups[14].Value, out mCs);
+                                string mResult = pMatch.Groups[15].Value;
+
+                                var itemsArr = new List<int>();
+                                foreach (var rawId in itemIdsStr.Split(','))
+                                {
+                                    int itemIdVal;
+                                    if (int.TryParse(rawId.Trim(), out itemIdVal)) itemsArr.Add(itemIdVal);
+                                }
+
+                                var itemNamesArr = new List<string>();
+                                foreach (var rawName in itemNamesStr.Split(','))
+                                {
+                                    string trimmed = rawName.Trim().Trim('"');
+                                    if (!string.IsNullOrEmpty(trimmed)) itemNamesArr.Add(trimmed);
+                                }
+
+                                double mKda = mDeaths > 0 ? Math.Round((double)(mKills + mAssists) / mDeaths, 2) : Math.Round((double)(mKills + mAssists), 2);
+
+                                var matchObj = new Dictionary<string, object>
+                                {
+                                    { "gameType", gType },
+                                    { "duration", duration },
+                                    { "createdAt", createdAt },
+                                    { "champId", mChampId },
+                                    { "champName", mChampName },
+                                    { "level", mLevel },
+                                    { "kills", mKills },
+                                    { "deaths", mDeaths },
+                                    { "assists", mAssists },
+                                    { "kda", mKda },
+                                    { "cs", mCs },
+                                    { "result", mResult },
+                                    { "items", itemsArr },
+                                    { "itemNames", itemNamesArr }
+                                };
+                                matchesList.Add(matchObj);
+                                mCount++;
+                            }
+                        }
+                    }
+                }
+                catch { }
+
+                result["matches"] = matchesList;
 
                 return serializer.Serialize(result);
             }

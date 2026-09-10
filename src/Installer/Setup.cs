@@ -35,7 +35,7 @@ namespace LeagueOfCustoms.Installer
 
         public SetupForm()
         {
-            this.Text = "League of Customs v0.2 Setup";
+            this.Text = "League of Customs v0.3 Setup";
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.StartPosition = FormStartPosition.CenterScreen;
@@ -101,7 +101,7 @@ namespace LeagueOfCustoms.Installer
 
             Label lblSub = new Label
             {
-                Text = "Version v0.2 — Custom Game Companion & Team Randomizer",
+                Text = "Version v0.3 — Custom Game Companion & Team Randomizer",
                 Font = new Font("Segoe UI", 8.75f, FontStyle.Regular),
                 ForeColor = Color.FromArgb(160, 155, 140),
                 Location = new Point(90, 44),
@@ -113,21 +113,55 @@ namespace LeagueOfCustoms.Installer
             pnlHeader.Controls.Add(lblSub);
             this.Controls.Add(pnlHeader);
 
+            // Check for existing installation (Upgrade / Update detection)
+            string existingPath = null;
+            string existingVer = null;
+            try
+            {
+                using (var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\LeagueOfCustoms"))
+                {
+                    if (key != null)
+                    {
+                        existingPath = key.GetValue("InstallLocation") as string;
+                        existingVer = key.GetValue("DisplayVersion") as string;
+                    }
+                }
+            }
+            catch { }
+
+            string defaultPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                @"Programs\LeagueOfCustoms"
+            );
+
+            bool isUpgrade = false;
+            if (!string.IsNullOrEmpty(existingPath) && Directory.Exists(existingPath))
+            {
+                defaultPath = existingPath;
+                isUpgrade = true;
+            }
+            else if (File.Exists(Path.Combine(defaultPath, "LeagueOfCustoms.exe")))
+            {
+                isUpgrade = true;
+            }
+
+            if (isUpgrade)
+            {
+                this.Text = "League of Customs v0.3 Update";
+                lblTitle.Text = "UPDATE LEAGUE OF CUSTOMS";
+                lblSub.Text = string.Format("Upgrade existing installation{0} to Version v0.3", string.IsNullOrEmpty(existingVer) ? "" : " (v" + existingVer + ")");
+            }
+
             // Install Location Group
             Label lblDest = new Label
             {
-                Text = "Destination Folder:",
+                Text = isUpgrade ? "Installation to Update:" : "Destination Folder:",
                 Location = new Point(28, 106),
                 AutoSize = true,
                 ForeColor = Color.FromArgb(200, 155, 60),
                 Font = new Font("Segoe UI", 9.25f, FontStyle.Bold)
             };
             this.Controls.Add(lblDest);
-
-            string defaultPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                @"Programs\LeagueOfCustoms"
-            );
 
             _txtPath = new TextBox
             {
@@ -200,7 +234,7 @@ namespace LeagueOfCustoms.Installer
             // Progress Bar & Status
             _lblStatus = new Label
             {
-                Text = "Ready to install. Click 'Install' to begin.",
+                Text = isUpgrade ? "Existing installation detected. Click 'Update' to upgrade to v0.3." : "Ready to install. Click 'Install' to begin.",
                 Location = new Point(30, 276),
                 AutoSize = true,
                 ForeColor = Color.FromArgb(160, 155, 140)
@@ -234,7 +268,7 @@ namespace LeagueOfCustoms.Installer
 
             _btnInstall = new Button
             {
-                Text = "Install",
+                Text = isUpgrade ? "Update" : "Install",
                 Location = new Point(356, 14),
                 Width = 100,
                 Height = 32,
@@ -432,7 +466,7 @@ namespace LeagueOfCustoms.Installer
                     if (key != null)
                     {
                         key.SetValue("DisplayName", "League of Customs");
-                        key.SetValue("DisplayVersion", "0.2");
+                        key.SetValue("DisplayVersion", "0.3");
                         key.SetValue("Publisher", "Venomasa");
                         key.SetValue("DisplayIcon", iconPath);
                         key.SetValue("InstallLocation", installDir);
