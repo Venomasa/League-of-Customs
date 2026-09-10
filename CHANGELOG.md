@@ -2,6 +2,15 @@
 
 All notable changes to **League of Customs** are documented here.
 
+## [v0.3] — In Development
+
+### Added
+- **Randomizer Sub-Pages**: Split the Randomizer into 3 dedicated sub-pages: **Custom Randomizer**, **Team Randomizer**, and **Solo Randomizer**.
+- **Custom Randomizer Champions**: Optional toggle to assign random, unique champions to each player in custom matches.
+- **Team Randomizer**: Dedicated 1–5 player squad randomizer for rolling roles/lanes, champions, or both with individual slot rerolls.
+- **Solo Randomizer (Ultimate Challenge)**: Full challenge generator for single players rolling Role, Champion, full Runes Reforged tree, Item build, and Summoner Spells.
+- **Offline & Dynamic Assets**: Comprehensive champion, rune, and item database powered by Riot Data Dragon with built-in offline fallbacks.
+
 ---
 
 ## [v0.2] — 2026-09-10

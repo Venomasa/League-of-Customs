@@ -29,7 +29,7 @@ if %ERRORLEVEL% equ 0 (
     echo [OK] Built successfully: LeagueOfCustoms.exe
     for %%A in ("LeagueOfCustoms.exe") do (
         set /a sizeKB=%%~zA / 1024
-        echo [INFO] Executable Size: %%~zA bytes (~!sizeKB! KB)
+        echo [INFO] Executable Size: %%~zA bytes [~!sizeKB! KB]
     )
 ) else (
     echo [ERROR] Build failed!

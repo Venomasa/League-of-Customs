@@ -363,6 +363,87 @@
     .toast{position:fixed;bottom:24px;right:24px;background:var(--gold-4);color:var(--gold-1);border:1px solid var(--gold-3);padding:10px 22px;font-family:'Cinzel',serif;font-size:.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;box-shadow:0 8px 24px rgba(0,0,0,.5);opacity:0;transform:translateY(8px);transition:all .25s cubic-bezier(.16,1,.3,1);pointer-events:none;z-index:1000}
     .toast.show{opacity:1;transform:translateY(0)}
     @keyframes popIn{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
+
+    /* SUB-NAV BAR (LoL Client Sub-Tabs) */
+    .sub-nav-bar{display:flex;background:var(--black-3);border:1px solid var(--gold-3);margin-bottom:18px;position:relative}
+    .sub-nav-bar::before,.sub-nav-bar::after{content:'';position:absolute;width:6px;height:6px;border-color:var(--gold-2);border-style:solid;z-index:2}
+    .sub-nav-bar::before{top:-1px;left:-1px;border-width:2px 0 0 2px}
+    .sub-nav-bar::after{bottom:-1px;right:-1px;border-width:0 2px 2px 0}
+    .sub-nav-btn{flex:1;padding:10px 16px;font-family:'Cinzel',serif;font-size:.74rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;background:transparent;color:var(--grey-1);border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+    .sub-nav-btn:hover{color:var(--gold-1);background:rgba(200,155,60,.05)}
+    .sub-nav-btn.active{color:var(--gold-1);border-bottom-color:var(--gold-2);background:linear-gradient(180deg,rgba(200,155,60,.12),transparent);text-shadow:0 0 10px rgba(200,155,60,.45)}
+    .sub-page{display:none;width:100%}
+    .sub-page.active{display:block}
+
+    /* CUSTOM RANDOMIZER CHAMPION PILL */
+    .slot-champ-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(1,10,19,.75);border:1px solid var(--gold-3);padding:2px 8px 2px 3px;border-radius:2px;font-family:'Cinzel',serif;font-size:.68rem;font-weight:700;color:var(--gold-1);margin-left:auto;flex-shrink:0;box-shadow:0 0 6px rgba(0,0,0,.5)}
+    .slot-champ-img{width:22px;height:22px;border-radius:2px;border:1px solid var(--gold-2);object-fit:cover}
+
+    /* TEAM RANDOMIZER STYLES */
+    .squad-inputs-box{display:flex;flex-direction:column;gap:6px;margin:10px 0 6px}
+    .squad-input-row{display:flex;align-items:center;background:var(--black-1);border:1px solid var(--gold-4);padding:0 8px;height:34px;transition:border-color .2s}
+    .squad-input-row:focus-within{border-color:var(--gold-2);box-shadow:0 0 6px rgba(200,155,60,.25)}
+    .squad-slot-num{font-family:'Cinzel',serif;font-size:.75rem;font-weight:800;color:var(--gold-2);width:22px;flex-shrink:0}
+    .squad-member-input{background:transparent;border:none;color:var(--gold-1);font-family:'Nunito Sans',sans-serif;font-size:.84rem;outline:none;width:100%}
+    .slot-reroll-btn{background:rgba(200,155,60,.08);border:1px solid var(--gold-4);color:var(--gold-2);width:28px;height:28px;border-radius:2px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;padding:0}
+    .slot-reroll-btn:hover{background:var(--gold-4);border-color:var(--gold-2);color:#fff;box-shadow:0 0 8px rgba(200,155,60,.45)}
+
+    /* SOLO RANDOMIZER STYLES */
+    .solo-grid{display:grid;grid-template-columns:330px 1fr;gap:18px;align-items:start}
+    @media(max-width:960px){.solo-grid{grid-template-columns:1fr}}
+    .solo-right-col{display:flex;flex-direction:column;gap:18px}
+    .solo-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid rgba(200,155,60,.2);padding-bottom:8px}
+    .solo-card-title{font-family:'Cinzel',serif;font-size:.72rem;font-weight:800;letter-spacing:2px;color:var(--gold-2);text-transform:uppercase}
+    .solo-reroll-actions{display:flex;gap:6px}
+    .solo-reroll-mini-btn{font-family:'Cinzel',serif;font-size:.62rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(200,155,60,.1);border:1px solid var(--gold-4);color:var(--gold-1);padding:3px 8px;cursor:pointer;transition:all .2s}
+    .solo-reroll-mini-btn:hover{background:var(--gold-4);border-color:var(--gold-2);color:#fff;box-shadow:0 0 6px rgba(200,155,60,.3)}
+    .solo-champ-content{display:flex;flex-direction:column;gap:12px}
+    .solo-hero-wrap{display:flex;align-items:center;gap:16px;background:var(--black-1);border:1px solid var(--gold-3);padding:14px 16px;position:relative}
+    .solo-champ-avatar-container{position:relative;width:82px;height:82px;flex-shrink:0}
+    .solo-champ-avatar{width:100%;height:100%;border-radius:4px;border:2px solid var(--gold-2);box-shadow:0 0 12px rgba(200,155,60,.4);object-fit:cover;background:#010a13}
+    .solo-champ-role-badge{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);background:rgba(1,10,19,.95);border:1px solid var(--gold-2);padding:1px 8px;display:flex;align-items:center;gap:5px;font-family:'Cinzel',serif;font-size:.62rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--gold-1);white-space:nowrap;border-radius:2px;box-shadow:0 0 8px rgba(0,0,0,.9)}
+    .solo-champ-role-badge img{width:14px;height:14px;object-fit:contain}
+    .solo-champ-meta{padding:4px 0}
+    .solo-champ-name{font-family:'Cinzel',serif;font-size:1.35rem;font-weight:900;letter-spacing:2px;color:var(--gold-1)}
+    .solo-champ-title{font-size:.82rem;color:var(--gold-2);font-style:italic;margin-top:2px}
+    .solo-champ-tags{font-size:.72rem;color:var(--grey-1);margin-top:5px}
+
+    /* Solo Runes */
+    .solo-runes-content{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    @media(max-width:650px){.solo-runes-content{grid-template-columns:1fr}}
+    .rune-tree-column{background:var(--black-1);border:1px solid rgba(255,255,255,.05);padding:10px 12px}
+    .rune-tree-head{display:flex;align-items:center;gap:8px;font-family:'Cinzel',serif;font-size:.74rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-2);border-bottom:1px solid rgba(200,155,60,.15);padding-bottom:6px;margin-bottom:8px}
+    .rune-tree-icon{width:22px;height:22px;object-fit:contain}
+    .rune-keystone-row{display:flex;align-items:center;gap:10px;background:rgba(200,155,60,.12);border:1px solid var(--gold-2);padding:6px 10px;margin-bottom:8px;box-shadow:0 0 10px rgba(200,155,60,.25)}
+    .rune-keystone-icon{width:30px;height:30px;object-fit:contain}
+    .rune-keystone-name{font-family:'Cinzel',serif;font-size:.8rem;font-weight:800;color:var(--gold-1)}
+    .rune-minors-list{display:flex;flex-direction:column;gap:5px}
+    .rune-minor-row{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);padding:4px 8px}
+    .rune-minor-icon{width:20px;height:20px;object-fit:contain}
+    .rune-minor-name{font-size:.74rem;color:var(--grey-1);font-weight:600}
+    .rune-shards-title{font-family:'Cinzel',serif;font-size:.62rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--gold-2);margin:10px 0 4px}
+    .rune-shards-list{display:flex;flex-direction:column;gap:4px}
+    .rune-shard-row{font-size:.7rem;color:var(--grey-1);background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);padding:3px 8px}
+
+    /* Solo Items */
+    .solo-items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+    .solo-item-card{background:var(--black-1);border:1px solid rgba(255,255,255,.06);padding:8px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;position:relative}
+    .solo-item-card.boots{border-color:rgba(10,200,185,.35)}
+    .solo-item-card.starter{border-color:rgba(200,155,60,.35)}
+    .solo-item-type-tag{font-family:'Cinzel',serif;font-size:.56rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--gold-2)}
+    .solo-item-img{width:42px;height:42px;border:1px solid var(--gold-3);object-fit:cover}
+    .solo-item-name{font-size:.72rem;font-weight:700;color:var(--gold-1);line-height:1.25}
+
+    /* Solo Spells */
+    .solo-spells-box{display:flex;gap:12px}
+    .solo-spell-card{flex:1;background:var(--black-1);border:1px solid var(--gold-4);padding:8px 12px;display:flex;align-items:center;gap:10px}
+    .solo-spell-img{width:36px;height:36px;border:1px solid var(--gold-3);object-fit:cover}
+    .solo-spell-name{font-family:'Cinzel',serif;font-size:.78rem;font-weight:800;color:var(--gold-1)}
+
+    /* Mode Pill Toggle */
+    .mode-toggle-pill{display:inline-flex;background:var(--black-1);border:1px solid var(--gold-3)}
+    .mode-pill-btn{padding:7px 14px;font-family:'Cinzel',serif;font-size:.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:transparent;color:var(--grey-1);border:none;cursor:pointer;transition:all .2s}
+    .mode-pill-btn.active{background:var(--gold-4);color:var(--gold-1)}
   </style>
 </head>
 <body>
@@ -509,121 +590,338 @@
       
       <!-- PAGE 1: Randomizer -->
       <div class="view-page" id="pageRandomizer">
-        <div class="main-grid">
-    <div class="panel">
-      <div class="pi">
-        <div class="tab-bar">
-          <button class="tab-btn active" id="tabChatBtn" onclick="switchInputMode('chat')">League Chat</button>
-          <button class="tab-btn" id="tabManualBtn" onclick="switchInputMode('manual')">Manual Roster</button>
+        <!-- Sub-Navigation Bar (LoL Client Sub-Tabs) -->
+        <div class="sub-nav-bar">
+          <button class="sub-nav-btn active" id="subTabCustom" onclick="switchRandomizerSubTab('custom')">
+            <span>Custom Randomizer</span>
+          </button>
+          <button class="sub-nav-btn" id="subTabTeam" onclick="switchRandomizerSubTab('team')">
+            <span>Team Randomizer</span>
+          </button>
+          <button class="sub-nav-btn" id="subTabSolo" onclick="switchRandomizerSubTab('solo')">
+            <span>Solo Randomizer</span>
+          </button>
         </div>
 
-        <div class="input-section active" id="chatSection">
-          <div class="section-desc">Paste your lobby chat log. Joins and leaves are tracked automatically.<br>Add extra players on new lines starting with <code>+</code></div>
-          <textarea id="chatInput" spellcheck="false" placeholder="Paste lobby chat here...&#10;&#10;Extra players:&#10;+ PlayerName #EUW"></textarea>
-          <button class="btn btn-paste" onclick="pasteChatClipboard()">Paste from Clipboard</button>
-          <div class="btn-row">
-            <button class="btn btn-secondary" style="flex:1" onclick="clearChat()">Clear</button>
+        <!-- SUB-PAGE 1: Custom Randomizer -->
+        <div class="sub-page active" id="subPageCustom">
+          <div class="main-grid">
+            <div class="panel">
+              <div class="pi">
+                <div class="tab-bar">
+                  <button class="tab-btn active" id="tabChatBtn" onclick="switchInputMode('chat')">League Chat</button>
+                  <button class="tab-btn" id="tabManualBtn" onclick="switchInputMode('manual')">Manual Roster</button>
+                </div>
+
+                <div class="input-section active" id="chatSection">
+                  <div class="section-desc">Paste your lobby chat log. Joins and leaves are tracked automatically.<br>Add extra players on new lines starting with <code>+</code></div>
+                  <textarea id="chatInput" spellcheck="false" placeholder="Paste lobby chat here...&#10;&#10;Extra players:&#10;+ PlayerName #EUW"></textarea>
+                  <button class="btn btn-paste" onclick="pasteChatClipboard()">Paste from Clipboard</button>
+                  <div class="btn-row">
+                    <button class="btn btn-secondary" style="flex:1" onclick="clearChat()">Clear</button>
+                  </div>
+                </div>
+
+                <div class="input-section" id="manualSection">
+                  <div class="section-desc">One player per line, or comma-separated. Lines starting with <code>#</code> are ignored.</div>
+                  <textarea id="manualInput" spellcheck="false" placeholder="Player1&#10;Player2 #TAG&#10;Player3, Player4"></textarea>
+                  <button class="btn btn-paste" onclick="pasteManualClipboard()">Paste from Clipboard</button>
+                  <div class="btn-row">
+                    <button class="btn btn-secondary" style="flex:1" onclick="clearManual()">Clear</button>
+                  </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Read from LoL Client - always visible -->
+                <div class="lcu-block">
+                  <button class="btn btn-lcu" id="lcuBtn" onclick="readFromLolClient()">Read from LoL Client</button>
+                  <div class="lcu-status" id="lcuStatus">Make sure your League custom lobby is open.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Center: Teams -->
+            <div>
+              <div class="action-toolbar">
+                <button class="btn btn-primary" id="rollBtn" onclick="animateAndRandomize()">Randomize Teams</button>
+                <button class="btn btn-discord" onclick="copyDiscord()">Copy for Discord</button>
+              </div>
+
+              <div class="teams-grid">
+                <div class="team-card team-blue">
+                  <div class="team-header">
+                    <span class="team-title">Blue Team</span>
+                    <span class="team-count" id="t1HeaderCount">&mdash; Players</span>
+                  </div>
+                  <div class="team-subhead">
+                    <span>ROLE</span>
+                    <span>SUMMONER</span>
+                  </div>
+                  <div class="slots-container" id="t1Container"></div>
+                </div>
+                <div class="team-card team-red">
+                  <div class="team-header">
+                    <span class="team-title">Red Team</span>
+                    <span class="team-count" id="t2HeaderCount">&mdash; Players</span>
+                  </div>
+                  <div class="team-subhead">
+                    <span>ROLE</span>
+                    <span>SUMMONER</span>
+                  </div>
+                  <div class="slots-container" id="t2Container"></div>
+                </div>
+              </div>
+
+              <div class="spec-card">
+                <div class="spec-header" id="specHeader">Spectators / Bench</div>
+                <div class="spec-body" id="specBody"><span class="no-spec">No spectators</span></div>
+              </div>
+            </div>
+
+            <!-- Right: Settings Panel -->
+            <div class="settings-panel">
+              <div class="si">
+                <div class="settings-title">Settings</div>
+
+                <div class="set-label">Game Mode</div>
+                <div class="mode-group-vert">
+                  <button class="mode-btn-v active" id="btnModeRift" onclick="setGameMode(false)">Rift (Roles)</button>
+                  <button class="mode-btn-v aram" id="btnModeAram" onclick="setGameMode(true)">ARAM</button>
+                </div>
+
+                <div class="divider" style="margin-top:16px;"></div>
+
+                <div class="set-label" style="margin-top:0;">Options</div>
+
+                <label class="lol-check" for="stripTagsCheck">
+                  <input type="checkbox" id="stripTagsCheck" onchange="onToggleTag()">
+                  <span class="lol-box"></span>
+                  <span class="lol-check-text">Hide Riot #Tag
+                    <em>Strip #TAG from all player names</em>
+                  </span>
+                </label>
+
+                <label class="lol-check" for="noLeftBehindCheck">
+                  <input type="checkbox" id="noLeftBehindCheck" onchange="updateStats()">
+                  <span class="lol-box"></span>
+                  <span class="lol-check-text">Don't leave anyone behind
+                    <em>Odd leftover player (&lt;10) is added to one team (max 5v5)</em>
+                  </span>
+                </label>
+
+                <label class="lol-check" for="randomChampsCheck">
+                  <input type="checkbox" id="randomChampsCheck" onchange="onToggleRandomChamps()">
+                  <span class="lol-box"></span>
+                  <span class="lol-check-text">Assign Random Champions
+                    <em>Roll unique champions for each player</em>
+                  </span>
+                </label>
+
+                <label class="lol-check" for="laneChampsCustomCheck">
+                  <input type="checkbox" id="laneChampsCustomCheck" onchange="onToggleLaneChampsCustom()">
+                  <span class="lol-box"></span>
+                  <span class="lol-check-text">Role-Specific Champions
+                    <em>Assign Top laners to Top, Junglers to Jungle, etc.</em>
+                  </span>
+                </label>
+
+                <div class="divider" style="margin-top:14px;"></div>
+
+                <div class="status-badge" id="sourceBanner">Waiting for input...</div>
+                <div class="stats-summary" id="statsSummary">&mdash;</div>
+              </div>
+            </div>
+          </div> <!-- .main-grid -->
+        </div> <!-- #subPageCustom -->
+
+        <!-- SUB-PAGE 2: Team Randomizer -->
+        <div class="sub-page" id="subPageTeam">
+          <div class="main-grid" style="grid-template-columns: 330px 1fr;">
+            <!-- Left: Squad Input & Options -->
+            <div class="panel">
+              <div class="pi">
+                <div class="settings-title" style="margin-bottom:12px;">Squad Members (1-5)</div>
+                <div class="section-desc">Enter up to 5 players to balance roles, roll champions, or both.</div>
+                
+                <div class="squad-inputs-box">
+                  <div class="squad-input-row">
+                    <span class="squad-slot-num">1</span>
+                    <input type="text" class="squad-member-input" id="squadInput0" placeholder="Player 1" oninput="updateTeamSquadFromInputs()" />
+                  </div>
+                  <div class="squad-input-row">
+                    <span class="squad-slot-num">2</span>
+                    <input type="text" class="squad-member-input" id="squadInput1" placeholder="Player 2" oninput="updateTeamSquadFromInputs()" />
+                  </div>
+                  <div class="squad-input-row">
+                    <span class="squad-slot-num">3</span>
+                    <input type="text" class="squad-member-input" id="squadInput2" placeholder="Player 3" oninput="updateTeamSquadFromInputs()" />
+                  </div>
+                  <div class="squad-input-row">
+                    <span class="squad-slot-num">4</span>
+                    <input type="text" class="squad-member-input" id="squadInput3" placeholder="Player 4" oninput="updateTeamSquadFromInputs()" />
+                  </div>
+                  <div class="squad-input-row">
+                    <span class="squad-slot-num">5</span>
+                    <input type="text" class="squad-member-input" id="squadInput4" placeholder="Player 5" oninput="updateTeamSquadFromInputs()" />
+                  </div>
+                </div>
+
+                <button class="btn btn-paste" onclick="pasteTeamClipboard()">Paste from Clipboard</button>
+                <button class="btn btn-lcu" id="btnTeamLcu" style="margin-top:6px;" onclick="readFromLolClientForTeam()">Read from LoL Client</button>
+                <div class="btn-row">
+                  <button class="btn btn-secondary" style="flex:1" onclick="clearTeamInputs()">Clear</button>
+                </div>
+
+                <div class="divider" style="margin-top:16px;"></div>
+
+                <div class="set-label">Randomize Target</div>
+                <div class="mode-group-vert">
+                  <button class="mode-btn-v active" id="btnTeamTargetBoth" onclick="setTeamTarget('both')">Roles & Champions</button>
+                  <button class="mode-btn-v" id="btnTeamTargetRoles" onclick="setTeamTarget('roles')">Roles Only</button>
+                  <button class="mode-btn-v" id="btnTeamTargetChamps" onclick="setTeamTarget('champs')">Champions Only</button>
+                </div>
+
+                <div class="set-label" style="margin-top:14px;">Game Mode</div>
+                <div class="mode-group-vert">
+                  <button class="mode-btn-v active" id="btnTeamModeRift" onclick="setTeamMode(false)">Summoner's Rift</button>
+                  <button class="mode-btn-v aram" id="btnTeamModeAram" onclick="setTeamMode(true)">ARAM</button>
+                </div>
+
+                <label class="lol-check" for="teamStripTagsCheck" style="margin-top:12px;">
+                  <input type="checkbox" id="teamStripTagsCheck" onchange="renderTeamSquad()">
+                  <span class="lol-box"></span>
+                  <span class="lol-check-text">Hide Riot #Tag
+                    <em>Strip #TAG from player names</em>
+                  </span>
+                </label>
+
+                <label class="lol-check" for="laneChampsTeamCheck" style="margin-top:6px;">
+                  <input type="checkbox" id="laneChampsTeamCheck" onchange="onToggleLaneChampsTeam()">
+                  <span class="lol-box"></span>
+                  <span class="lol-check-text">Role-Specific Champions
+                    <em>Assign Top laners to Top, Junglers to Jungle, etc.</em>
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Right: Squad Display -->
+            <div>
+              <div class="action-toolbar">
+                <button class="btn btn-primary" id="btnRollTeam" onclick="animateAndRandomizeTeam()">Randomize Team</button>
+                <button class="btn btn-discord" onclick="copyTeamDiscord()">Copy for Discord</button>
+              </div>
+
+              <div class="team-card team-blue" style="border-color: var(--gold-2); box-shadow: 0 0 20px rgba(200,155,60,.15);">
+                <div class="team-header" style="background: linear-gradient(90deg, rgba(200,155,60,.18), var(--black-3)); border-bottom-color: var(--gold-3);">
+                  <span class="team-title" style="color: var(--gold-1); font-size: .78rem;">Squad Team Roster</span>
+                  <span class="team-count" id="teamSquadHeaderCount" style="color: var(--gold-2);">— Players</span>
+                </div>
+                <div class="team-subhead" style="grid-template-columns: 126px 1fr auto 36px; padding-right: 14px;">
+                  <span>ROLE</span>
+                  <span>SUMMONER</span>
+                  <span>CHAMPION</span>
+                  <span style="text-align:center;">ROLL</span>
+                </div>
+                <div class="slots-container" id="teamSquadContainer"></div>
+              </div>
+            </div>
           </div>
-        </div>
+        </div> <!-- #subPageTeam -->
 
-        <div class="input-section" id="manualSection">
-          <div class="section-desc">One player per line, or comma-separated. Lines starting with <code>#</code> are ignored.</div>
-          <textarea id="manualInput" spellcheck="false" placeholder="Player1&#10;Player2 #TAG&#10;Player3, Player4"></textarea>
-          <button class="btn btn-paste" onclick="pasteManualClipboard()">Paste from Clipboard</button>
-          <div class="btn-row">
-            <button class="btn btn-secondary" style="flex:1" onclick="clearManual()">Clear</button>
+        <!-- SUB-PAGE 3: Solo Randomizer -->
+        <div class="sub-page" id="subPageSolo">
+          <div class="action-toolbar" style="margin-bottom:18px;">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+              <button class="btn btn-primary solo-master-btn" id="btnSoloRollAll" onclick="animateAndRollSolo()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px;"><rect x="2" y="2" width="20" height="20" rx="4"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="16" cy="8" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="8" cy="16" r="1.5" fill="currentColor"/><circle cx="16" cy="16" r="1.5" fill="currentColor"/></svg>
+                ROLL EVERYTHING
+              </button>
+              <div class="mode-toggle-pill">
+                <button class="mode-pill-btn active" id="soloModeRift" onclick="setSoloMode(false)">Summoner's Rift</button>
+                <button class="mode-pill-btn" id="soloModeAram" onclick="setSoloMode(true)">ARAM</button>
+              </div>
+            </div>
+            <button class="btn btn-discord" onclick="copySoloDiscord()">Copy Challenge for Discord</button>
           </div>
-        </div>
 
-        <div class="divider"></div>
+          <!-- Solo Grid: Left Card (Champion & Role), Right Column (Runes, Items, Spells) -->
+          <div class="solo-grid">
+            <!-- Left Card: Champion & Lane -->
+            <div class="panel solo-card solo-champ-card">
+              <div class="pi">
+                <div class="solo-card-header">
+                  <span class="solo-card-title">Champion & Lane</span>
+                  <div class="solo-reroll-actions">
+                    <button class="solo-reroll-mini-btn" onclick="rerollSoloChamp()" title="Reroll Champion">Reroll Champ</button>
+                    <button class="solo-reroll-mini-btn" onclick="rerollSoloRole()" title="Reroll Role">Reroll Role</button>
+                  </div>
+                </div>
+                <div class="solo-champ-content">
+                  <div class="solo-hero-wrap">
+                    <div class="solo-champ-avatar-container">
+                      <img id="soloChampAvatar" class="solo-champ-avatar" src="" alt="Champion Avatar" onerror="this.src='assets/app.png'"/>
+                      <div class="solo-champ-role-badge" id="soloChampRoleBadge">
+                        <img id="soloRoleIcon" src="assets/icons/icon-middle.png" alt="Role"/>
+                        <span id="soloRoleText">Mid</span>
+                      </div>
+                    </div>
+                    <div class="solo-champ-meta">
+                      <div class="solo-champ-name" id="soloChampName">—</div>
+                      <div class="solo-champ-title" id="soloChampTitle">—</div>
+                      <div class="solo-champ-tags" id="soloChampTags">—</div>
+                    </div>
+                  </div>
+                </div>
+                </div>
+              </div>
+            </div>
 
-        <!-- Read from LoL Client - always visible -->
-        <div class="lcu-block">
-          <button class="btn btn-lcu" id="lcuBtn" onclick="readFromLolClient()">Read from LoL Client</button>
-          <div class="lcu-status" id="lcuStatus">Make sure your League custom lobby is open.</div>
-        </div>
+            <!-- Right Column -->
+            <div class="solo-right-col">
+              <!-- Runes Reforged -->
+              <div class="panel solo-card">
+                <div class="pi">
+                  <div class="solo-card-header">
+                    <span class="solo-card-title">Runes Reforged</span>
+                    <button class="solo-reroll-mini-btn" onclick="rerollSoloRunes()" title="Reroll Runes">Reroll Runes</button>
+                  </div>
+                  <div class="solo-runes-content" id="soloRunesContent">
+                    <!-- Populated by JS -->
+                  </div>
+                </div>
+              </div>
 
-      </div>
-    </div>
+              <!-- Item Build -->
+              <div class="panel solo-card">
+                <div class="pi">
+                  <div class="solo-card-header">
+                    <span class="solo-card-title">Item Build</span>
+                    <button class="solo-reroll-mini-btn" onclick="rerollSoloItems()" title="Reroll Items">Reroll Items</button>
+                  </div>
+                  <div class="solo-items-grid" id="soloItemsGrid">
+                    <!-- Populated by JS -->
+                  </div>
+                </div>
+              </div>
 
-    <!-- Center: Teams -->
-    <div>
-      <div class="action-toolbar">
-        <button class="btn btn-primary" id="rollBtn" onclick="animateAndRandomize()">Randomize Teams</button>
-        <button class="btn btn-discord" onclick="copyDiscord()">Copy for Discord</button>
-      </div>
-
-      <div class="teams-grid">
-        <div class="team-card team-blue">
-          <div class="team-header">
-            <span class="team-title">Blue Team</span>
-            <span class="team-count" id="t1HeaderCount">&mdash; Players</span>
+              <!-- Summoner Spells -->
+              <div class="panel solo-card">
+                <div class="pi">
+                  <div class="solo-card-header">
+                    <span class="solo-card-title">Summoner Spells</span>
+                    <button class="solo-reroll-mini-btn" onclick="rerollSoloSpells()" title="Reroll Spells">Reroll Spells</button>
+                  </div>
+                  <div class="solo-spells-box" id="soloSpellsBox">
+                    <!-- Populated by JS -->
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="team-subhead">
-            <span>ROLE</span>
-            <span>SUMMONER</span>
-          </div>
-          <div class="slots-container" id="t1Container"></div>
-        </div>
-        <div class="team-card team-red">
-          <div class="team-header">
-            <span class="team-title">Red Team</span>
-            <span class="team-count" id="t2HeaderCount">&mdash; Players</span>
-          </div>
-          <div class="team-subhead">
-            <span>ROLE</span>
-            <span>SUMMONER</span>
-          </div>
-          <div class="slots-container" id="t2Container"></div>
-        </div>
-      </div>
-
-      <div class="spec-card">
-        <div class="spec-header" id="specHeader">Spectators / Bench</div>
-        <div class="spec-body" id="specBody"><span class="no-spec">No spectators</span></div>
-      </div>
-    </div>
-
-    <!-- Right: Settings Panel -->
-    <div class="settings-panel">
-      <div class="si">
-        <div class="settings-title">Settings</div>
-
-        <div class="set-label">Game Mode</div>
-        <div class="mode-group-vert">
-          <button class="mode-btn-v active" id="btnModeRift" onclick="setGameMode(false)">Rift (Roles)</button>
-          <button class="mode-btn-v aram" id="btnModeAram" onclick="setGameMode(true)">ARAM</button>
-        </div>
-
-        <div class="divider" style="margin-top:16px;"></div>
-
-        <div class="set-label" style="margin-top:0;">Options</div>
-
-        <label class="lol-check" for="stripTagsCheck">
-          <input type="checkbox" id="stripTagsCheck" onchange="onToggleTag()">
-          <span class="lol-box"></span>
-          <span class="lol-check-text">Hide Riot #Tag
-            <em>Strip #TAG from all player names</em>
-          </span>
-        </label>
-
-        <label class="lol-check" for="noLeftBehindCheck">
-          <input type="checkbox" id="noLeftBehindCheck" onchange="updateStats()">
-          <span class="lol-box"></span>
-          <span class="lol-check-text">Don't leave anyone behind
-            <em>Odd leftover player (&lt;10) is added to one team (max 5v5)</em>
-          </span>
-        </label>
-
-        <div class="divider" style="margin-top:14px;"></div>
-
-        <div class="status-badge" id="sourceBanner">Waiting for input...</div>
-        <div class="stats-summary" id="statsSummary">&mdash;</div>
-      </div>
-    </div>
-
-    </div> <!-- .main-grid -->
-  </div> <!-- #pageRandomizer -->
+        </div> <!-- #subPageSolo -->
+      </div> <!-- #pageRandomizer -->
 
   <!-- PAGE 2: Match History (Placeholder / Test) -->
   <div class="view-page" id="pageHistory">
@@ -767,6 +1065,7 @@
 <div id="toast" class="toast">Done</div>
 
 <script>
+const LOL_DATA = {"champions": [{"id": "Aatrox", "name": "Aatrox", "title": "the Darkin Blade", "roles": ["Fighter"], "lanes": ["Top", "Mid"]}, {"id": "Ahri", "name": "Ahri", "title": "the Nine-Tailed Fox", "roles": ["Mage", "Assassin"], "lanes": ["Mid"]}, {"id": "Akali", "name": "Akali", "title": "the Rogue Assassin", "roles": ["Assassin"], "lanes": ["Mid", "Top"]}, {"id": "Akshan", "name": "Akshan", "title": "the Rogue Sentinel", "roles": ["Marksman", "Assassin"], "lanes": ["Mid", "Top", "ADC"]}, {"id": "Alistar", "name": "Alistar", "title": "the Minotaur", "roles": ["Tank", "Support"], "lanes": ["Support"]}, {"id": "Ambessa", "name": "Ambessa", "title": "Matriarch of War", "roles": ["Fighter", "Assassin"], "lanes": ["Top", "Jungle"]}, {"id": "Amumu", "name": "Amumu", "title": "the Sad Mummy", "roles": ["Tank", "Support"], "lanes": ["Jungle", "Support"]}, {"id": "Anivia", "name": "Anivia", "title": "the Cryophoenix", "roles": ["Mage"], "lanes": ["Mid"]}, {"id": "Annie", "name": "Annie", "title": "the Dark Child", "roles": ["Mage", "Support"], "lanes": ["Mid", "Support"]}, {"id": "Aphelios", "name": "Aphelios", "title": "the Weapon of the Faithful", "roles": ["Marksman"], "lanes": ["ADC"]}, {"id": "Ashe", "name": "Ashe", "title": "the Frost Archer", "roles": ["Marksman", "Support"], "lanes": ["ADC", "Support"]}, {"id": "AurelionSol", "name": "Aurelion Sol", "title": "The Star Forger", "roles": ["Mage"], "lanes": ["Mid"]}, {"id": "Aurora", "name": "Aurora", "title": "the Witch Between Worlds", "roles": ["Mage", "Assassin"], "lanes": ["Mid", "Top"]}, {"id": "Azir", "name": "Azir", "title": "the Emperor of the Sands", "roles": ["Mage", "Marksman"], "lanes": ["Mid"]}, {"id": "Bard", "name": "Bard", "title": "the Wandering Caretaker", "roles": ["Support", "Mage"], "lanes": ["Support"]}, {"id": "Belveth", "name": "Bel'Veth", "title": "the Empress of the Void", "roles": ["Fighter"], "lanes": ["Jungle"]}, {"id": "Blitzcrank", "name": "Blitzcrank", "title": "the Great Steam Golem", "roles": ["Tank", "Support"], "lanes": ["Support"]}, {"id": "Brand", "name": "Brand", "title": "the Burning Vengeance", "roles": ["Mage", "Support"], "lanes": ["Support", "Mid", "Jungle"]}, {"id": "Braum", "name": "Braum", "title": "the Heart of the Freljord", "roles": ["Tank", "Support"], "lanes": ["Support"]}, {"id": "Briar", "name": "Briar", "title": "the Restrained Hunger", "roles": ["Fighter", "Assassin"], "lanes": ["Jungle", "Top"]}, {"id": "Caitlyn", "name": "Caitlyn", "title": "the Sheriff of Piltover", "roles": ["Marksman"], "lanes": ["ADC"]}, {"id": "Camille", "name": "Camille", "title": "the Steel Shadow", "roles": ["Fighter", "Assassin"], "lanes": ["Top", "Support"]}, {"id": "Cassiopeia", "name": "Cassiopeia", "title": "the Serpent's Embrace", "roles": ["Mage"], "lanes": ["Mid", "Top"]}, {"id": "Chogath", "name": "Cho'Gath", "title": "the Terror of the Void", "roles": ["Tank", "Mage"], "lanes": ["Top", "Mid"]}, {"id": "Corki", "name": "Corki", "title": "the Daring Bombardier", "roles": ["Marksman", "Mage"], "lanes": ["ADC", "Mid"]}, {"id": "Darius", "name": "Darius", "title": "the Hand of Noxus", "roles": ["Fighter", "Tank"], "lanes": ["Top"]}, {"id": "Diana", "name": "Diana", "title": "Scorn of the Moon", "roles": ["Fighter", "Assassin"], "lanes": ["Jungle", "Mid"]}, {"id": "Draven", "name": "Draven", "title": "the Glorious Executioner", "roles": ["Marksman"], "lanes": ["ADC"]}, {"id": "DrMundo", "name": "Dr. Mundo", "title": "the Madman of Zaun", "roles": ["Tank", "Fighter"], "lanes": ["Top", "Jungle"]}, {"id": "Ekko", "name": "Ekko", "title": "the Boy Who Shattered Time", "roles": ["Assassin", "Mage"], "lanes": ["Jungle", "Mid"]}, {"id": "Elise", "name": "Elise", "title": "the Spider Queen", "roles": ["Assassin", "Mage"], "lanes": ["Jungle", "Support"]}, {"id": "Evelynn", "name": "Evelynn", "title": "Agony's Embrace", "roles": ["Assassin", "Mage"], "lanes": ["Jungle"]}, {"id": "Ezreal", "name": "Ezreal", "title": "the Prodigal Explorer", "roles": ["Marksman", "Mage"], "lanes": ["ADC", "Mid"]}, {"id": "Fiddlesticks", "name": "Fiddlesticks", "title": "the Ancient Fear", "roles": ["Mage", "Support"], "lanes": ["Jungle", "Support"]}, {"id": "Fiora", "name": "Fiora", "title": "the Grand Duelist", "roles": ["Fighter", "Assassin"], "lanes": ["Top"]}, {"id": "Fizz", "name": "Fizz", "title": "the Tidal Trickster", "roles": ["Assassin", "Fighter"], "lanes": ["Mid"]}, {"id": "Galio", "name": "Galio", "title": "the Colossus", "roles": ["Tank", "Mage"], "lanes": ["Mid", "Support"]}, {"id": "Gangplank", "name": "Gangplank", "title": "the Saltwater Scourge", "roles": ["Fighter"], "lanes": ["Top", "Mid"]}, {"id": "Garen", "name": "Garen", "title": "The Might of Demacia", "roles": ["Fighter", "Tank"], "lanes": ["Top", "Mid"]}, {"id": "Gnar", "name": "Gnar", "title": "the Missing Link", "roles": ["Fighter", "Tank"], "lanes": ["Top"]}, {"id": "Gragas", "name": "Gragas", "title": "the Rabble Rouser", "roles": ["Fighter", "Mage"], "lanes": ["Top", "Jungle", "Mid", "Support"]}, {"id": "Graves", "name": "Graves", "title": "the Outlaw", "roles": ["Marksman"], "lanes": ["Jungle", "Top"]}, {"id": "Gwen", "name": "Gwen", "title": "The Hallowed Seamstress", "roles": ["Fighter"], "lanes": ["Top", "Jungle"]}, {"id": "Hecarim", "name": "Hecarim", "title": "the Shadow of War", "roles": ["Fighter", "Tank"], "lanes": ["Jungle"]}, {"id": "Heimerdinger", "name": "Heimerdinger", "title": "the Revered Inventor", "roles": ["Mage", "Support"], "lanes": ["Top", "Mid", "Support", "ADC"]}, {"id": "Hwei", "name": "Hwei", "title": "the Visionary", "roles": ["Mage", "Support"], "lanes": ["Mid", "Support"]}, {"id": "Illaoi", "name": "Illaoi", "title": "the Kraken Priestess", "roles": ["Fighter", "Tank"], "lanes": ["Top"]}, {"id": "Irelia", "name": "Irelia", "title": "the Blade Dancer", "roles": ["Fighter", "Assassin"], "lanes": ["Top", "Mid"]}, {"id": "Ivern", "name": "Ivern", "title": "the Green Father", "roles": ["Support", "Mage"], "lanes": ["Jungle", "Support"]}, {"id": "Janna", "name": "Janna", "title": "the Storm's Fury", "roles": ["Support", "Mage"], "lanes": ["Support"]}, {"id": "JarvanIV", "name": "Jarvan IV", "title": "the Exemplar of Demacia", "roles": ["Fighter", "Tank"], "lanes": ["Jungle", "Top"]}, {"id": "Jax", "name": "Jax", "title": "Grandmaster at Arms", "roles": ["Fighter"], "lanes": ["Top", "Jungle"]}, {"id": "Jayce", "name": "Jayce", "title": "the Defender of Tomorrow", "roles": ["Marksman", "Fighter"], "lanes": ["Top", "Mid"]}, {"id": "Jhin", "name": "Jhin", "title": "the Virtuoso", "roles": ["Marksman", "Mage"], "lanes": ["ADC"]}, {"id": "Jinx", "name": "Jinx", "title": "the Loose Cannon", "roles": ["Marksman"], "lanes": ["ADC"]}, {"id": "Kaisa", "name": "Kai'Sa", "title": "Daughter of the Void", "roles": ["Marksman", "Mage"], "lanes": ["ADC"]}, {"id": "Kalista", "name": "Kalista", "title": "the Spear of Vengeance", "roles": ["Marksman"], "lanes": ["ADC", "Top"]}, {"id": "Karma", "name": "Karma", "title": "the Enlightened One", "roles": ["Mage", "Support"], "lanes": ["Support", "Mid"]}, {"id": "Karthus", "name": "Karthus", "title": "the Deathsinger", "roles": ["Mage"], "lanes": ["Jungle", "ADC", "Mid"]}, {"id": "Kassadin", "name": "Kassadin", "title": "the Void Walker", "roles": ["Assassin", "Mage"], "lanes": ["Mid"]}, {"id": "Katarina", "name": "Katarina", "title": "the Sinister Blade", "roles": ["Assassin", "Mage"], "lanes": ["Mid"]}, {"id": "Kayle", "name": "Kayle", "title": "the Righteous", "roles": ["Mage", "Marksman"], "lanes": ["Top", "Mid"]}, {"id": "Kayn", "name": "Kayn", "title": "the Shadow Reaper", "roles": ["Fighter", "Assassin"], "lanes": ["Jungle"]}, {"id": "Kennen", "name": "Kennen", "title": "the Heart of the Tempest", "roles": ["Mage"], "lanes": ["Top", "Mid"]}, {"id": "Khazix", "name": "Kha'Zix", "title": "the Voidreaver", "roles": ["Assassin"], "lanes": ["Jungle"]}, {"id": "Kindred", "name": "Kindred", "title": "The Eternal Hunters", "roles": ["Marksman"], "lanes": ["Jungle", "ADC"]}, {"id": "Kled", "name": "Kled", "title": "the Cantankerous Cavalier", "roles": ["Fighter"], "lanes": ["Top", "Mid"]}, {"id": "KogMaw", "name": "Kog'Maw", "title": "the Mouth of the Abyss", "roles": ["Marksman", "Mage"], "lanes": ["ADC", "Mid"]}, {"id": "KSante", "name": "K'Sante", "title": "the Pride of Nazumah", "roles": ["Tank", "Fighter"], "lanes": ["Top", "Mid"]}, {"id": "Leblanc", "name": "LeBlanc", "title": "the Deceiver", "roles": ["Assassin", "Mage"], "lanes": ["Mid", "Support"]}, {"id": "LeeSin", "name": "Lee Sin", "title": "the Blind Monk", "roles": ["Fighter", "Assassin"], "lanes": ["Jungle", "Top"]}, {"id": "Leona", "name": "Leona", "title": "the Radiant Dawn", "roles": ["Tank", "Support"], "lanes": ["Support"]}, {"id": "Lillia", "name": "Lillia", "title": "the Bashful Bloom", "roles": ["Fighter", "Mage"], "lanes": ["Jungle", "Top"]}, {"id": "Lissandra", "name": "Lissandra", "title": "the Ice Witch", "roles": ["Mage"], "lanes": ["Mid", "Top"]}, {"id": "Lucian", "name": "Lucian", "title": "the Purifier", "roles": ["Marksman", "Assassin"], "lanes": ["ADC", "Mid"]}, {"id": "Lulu", "name": "Lulu", "title": "the Fae Sorceress", "roles": ["Support", "Mage"], "lanes": ["Support"]}, {"id": "Lux", "name": "Lux", "title": "the Lady of Luminosity", "roles": ["Mage", "Support"], "lanes": ["Support", "Mid"]}, {"id": "Malphite", "name": "Malphite", "title": "Shard of the Monolith", "roles": ["Tank", "Mage"], "lanes": ["Top", "Mid", "Support"]}, {"id": "Malzahar", "name": "Malzahar", "title": "the Prophet of the Void", "roles": ["Mage"], "lanes": ["Mid"]}, {"id": "Maokai", "name": "Maokai", "title": "the Twisted Treant", "roles": ["Tank", "Support"], "lanes": ["Support", "Top", "Jungle"]}, {"id": "MasterYi", "name": "Master Yi", "title": "the Wuju Bladesman", "roles": ["Assassin", "Fighter"], "lanes": ["Jungle"]}, {"id": "Milio", "name": "Milio", "title": "The Gentle Flame", "roles": ["Support", "Mage"], "lanes": ["Support"]}, {"id": "MissFortune", "name": "Miss Fortune", "title": "the Bounty Hunter", "roles": ["Marksman", "Mage"], "lanes": ["ADC", "Support"]}, {"id": "MonkeyKing", "name": "Wukong", "title": "the Monkey King", "roles": ["Fighter", "Tank"], "lanes": ["Top", "Jungle"]}, {"id": "Mordekaiser", "name": "Mordekaiser", "title": "the Iron Revenant", "roles": ["Fighter", "Mage"], "lanes": ["Top", "Jungle"]}, {"id": "Morgana", "name": "Morgana", "title": "the Fallen", "roles": ["Mage", "Support"], "lanes": ["Support", "Mid", "Jungle"]}, {"id": "Naafiri", "name": "Naafiri", "title": "the Hound of a Hundred Bites", "roles": ["Assassin", "Fighter"], "lanes": ["Mid", "Top"]}, {"id": "Nami", "name": "Nami", "title": "the Tidecaller", "roles": ["Support", "Mage"], "lanes": ["Support"]}, {"id": "Nasus", "name": "Nasus", "title": "the Curator of the Sands", "roles": ["Fighter", "Tank"], "lanes": ["Top", "Mid"]}, {"id": "Nautilus", "name": "Nautilus", "title": "the Titan of the Depths", "roles": ["Tank", "Support"], "lanes": ["Support"]}, {"id": "Neeko", "name": "Neeko", "title": "the Curious Chameleon", "roles": ["Mage", "Support"], "lanes": ["Mid", "Support", "Top"]}, {"id": "Nidalee", "name": "Nidalee", "title": "the Bestial Huntress", "roles": ["Assassin", "Mage"], "lanes": ["Jungle"]}, {"id": "Nilah", "name": "Nilah", "title": "the Joy Unbound", "roles": ["Fighter", "Assassin"], "lanes": ["ADC"]}, {"id": "Nocturne", "name": "Nocturne", "title": "the Eternal Nightmare", "roles": ["Fighter", "Assassin"], "lanes": ["Jungle", "Mid"]}, {"id": "Nunu", "name": "Nunu & Willump", "title": "the Boy and His Yeti", "roles": ["Tank", "Mage"], "lanes": ["Jungle", "Mid"]}, {"id": "Olaf", "name": "Olaf", "title": "the Berserker", "roles": ["Fighter", "Tank"], "lanes": ["Top", "Jungle"]}, {"id": "Orianna", "name": "Orianna", "title": "the Lady of Clockwork", "roles": ["Mage", "Support"], "lanes": ["Mid"]}, {"id": "Ornn", "name": "Ornn", "title": "The Fire below the Mountain", "roles": ["Tank"], "lanes": ["Top"]}, {"id": "Pantheon", "name": "Pantheon", "title": "the Unbreakable Spear", "roles": ["Fighter", "Assassin"], "lanes": ["Support", "Top", "Mid", "Jungle"]}, {"id": "Poppy", "name": "Poppy", "title": "Keeper of the Hammer", "roles": ["Tank", "Fighter"], "lanes": ["Top", "Jungle", "Support"]}, {"id": "Pyke", "name": "Pyke", "title": "the Bloodharbor Ripper", "roles": ["Support", "Assassin"], "lanes": ["Support", "Mid"]}, {"id": "Qiyana", "name": "Qiyana", "title": "Empress of the Elements", "roles": ["Assassin"], "lanes": ["Mid", "Jungle"]}, {"id": "Quinn", "name": "Quinn", "title": "Demacia's Wings", "roles": ["Marksman", "Assassin"], "lanes": ["Top", "ADC"]}, {"id": "Rakan", "name": "Rakan", "title": "The Charmer", "roles": ["Support"], "lanes": ["Support"]}, {"id": "Rammus", "name": "Rammus", "title": "the Armordillo", "roles": ["Tank"], "lanes": ["Jungle"]}, {"id": "RekSai", "name": "Rek'Sai", "title": "the Void Burrower", "roles": ["Fighter", "Tank"], "lanes": ["Jungle", "Top"]}, {"id": "Rell", "name": "Rell", "title": "the Iron Maiden", "roles": ["Tank", "Support"], "lanes": ["Support", "Jungle"]}, {"id": "Renata", "name": "Renata Glasc", "title": "the Chem-Baroness", "roles": ["Support", "Mage"], "lanes": ["Support"]}, {"id": "Renekton", "name": "Renekton", "title": "the Butcher of the Sands", "roles": ["Fighter", "Tank"], "lanes": ["Top", "Mid"]}, {"id": "Rengar", "name": "Rengar", "title": "the Pridestalker", "roles": ["Assassin", "Fighter"], "lanes": ["Jungle", "Top"]}, {"id": "Riven", "name": "Riven", "title": "the Exile", "roles": ["Fighter", "Assassin"], "lanes": ["Top", "Mid"]}, {"id": "Rumble", "name": "Rumble", "title": "the Mechanized Menace", "roles": ["Fighter", "Mage"], "lanes": ["Top", "Mid", "Jungle"]}, {"id": "Ryze", "name": "Ryze", "title": "the Rune Mage", "roles": ["Mage"], "lanes": ["Mid", "Top"]}, {"id": "Samira", "name": "Samira", "title": "the Desert Rose", "roles": ["Marksman", "Assassin"], "lanes": ["ADC"]}, {"id": "Sejuani", "name": "Sejuani", "title": "Fury of the North", "roles": ["Tank"], "lanes": ["Jungle", "Top"]}, {"id": "Senna", "name": "Senna", "title": "the Redeemer", "roles": ["Support", "Marksman"], "lanes": ["Support", "ADC"]}, {"id": "Seraphine", "name": "Seraphine", "title": "the Starry-Eyed Songstress", "roles": ["Support", "Mage"], "lanes": ["Support", "ADC", "Mid"]}, {"id": "Sett", "name": "Sett", "title": "the Boss", "roles": ["Fighter", "Tank"], "lanes": ["Top", "Support", "Mid"]}, {"id": "Shaco", "name": "Shaco", "title": "the Demon Jester", "roles": ["Assassin"], "lanes": ["Jungle", "Support"]}, {"id": "Shen", "name": "Shen", "title": "the Eye of Twilight", "roles": ["Tank"], "lanes": ["Top", "Support"]}, {"id": "Shyvana", "name": "Shyvana", "title": "the Half-Dragon", "roles": ["Fighter", "Mage"], "lanes": ["Jungle", "Top"]}, {"id": "Singed", "name": "Singed", "title": "the Mad Chemist", "roles": ["Tank", "Mage"], "lanes": ["Top", "Mid"]}, {"id": "Sion", "name": "Sion", "title": "The Undead Juggernaut", "roles": ["Tank", "Fighter"], "lanes": ["Top", "Mid"]}, {"id": "Sivir", "name": "Sivir", "title": "the Battle Mistress", "roles": ["Marksman"], "lanes": ["ADC"]}, {"id": "Skarner", "name": "Skarner", "title": "the Primordial Sovereign", "roles": ["Tank", "Fighter"], "lanes": ["Top", "Jungle"]}, {"id": "Smolder", "name": "Smolder", "title": "the Fiery Fledgling", "roles": ["Marksman", "Mage"], "lanes": ["ADC", "Mid", "Top"]}, {"id": "Sona", "name": "Sona", "title": "Maven of the Strings", "roles": ["Support", "Mage"], "lanes": ["Support"]}, {"id": "Soraka", "name": "Soraka", "title": "the Starchild", "roles": ["Support", "Mage"], "lanes": ["Support"]}, {"id": "Swain", "name": "Swain", "title": "the Noxian Grand General", "roles": ["Mage", "Support"], "lanes": ["Support", "Mid", "ADC"]}, {"id": "Sylas", "name": "Sylas", "title": "the Unshackled", "roles": ["Mage", "Assassin"], "lanes": ["Mid", "Jungle", "Top"]}, {"id": "Syndra", "name": "Syndra", "title": "the Dark Sovereign", "roles": ["Mage"], "lanes": ["Mid"]}, {"id": "TahmKench", "name": "Tahm Kench", "title": "The River King", "roles": ["Tank", "Support"], "lanes": ["Support", "Top"]}, {"id": "Taliyah", "name": "Taliyah", "title": "the Stoneweaver", "roles": ["Mage", "Support"], "lanes": ["Jungle", "Mid"]}, {"id": "Talon", "name": "Talon", "title": "the Blade's Shadow", "roles": ["Assassin"], "lanes": ["Mid", "Jungle"]}, {"id": "Taric", "name": "Taric", "title": "the Shield of Valoran", "roles": ["Support", "Tank"], "lanes": ["Support"]}, {"id": "Teemo", "name": "Teemo", "title": "the Swift Scout", "roles": ["Marksman", "Mage"], "lanes": ["Top", "Support"]}, {"id": "Thresh", "name": "Thresh", "title": "the Chain Warden", "roles": ["Support", "Tank"], "lanes": ["Support"]}, {"id": "Tristana", "name": "Tristana", "title": "the Yordle Gunner", "roles": ["Marksman", "Assassin"], "lanes": ["ADC", "Mid"]}, {"id": "Trundle", "name": "Trundle", "title": "the Troll King", "roles": ["Fighter", "Tank"], "lanes": ["Top", "Jungle"]}, {"id": "Tryndamere", "name": "Tryndamere", "title": "the Barbarian King", "roles": ["Fighter", "Assassin"], "lanes": ["Top", "Mid"]}, {"id": "TwistedFate", "name": "Twisted Fate", "title": "the Card Master", "roles": ["Mage", "Marksman"], "lanes": ["Mid", "ADC"]}, {"id": "Twitch", "name": "Twitch", "title": "the Plague Rat", "roles": ["Marksman", "Assassin"], "lanes": ["ADC", "Support"]}, {"id": "Udyr", "name": "Udyr", "title": "the Spirit Walker", "roles": ["Fighter", "Tank"], "lanes": ["Jungle", "Top"]}, {"id": "Urgot", "name": "Urgot", "title": "the Dreadnought", "roles": ["Fighter", "Tank"], "lanes": ["Top", "Mid"]}, {"id": "Varus", "name": "Varus", "title": "the Arrow of Retribution", "roles": ["Marksman", "Mage"], "lanes": ["ADC", "Mid"]}, {"id": "Vayne", "name": "Vayne", "title": "the Night Hunter", "roles": ["Marksman", "Assassin"], "lanes": ["ADC", "Top"]}, {"id": "Veigar", "name": "Veigar", "title": "the Tiny Master of Evil", "roles": ["Mage"], "lanes": ["Mid", "ADC", "Support"]}, {"id": "Velkoz", "name": "Vel'Koz", "title": "the Eye of the Void", "roles": ["Mage", "Support"], "lanes": ["Support", "Mid"]}, {"id": "Vex", "name": "Vex", "title": "the Gloomist", "roles": ["Mage"], "lanes": ["Mid"]}, {"id": "Vi", "name": "Vi", "title": "the Piltover Enforcer", "roles": ["Fighter", "Assassin"], "lanes": ["Jungle"]}, {"id": "Viego", "name": "Viego", "title": "The Ruined King", "roles": ["Fighter", "Assassin"], "lanes": ["Jungle", "Mid"]}, {"id": "Viktor", "name": "Viktor", "title": "the Herald of the Arcane", "roles": ["Mage"], "lanes": ["Mid"]}, {"id": "Vladimir", "name": "Vladimir", "title": "the Crimson Reaper", "roles": ["Mage", "Fighter"], "lanes": ["Mid", "Top"]}, {"id": "Volibear", "name": "Volibear", "title": "the Relentless Storm", "roles": ["Fighter", "Tank"], "lanes": ["Top", "Jungle"]}, {"id": "Warwick", "name": "Warwick", "title": "the Uncaged Wrath of Zaun", "roles": ["Fighter", "Tank"], "lanes": ["Jungle", "Top"]}, {"id": "Xayah", "name": "Xayah", "title": "the Rebel", "roles": ["Marksman"], "lanes": ["ADC"]}, {"id": "Xerath", "name": "Xerath", "title": "the Magus Ascendant", "roles": ["Mage", "Support"], "lanes": ["Support", "Mid"]}, {"id": "XinZhao", "name": "Xin Zhao", "title": "the Seneschal of Demacia", "roles": ["Fighter", "Tank"], "lanes": ["Jungle", "Top"]}, {"id": "Yasuo", "name": "Yasuo", "title": "the Unforgiven", "roles": ["Fighter", "Assassin"], "lanes": ["Mid", "Top", "ADC"]}, {"id": "Yone", "name": "Yone", "title": "the Unforgotten", "roles": ["Fighter", "Assassin"], "lanes": ["Mid", "Top"]}, {"id": "Yorick", "name": "Yorick", "title": "Shepherd of Souls", "roles": ["Fighter", "Tank"], "lanes": ["Top", "Mid"]}, {"id": "Yuumi", "name": "Yuumi", "title": "the Magical Cat", "roles": ["Support", "Mage"], "lanes": ["Support"]}, {"id": "Zac", "name": "Zac", "title": "the Secret Weapon", "roles": ["Tank", "Fighter"], "lanes": ["Jungle", "Top", "Support"]}, {"id": "Zed", "name": "Zed", "title": "the Master of Shadows", "roles": ["Assassin"], "lanes": ["Mid", "Jungle"]}, {"id": "Zeri", "name": "Zeri", "title": "The Spark of Zaun", "roles": ["Marksman"], "lanes": ["ADC"]}, {"id": "Ziggs", "name": "Ziggs", "title": "the Hexplosives Expert", "roles": ["Mage"], "lanes": ["ADC", "Mid"]}, {"id": "Zilean", "name": "Zilean", "title": "the Chronokeeper", "roles": ["Support", "Mage"], "lanes": ["Support", "Mid"]}, {"id": "Zoe", "name": "Zoe", "title": "the Aspect of Twilight", "roles": ["Mage"], "lanes": ["Mid", "Support"]}, {"id": "Zyra", "name": "Zyra", "title": "Rise of the Thorns", "roles": ["Mage", "Support"], "lanes": ["Support", "Jungle", "Mid"]}], "runes": [{"id": 8100, "name": "Domination", "icon": "perk-images/Styles/7200_Domination.png", "keystones": [{"id": 8112, "name": "Electrocute", "icon": "perk-images/Styles/Domination/Electrocute/Electrocute.png"}, {"id": 8128, "name": "Dark Harvest", "icon": "perk-images/Styles/Domination/DarkHarvest/DarkHarvest.png"}, {"id": 9923, "name": "Hail of Blades", "icon": "perk-images/Styles/Domination/HailOfBlades/HailOfBlades.png"}], "slots": [[{"id": 8126, "name": "Cheap Shot", "icon": "perk-images/Styles/Domination/CheapShot/CheapShot.png"}, {"id": 8139, "name": "Taste of Blood", "icon": "perk-images/Styles/Domination/TasteOfBlood/GreenTerror_TasteOfBlood.png"}, {"id": 8143, "name": "Sudden Impact", "icon": "perk-images/Styles/Domination/SuddenImpact/SuddenImpact.png"}], [{"id": 8136, "name": "Zombie Ward", "icon": "perk-images/Styles/Domination/ZombieWard/ZombieWard.png"}, {"id": 8120, "name": "Ghost Poro", "icon": "perk-images/Styles/Domination/GhostPoro/GhostPoro.png"}, {"id": 8138, "name": "Eyeball Collection", "icon": "perk-images/Styles/Domination/EyeballCollection/EyeballCollection.png"}], [{"id": 8135, "name": "Treasure Hunter", "icon": "perk-images/Styles/Domination/TreasureHunter/TreasureHunter.png"}, {"id": 8105, "name": "Relentless Hunter", "icon": "perk-images/Styles/Domination/RelentlessHunter/RelentlessHunter.png"}, {"id": 8106, "name": "Ultimate Hunter", "icon": "perk-images/Styles/Domination/UltimateHunter/UltimateHunter.png"}]]}, {"id": 8300, "name": "Inspiration", "icon": "perk-images/Styles/7203_Whimsy.png", "keystones": [{"id": 8351, "name": "Glacial Augment", "icon": "perk-images/Styles/Inspiration/GlacialAugment/GlacialAugment.png"}, {"id": 8360, "name": "Unsealed Spellbook", "icon": "perk-images/Styles/Inspiration/UnsealedSpellbook/UnsealedSpellbook.png"}, {"id": 8369, "name": "First Strike", "icon": "perk-images/Styles/Inspiration/FirstStrike/FirstStrike.png"}], "slots": [[{"id": 8306, "name": "Hextech Flashtraption", "icon": "perk-images/Styles/Inspiration/HextechFlashtraption/HextechFlashtraption.png"}, {"id": 8304, "name": "Magical Footwear", "icon": "perk-images/Styles/Inspiration/MagicalFootwear/MagicalFootwear.png"}, {"id": 8321, "name": "Cash Back", "icon": "perk-images/Styles/Inspiration/CashBack/CashBack2.png"}], [{"id": 8313, "name": "Triple Tonic", "icon": "perk-images/Styles/Inspiration/PerfectTiming/AlchemistCabinet.png"}, {"id": 8352, "name": "Time Warp Tonic", "icon": "perk-images/Styles/Inspiration/TimeWarpTonic/TimeWarpTonic.png"}, {"id": 8345, "name": "Biscuit Delivery", "icon": "perk-images/Styles/Inspiration/BiscuitDelivery/BiscuitDelivery.png"}], [{"id": 8347, "name": "Cosmic Insight", "icon": "perk-images/Styles/Inspiration/CosmicInsight/CosmicInsight.png"}, {"id": 8410, "name": "Approach Velocity", "icon": "perk-images/Styles/Resolve/ApproachVelocity/ApproachVelocity.png"}, {"id": 8316, "name": "Jack Of All Trades", "icon": "perk-images/Styles/Inspiration/JackOfAllTrades/JackofAllTrades2.png"}]]}, {"id": 8000, "name": "Precision", "icon": "perk-images/Styles/7201_Precision.png", "keystones": [{"id": 8005, "name": "Press the Attack", "icon": "perk-images/Styles/Precision/PressTheAttack/PressTheAttack.png"}, {"id": 8008, "name": "Lethal Tempo", "icon": "perk-images/Styles/Precision/LethalTempo/LethalTempoTemp.png"}, {"id": 8021, "name": "Fleet Footwork", "icon": "perk-images/Styles/Precision/FleetFootwork/FleetFootwork.png"}, {"id": 8010, "name": "Conqueror", "icon": "perk-images/Styles/Precision/Conqueror/Conqueror.png"}], "slots": [[{"id": 9101, "name": "Absorb Life", "icon": "perk-images/Styles/Precision/AbsorbLife/AbsorbLife.png"}, {"id": 9111, "name": "Triumph", "icon": "perk-images/Styles/Precision/Triumph.png"}, {"id": 8009, "name": "Presence of Mind", "icon": "perk-images/Styles/Precision/PresenceOfMind/PresenceOfMind.png"}], [{"id": 9104, "name": "Legend: Alacrity", "icon": "perk-images/Styles/Precision/LegendAlacrity/LegendAlacrity.png"}, {"id": 9105, "name": "Legend: Haste", "icon": "perk-images/Styles/Precision/LegendHaste/LegendHaste.png"}, {"id": 9103, "name": "Legend: Bloodline", "icon": "perk-images/Styles/Precision/LegendBloodline/LegendBloodline.png"}], [{"id": 8014, "name": "Coup de Grace", "icon": "perk-images/Styles/Precision/CoupDeGrace/CoupDeGrace.png"}, {"id": 8017, "name": "Cut Down", "icon": "perk-images/Styles/Precision/CutDown/CutDown.png"}, {"id": 8299, "name": "Last Stand", "icon": "perk-images/Styles/Sorcery/LastStand/LastStand.png"}]]}, {"id": 8400, "name": "Resolve", "icon": "perk-images/Styles/7204_Resolve.png", "keystones": [{"id": 8437, "name": "Grasp of the Undying", "icon": "perk-images/Styles/Resolve/GraspOfTheUndying/GraspOfTheUndying.png"}, {"id": 8439, "name": "Aftershock", "icon": "perk-images/Styles/Resolve/VeteranAftershock/VeteranAftershock.png"}, {"id": 8465, "name": "Guardian", "icon": "perk-images/Styles/Resolve/Guardian/Guardian.png"}], "slots": [[{"id": 8446, "name": "Demolish", "icon": "perk-images/Styles/Resolve/Demolish/Demolish.png"}, {"id": 8463, "name": "Font of Life", "icon": "perk-images/Styles/Resolve/FontOfLife/FontOfLife.png"}, {"id": 8401, "name": "Shield Bash", "icon": "perk-images/Styles/Resolve/MirrorShell/MirrorShell.png"}], [{"id": 8429, "name": "Conditioning", "icon": "perk-images/Styles/Resolve/Conditioning/Conditioning.png"}, {"id": 8444, "name": "Second Wind", "icon": "perk-images/Styles/Resolve/SecondWind/SecondWind.png"}, {"id": 8473, "name": "Bone Plating", "icon": "perk-images/Styles/Resolve/BonePlating/BonePlating.png"}], [{"id": 8451, "name": "Overgrowth", "icon": "perk-images/Styles/Resolve/Overgrowth/Overgrowth.png"}, {"id": 8453, "name": "Revitalize", "icon": "perk-images/Styles/Resolve/Revitalize/Revitalize.png"}, {"id": 8242, "name": "Unflinching", "icon": "perk-images/Styles/Sorcery/Unflinching/Unflinching.png"}]]}, {"id": 8200, "name": "Sorcery", "icon": "perk-images/Styles/7202_Sorcery.png", "keystones": [{"id": 8214, "name": "Summon Aery", "icon": "perk-images/Styles/Sorcery/SummonAery/SummonAery.png"}, {"id": 8229, "name": "Arcane Comet", "icon": "perk-images/Styles/Sorcery/ArcaneComet/ArcaneComet.png"}, {"id": 8230, "name": "Phase Rush", "icon": "perk-images/Styles/Sorcery/PhaseRush/PhaseRush.png"}], "slots": [[{"id": 8224, "name": "Nullifying Orb", "icon": "perk-images/Styles/Sorcery/NullifyingOrb/Pokeshield.png"}, {"id": 8226, "name": "Manaflow Band", "icon": "perk-images/Styles/Sorcery/ManaflowBand/ManaflowBand.png"}, {"id": 8275, "name": "Nimbus Cloak", "icon": "perk-images/Styles/Sorcery/NimbusCloak/6361.png"}], [{"id": 8210, "name": "Transcendence", "icon": "perk-images/Styles/Sorcery/Transcendence/Transcendence.png"}, {"id": 8234, "name": "Celerity", "icon": "perk-images/Styles/Sorcery/Celerity/CelerityTemp.png"}, {"id": 8233, "name": "Absolute Focus", "icon": "perk-images/Styles/Sorcery/AbsoluteFocus/AbsoluteFocus.png"}], [{"id": 8237, "name": "Scorch", "icon": "perk-images/Styles/Sorcery/Scorch/Scorch.png"}, {"id": 8232, "name": "Waterwalking", "icon": "perk-images/Styles/Sorcery/Waterwalking/Waterwalking.png"}, {"id": 8236, "name": "Gathering Storm", "icon": "perk-images/Styles/Sorcery/GatheringStorm/GatheringStorm.png"}]]}], "boots": [{"id": 3006, "name": "Berserker's Greaves"}, {"id": 3047, "name": "Plated Steelcaps"}, {"id": 3111, "name": "Mercury's Treads"}, {"id": 3020, "name": "Sorcerer's Shoes"}, {"id": 3158, "name": "Ionian Boots of Lucidity"}, {"id": 3009, "name": "Boots of Swiftness"}, {"id": 3005, "name": "Symbiotic Soles"}], "starters": [{"id": 1055, "name": "Doran's Blade", "mode": "rift"}, {"id": 1056, "name": "Doran's Ring", "mode": "rift"}, {"id": 1054, "name": "Doran's Shield", "mode": "rift"}, {"id": 3070, "name": "Tear of the Goddess", "mode": "rift"}, {"id": 1082, "name": "Dark Seal", "mode": "rift"}, {"id": 3865, "name": "World Atlas", "mode": "rift", "role": "Support"}, {"id": 1102, "name": "Gustwalker Hatchling", "mode": "rift", "role": "Jungle"}, {"id": 1101, "name": "Mosstomper Seedling", "mode": "rift", "role": "Jungle"}, {"id": 1103, "name": "Scorchclaw Pup", "mode": "rift", "role": "Jungle"}, {"id": 2051, "name": "Guardian's Horn", "mode": "aram"}, {"id": 3177, "name": "Guardian's Blade", "mode": "aram"}, {"id": 3184, "name": "Guardian's Hammer", "mode": "aram"}, {"id": 3112, "name": "Guardian's Orb", "mode": "aram"}], "items": [{"id": 3031, "name": "Infinity Edge"}, {"id": 3072, "name": "Bloodthirster"}, {"id": 6672, "name": "Kraken Slayer"}, {"id": 3046, "name": "Phantom Dancer"}, {"id": 3036, "name": "Lord Dominik's Regards"}, {"id": 3094, "name": "Rapid Firecannon"}, {"id": 6676, "name": "The Collector"}, {"id": 6675, "name": "Navori Flickerblade"}, {"id": 6677, "name": "Yun Tal Wildarrows"}, {"id": 3033, "name": "Mortal Reminder"}, {"id": 3085, "name": "Runaan's Hurricane"}, {"id": 3087, "name": "Statikk Shiv"}, {"id": 3089, "name": "Rabadon's Deathcap"}, {"id": 4645, "name": "Shadowflame"}, {"id": 6657, "name": "Stormsurge"}, {"id": 3157, "name": "Zhonya's Hourglass"}, {"id": 3102, "name": "Banshee's Veil"}, {"id": 3135, "name": "Void Staff"}, {"id": 3137, "name": "Cryptbloom"}, {"id": 6655, "name": "Luden's Companion"}, {"id": 3118, "name": "Malignance"}, {"id": 3003, "name": "Archangel's Staff"}, {"id": 4628, "name": "Horizon Focus"}, {"id": 3115, "name": "Nashor's Tooth"}, {"id": 4629, "name": "Cosmic Drive"}, {"id": 3151, "name": "Liandry's Torment"}, {"id": 6656, "name": "Rod of Ages"}, {"id": 3302, "name": "Blackfire Torch"}, {"id": 3078, "name": "Trinity Force"}, {"id": 3153, "name": "Blade of the Ruined King"}, {"id": 3074, "name": "Ravenous Hydra"}, {"id": 3748, "name": "Titanic Hydra"}, {"id": 6698, "name": "Profane Hydra"}, {"id": 6610, "name": "Sundered Sky"}, {"id": 6692, "name": "Eclipse"}, {"id": 3071, "name": "Black Cleaver"}, {"id": 6333, "name": "Death's Dance"}, {"id": 3156, "name": "Maw of Malmortius"}, {"id": 3161, "name": "Spear of Shojin"}, {"id": 3181, "name": "Hullbreaker"}, {"id": 3053, "name": "Sterak's Gage"}, {"id": 6631, "name": "Stridebreaker"}, {"id": 3142, "name": "Youmuu's Ghostblade"}, {"id": 6701, "name": "Opportunity"}, {"id": 6697, "name": "Voltaic Cyclosword"}, {"id": 6699, "name": "Hubris"}, {"id": 3814, "name": "Edge of Night"}, {"id": 6696, "name": "Axiom Arc"}, {"id": 6694, "name": "Serylda's Grudge"}, {"id": 3179, "name": "Umbral Glaive"}, {"id": 3068, "name": "Sunfire Aegis"}, {"id": 6664, "name": "Hollow Radiance"}, {"id": 3084, "name": "Heartsteel"}, {"id": 3083, "name": "Warmog's Armor"}, {"id": 3075, "name": "Thornmail"}, {"id": 3143, "name": "Randuin's Omen"}, {"id": 3110, "name": "Frozen Heart"}, {"id": 3065, "name": "Spirit Visage"}, {"id": 4401, "name": "Force of Nature"}, {"id": 6667, "name": "Kaenic Rookern"}, {"id": 6665, "name": "Jak'Sho, The Protean"}, {"id": 6662, "name": "Unending Despair"}, {"id": 3080, "name": "Overlord's Bloodmail"}, {"id": 6617, "name": "Echoes of Helia"}, {"id": 6616, "name": "Moonstone Renewer"}, {"id": 3504, "name": "Ardent Censer"}, {"id": 6614, "name": "Staff of Flowing Water"}, {"id": 3107, "name": "Redemption"}, {"id": 3222, "name": "Mikael's Blessing"}, {"id": 2065, "name": "Shurelya's Battlesong"}, {"id": 3190, "name": "Locket of the Iron Solari"}, {"id": 6660, "name": "Trailblazer"}, {"id": 3109, "name": "Knight's Vow"}, {"id": 3050, "name": "Zeke's Convergence"}], "spells": [{"id": "SummonerFlash", "name": "Flash", "key": 4, "mode": "both"}, {"id": "SummonerDot", "name": "Ignite", "key": 14, "mode": "both"}, {"id": "SummonerTeleport", "name": "Teleport", "key": 12, "mode": "rift"}, {"id": "SummonerSmite", "name": "Smite", "key": 11, "mode": "rift", "jungleOnly": true}, {"id": "SummonerHaste", "name": "Ghost", "key": 6, "mode": "both"}, {"id": "SummonerHeal", "name": "Heal", "key": 7, "mode": "both"}, {"id": "SummonerBarrier", "name": "Barrier", "key": 21, "mode": "both"}, {"id": "SummonerExhaust", "name": "Exhaust", "key": 3, "mode": "both"}, {"id": "SummonerBoost", "name": "Cleanse", "key": 1, "mode": "both"}, {"id": "SummonerSnowball", "name": "Mark / Dash", "key": 32, "mode": "aram"}], "shards": {"offense": [{"id": 5008, "name": "Adaptive Force (+9)"}, {"id": 5005, "name": "Attack Speed (+10%)"}, {"id": 5007, "name": "Ability Haste (+8)"}], "flex": [{"id": 5008, "name": "Adaptive Force (+9)"}, {"id": 5010, "name": "Movement Speed (+2%)"}, {"id": 5001, "name": "Health Scaling (+10-180)"}], "defense": [{"id": 5011, "name": "Health (+65 Flat)"}, {"id": 5013, "name": "Tenacity & Slow Resist (+10%)"}, {"id": 5001, "name": "Health Scaling (+10-180)"}]}};
 const RIFT_ROLES=["Top","Jungle","Mid","ADC","Support"];
 const ROLE_ICONS = {
   "top": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIgAAACICAYAAAA8uqNSAAACDUlEQVR4Ae3SxZVWQRhF0WrLhXxwDYExQ9zd3aX/7hx4U7KCb4a9ixZW7LPWnZfspg+TJEmSJEmSJEmSJEnSm42Db//YbLO2BsjcbKO22mYCxNZrK20mQOxlwgGIPU84ALGnCQcg9jDhAMQe1JbbTIDYvdpSmwkQu5NwAGK3Eg5A7EbCAYhd6Ynj0J4t2wAZZ5c649hemwAZYxda1RsHIGPsXGccO2oTIGPsTGccO2sTIGPsVGccu2oTIGPs+O/AAci/uSOdcexOOIYE0vQ9OPZkHICE4AAEjr0ZBSAhOACBY3/GAEgIDkDgOPD9OACBAxB9PwpAAAFEgAACCCCAAAIIIIAAAggggAACCCCAACJA8n7/A/cdIIAAAggggAACCCCAAAIIIIAAAggggAACCCCAAAIIIID8tgABBBBAAAEEEEAAAQQQQAABBBBAAAEEEEAAAQQQQAABBBBAAAEEEED+jwABBBBAAAEEEEAAAQQQQAABBBBAjiIBSNpxHABJO4kCIGlnMEgBch6BFCAXm0KAXGoKAXKlttRmEiDX4UgBchOOFCC34UgBch+OFCAPeuKoC2+rva5N9u8DeVhbhmNugDyqrXTGMdkYQJ7BkQbICzjSAHkFRxogG3CkAbJZW4UjDZA1OADJwQEIHID8SRzbfSQgcAACByBwAAIHIOMmSZIkSZIkSZIkSZKkd8dKK/Dyg9OUAAAAAElFTkSuQmCC",
@@ -902,7 +1201,15 @@ function renderMatch(t1,t2,spec){
         const bc=it.bonus?"role-badge bonus-badge":isAram?"role-badge aram-badge":"role-badge";
         const sc=it.bonus?"player-slot bonus":"player-slot";
         const iconSrc=getRoleIcon(it.role);
-        box.innerHTML+=`<div class="${sc}"><div class="slot-role"><span class="${bc}"><img class="role-icon" src="${iconSrc}" alt="${it.role}"><span>${it.role}</span></span></div><div class="slot-player">${formatPlayerHtml(it.player)}</div></div>`;
+        let champHtml = "";
+        if(it.champ){
+          const cName = escapeHtml(it.champ.name);
+          const cId = escapeHtml(it.champ.id);
+          const cTitle = escapeHtml(it.champ.title || "");
+          const cIcon = `https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/${cId}.png`;
+          champHtml = `<div class="slot-champ-pill" title="${cTitle}"><img class="slot-champ-img" src="${cIcon}" alt="${cName}" onerror="this.style.display='none'"/><span>${cName}</span></div>`;
+        }
+        box.innerHTML+=`<div class="${sc}"><div class="slot-role"><span class="${bc}"><img class="role-icon" src="${iconSrc}" alt="${it.role}"><span>${it.role}</span></span></div><div class="slot-player">${formatPlayerHtml(it.player)}</div>${champHtml}</div>`;
       }
       else if(!isAram){
         const roleName=RIFT_ROLES[i]||("Slot "+(i+1));
@@ -917,24 +1224,131 @@ function renderMatch(t1,t2,spec){
   else{sh.innerText="Spectators / Bench";sb.innerHTML=`<span class="no-spec">All players assigned to teams.</span>`;}
 }
 
+function getTargetLaneFromRole(role){
+  if(!role) return null;
+  const l = role.trim().toLowerCase();
+  if(l.includes("top")) return "Top";
+  if(l.includes("jungle") || l.includes("jg")) return "Jungle";
+  if(l.includes("mid") || l.includes("middle")) return "Mid";
+  if(l.includes("adc") || l.includes("bot") || l.includes("bottom")) return "ADC";
+  if(l.includes("sup") || l.includes("utility")) return "Support";
+  return null;
+}
+
+function getCandidateChampionsForRole(role, usedChampIds = new Set()){
+  if(!LOL_DATA.champions || LOL_DATA.champions.length === 0) return [];
+  const targetLane = getTargetLaneFromRole(role);
+  if(targetLane){
+    const candidates = LOL_DATA.champions.filter(c => !usedChampIds.has(c.id) && Array.isArray(c.lanes) && c.lanes.includes(targetLane));
+    if(candidates.length > 0) return candidates;
+  }
+  const unused = LOL_DATA.champions.filter(c => !usedChampIds.has(c.id));
+  if(unused.length > 0) return unused;
+  return LOL_DATA.champions;
+}
+
 function randomizeMatch(){
   const data=parseActiveRoster();const players=data.players;if(players.length<2)return null;
   const nlb=document.getElementById("noLeftBehindCheck").checked;
+  const assignChamps = document.getElementById("randomChampsCheck") && document.getElementById("randomChampsCheck").checked;
+  const laneSpecific = assignChamps && document.getElementById("laneChampsCustomCheck") && document.getElementById("laneChampsCustomCheck").checked;
   const per=Math.min(5,Math.floor(players.length/2));const active=per*2;const sh=shuffle(players);
   const t1=[],t2=[],spec=[];
-  for(let i=0;i<per;i++){const r=isAram?`ARAM ${i+1}`:RIFT_ROLES[i];t1.push({role:r,player:sh[i]});}
-  for(let i=0;i<per;i++){const r=isAram?`ARAM ${i+1}`:RIFT_ROLES[i];t2.push({role:r,player:sh[i+per]});}
+
+  const usedChampIds = new Set();
+  function pickChampForCustom(role){
+    if(!assignChamps || typeof LOL_DATA === "undefined" || !LOL_DATA.champions || LOL_DATA.champions.length === 0) return null;
+    let pool;
+    if(laneSpecific && !isAram){
+      pool = getCandidateChampionsForRole(role, usedChampIds);
+    } else {
+      pool = LOL_DATA.champions.filter(c => !usedChampIds.has(c.id));
+      if(pool.length === 0) pool = LOL_DATA.champions;
+    }
+    const chosen = pool[Math.floor(Math.random() * pool.length)];
+    if(chosen) usedChampIds.add(chosen.id);
+    return chosen;
+  }
+
+  for(let i=0;i<per;i++){
+    const r=isAram?`ARAM ${i+1}`:RIFT_ROLES[i];
+    const c = pickChampForCustom(r);
+    t1.push({role:r,player:sh[i],champ:c});
+  }
+  for(let i=0;i<per;i++){
+    const r=isAram?`ARAM ${i+1}`:RIFT_ROLES[i];
+    const c = pickChampForCustom(r);
+    t2.push({role:r,player:sh[i+per],champ:c});
+  }
   if(sh.length>active){
     const rem=sh.slice(active);
-    // Don't leave anyone behind only applies when per < 5 (<10 players), because max team size in League is 5
     if(nlb && rem.length===1 && per<5){
-      const e={role:isAram?`ARAM ${per+1}`:"Sub",player:rem[0],bonus:true};
+      const r = isAram?`ARAM ${per+1}`:"Sub";
+      const c = pickChampForCustom(r);
+      const e={role:r,player:rem[0],bonus:true,champ:c};
       if(Math.random()<.5)t1.push(e);else t2.push(e);
     } else {
       spec.push(...rem);
     }
   }
-  return{team1:t1,team2:t2,spectators:spec,perTeam:per,isAram};
+  return{team1:t1,team2:t2,spectators:spec,perTeam:per,isAram,hasChamps:assignChamps};
+}
+
+function onToggleRandomChamps(){
+  const assignChamps = document.getElementById("randomChampsCheck") && document.getElementById("randomChampsCheck").checked;
+  const laneCheck = document.getElementById("laneChampsCustomCheck");
+  if(!assignChamps && laneCheck){
+    laneCheck.checked = false;
+  }
+  if(lastMatch){
+    if(assignChamps){
+      const laneSpecific = laneCheck && laneCheck.checked;
+      const usedChampIds = new Set();
+      lastMatch.team1.forEach(p => {
+        let pool = (laneSpecific && !lastMatch.isAram) ? getCandidateChampionsForRole(p.role, usedChampIds) : LOL_DATA.champions.filter(c => !usedChampIds.has(c.id));
+        if(pool.length === 0) pool = LOL_DATA.champions;
+        p.champ = pool[Math.floor(Math.random() * pool.length)];
+        if(p.champ) usedChampIds.add(p.champ.id);
+      });
+      lastMatch.team2.forEach(p => {
+        let pool = (laneSpecific && !lastMatch.isAram) ? getCandidateChampionsForRole(p.role, usedChampIds) : LOL_DATA.champions.filter(c => !usedChampIds.has(c.id));
+        if(pool.length === 0) pool = LOL_DATA.champions;
+        p.champ = pool[Math.floor(Math.random() * pool.length)];
+        if(p.champ) usedChampIds.add(p.champ.id);
+      });
+      lastMatch.hasChamps = true;
+    } else {
+      lastMatch.team1.forEach(p => delete p.champ);
+      lastMatch.team2.forEach(p => delete p.champ);
+      lastMatch.hasChamps = false;
+    }
+    renderMatch(lastMatch.team1, lastMatch.team2, lastMatch.spectators);
+  }
+}
+
+function onToggleLaneChampsCustom(){
+  const laneCheck = document.getElementById("laneChampsCustomCheck");
+  const randomCheck = document.getElementById("randomChampsCheck");
+  if(laneCheck && laneCheck.checked && randomCheck && !randomCheck.checked){
+    randomCheck.checked = true;
+  }
+  if(lastMatch && randomCheck && randomCheck.checked){
+    const laneSpecific = laneCheck && laneCheck.checked;
+    const usedChampIds = new Set();
+    lastMatch.team1.forEach(p => {
+      let pool = (laneSpecific && !lastMatch.isAram) ? getCandidateChampionsForRole(p.role, usedChampIds) : LOL_DATA.champions.filter(c => !usedChampIds.has(c.id));
+      if(pool.length === 0) pool = LOL_DATA.champions;
+      p.champ = pool[Math.floor(Math.random() * pool.length)];
+      if(p.champ) usedChampIds.add(p.champ.id);
+    });
+    lastMatch.team2.forEach(p => {
+      let pool = (laneSpecific && !lastMatch.isAram) ? getCandidateChampionsForRole(p.role, usedChampIds) : LOL_DATA.champions.filter(c => !usedChampIds.has(c.id));
+      if(pool.length === 0) pool = LOL_DATA.champions;
+      p.champ = pool[Math.floor(Math.random() * pool.length)];
+      if(p.champ) usedChampIds.add(p.champ.id);
+    });
+    renderMatch(lastMatch.team1, lastMatch.team2, lastMatch.spectators);
+  }
 }
 
 function animateAndRandomize(){
@@ -952,7 +1366,10 @@ async function pasteChatClipboard(){try{const t=await navigator.clipboard.readTe
 
 async function pasteManualClipboard(){try{const t=await navigator.clipboard.readText();if(t&&t.trim()){document.getElementById("manualInput").value=t;updateStats();animateAndRandomize();showToast("Pasted and randomized");}}catch{showToast("Paste directly into the box (Ctrl+V)");}}
 
+let isTeamLcuPending = false;
+
 async function readFromLolClient(){
+  isTeamLcuPending = false;
   const btn=document.getElementById("lcuBtn"),status=document.getElementById("lcuStatus");
   btn.disabled=true;btn.innerText="Connecting...";status.className="lcu-status";status.innerHTML="Connecting to League Client...";
 
@@ -984,10 +1401,35 @@ async function readFromLolClient(){
 }
 
 function handleLobbyResult(data){
+  if(isTeamLcuPending){
+    isTeamLcuPending = false;
+    const teamBtn = document.getElementById("btnTeamLcu");
+    if(teamBtn){
+      if(teamBtn._lcuTimeout){ clearTimeout(teamBtn._lcuTimeout); teamBtn._lcuTimeout = null; }
+      teamBtn.disabled = false;
+      teamBtn.innerText = "Read from LoL Client";
+    }
+    if(!data) return;
+    if(data.error){
+      showToast(data.error);
+    } else if(data.players && data.players.length > 0){
+      clearTeamInputs();
+      data.players.slice(0, 5).forEach((p, idx) => {
+        const inp = document.getElementById("squadInput" + idx);
+        if(inp) inp.value = p;
+      });
+      animateAndRandomizeTeam();
+      showToast(`Loaded ${Math.min(data.players.length, 5)} players from LoL Client`);
+    } else {
+      showToast("Lobby is empty. Make sure players have joined.");
+    }
+    return;
+  }
+
   const btn=document.getElementById("lcuBtn"),status=document.getElementById("lcuStatus");
   // Cancel the safety timeout if C# responded in time
-  if(btn._lcuTimeout){clearTimeout(btn._lcuTimeout);btn._lcuTimeout=null;}
-  btn.disabled=false;btn.innerText="Read from LoL Client";
+  if(btn && btn._lcuTimeout){clearTimeout(btn._lcuTimeout);btn._lcuTimeout=null;}
+  if(btn){ btn.disabled=false; btn.innerText="Read from LoL Client"; }
   if(!data)return;
   if(data.error){
     status.className="lcu-status err";status.innerHTML=data.error;
@@ -1294,9 +1736,9 @@ function copyDiscord(){
   if(!lastMatch){showToast("Randomize teams first");return;}
   const{team1,team2,spectators}=lastMatch;const t1=team1.length,t2=team2.length;
   let text=`**${isAram?"ARAM":"RIFT"} MATCH — ${t1}v${t2}**\n\n**BLUE TEAM (${t1})**\n`;
-  team1.forEach(i=>text+=`  ${i.role}: ${i.player}${i.bonus?" [+]":""}\n`);
+  team1.forEach(i=>text+=`  ${i.role}: ${i.player}${i.champ ? " ("+i.champ.name+")" : ""}${i.bonus?" [+]":""}\n`);
   text+=`\n**RED TEAM (${t2})**\n`;
-  team2.forEach(i=>text+=`  ${i.role}: ${i.player}${i.bonus?" [+]":""}\n`);
+  team2.forEach(i=>text+=`  ${i.role}: ${i.player}${i.champ ? " ("+i.champ.name+")" : ""}${i.bonus?" [+]":""}\n`);
   if(spectators.length>0)text+=`\nBench: ${spectators.join(", ")}`;
   copyContact(text,"Copied for Discord");
 }
@@ -1334,9 +1776,799 @@ document.addEventListener("keydown",e=>{
   if(e.target.tagName==="TEXTAREA"||e.target.tagName==="INPUT")return;
   if(e.code==="Space"||e.code==="Enter"){e.preventDefault();animateAndRandomize();}
 });
+
+/* =========================================================================
+   RANDOMIZER SUB-PAGES (Custom / Team / Solo) & ADVANCED GENERATORS
+   ========================================================================= */
+
+let currentRandomizerSubTab = 'custom';
+
+function switchRandomizerSubTab(subTab){
+  currentRandomizerSubTab = subTab;
+  ['custom', 'team', 'solo'].forEach(t => {
+    const btn = document.getElementById('subTab' + t.charAt(0).toUpperCase() + t.slice(1));
+    const page = document.getElementById('subPage' + t.charAt(0).toUpperCase() + t.slice(1));
+    if(btn) btn.classList.toggle('active', t === subTab);
+    if(page) page.classList.toggle('active', t === subTab);
+  });
+  if(subTab === 'team' && (!teamSquad || teamSquad.length === 0)){
+    initTeamRandomizerDefaults();
+  }
+  if(subTab === 'solo' && !soloState.champ){
+    rollSoloChallenge();
+  }
+}
+
+/* ==========================================
+   TEAM RANDOMIZER LOGIC (1-5 Squad Members)
+   ========================================== */
+let teamSquad = [];
+let isTeamAram = false;
+let teamTarget = 'both'; // 'both', 'roles', 'champs'
+let isTeamShuffling = false;
+
+function setTeamMode(aram){
+  isTeamAram = aram;
+  document.getElementById("btnTeamModeRift").classList.toggle("active", !aram);
+  document.getElementById("btnTeamModeAram").classList.toggle("active", aram);
+  if(teamSquad && teamSquad.length > 0){
+    teamSquad.forEach((s, i) => {
+      s.role = isTeamAram ? `ARAM ${i+1}` : (RIFT_ROLES[i] || `Slot ${i+1}`);
+    });
+    renderTeamSquad();
+  }
+}
+
+function setTeamTarget(target){
+  teamTarget = target;
+  ['both', 'roles', 'champs'].forEach(t => {
+    const btn = document.getElementById("btnTeamTarget" + t.charAt(0).toUpperCase() + t.slice(1));
+    if(btn) btn.classList.toggle("active", t === target);
+  });
+}
+
+function getTeamPlayerInputs(){
+  const players = [];
+  for(let i=0; i<5; i++){
+    const el = document.getElementById("squadInput" + i);
+    if(el && el.value.trim()) players.push(el.value.trim());
+  }
+  return players;
+}
+
+function initTeamRandomizerDefaults(){
+  const existing = getTeamPlayerInputs();
+  if(existing.length === 0){
+    const chatRoster = parseActiveRoster();
+    if(chatRoster && chatRoster.players && chatRoster.players.length > 0){
+      chatRoster.players.slice(0, 5).forEach((p, idx) => {
+        const inp = document.getElementById("squadInput" + idx);
+        if(inp) inp.value = p;
+      });
+    }
+  }
+  randomizeTeamSquad(false);
+}
+
+function updateTeamSquadFromInputs(){
+  const inputs = getTeamPlayerInputs();
+  if(!teamSquad || teamSquad.length === 0 || inputs.length !== teamSquad.length){
+    randomizeTeamSquad(false);
+  } else {
+    teamSquad = inputs.map((name, i) => {
+      const prev = teamSquad[i];
+      return {
+        player: name,
+        role: prev ? prev.role : (isTeamAram ? `ARAM ${i+1}` : (RIFT_ROLES[i] || `Slot ${i+1}`)),
+        champ: prev ? prev.champ : (LOL_DATA.champions ? LOL_DATA.champions[i % LOL_DATA.champions.length] : null)
+      };
+    });
+    renderTeamSquad();
+  }
+}
+
+function randomizeTeamSquad(isAnimate = true){
+  const rawPlayers = getTeamPlayerInputs();
+  if(rawPlayers.length === 0){
+    if(isAnimate) showToast("Enter at least 1 player in the squad");
+    renderEmptyTeamSquad();
+    return;
+  }
+
+  const count = rawPlayers.length;
+  const roles = isTeamAram 
+    ? Array.from({length: count}, (_, i) => `ARAM ${i+1}`)
+    : RIFT_ROLES.slice(0, count);
+
+  const laneSpecific = document.getElementById("laneChampsTeamCheck") && document.getElementById("laneChampsTeamCheck").checked;
+  const usedChampIds = new Set();
+
+  function pickChampForTeamSlot(role){
+    if(!LOL_DATA.champions || LOL_DATA.champions.length === 0) return null;
+    let pool;
+    if(laneSpecific && !isTeamAram){
+      pool = getCandidateChampionsForRole(role, usedChampIds);
+    } else {
+      pool = LOL_DATA.champions.filter(c => !usedChampIds.has(c.id));
+      if(pool.length === 0) pool = LOL_DATA.champions;
+    }
+    const chosen = pool[Math.floor(Math.random() * pool.length)];
+    if(chosen) usedChampIds.add(chosen.id);
+    return chosen;
+  }
+
+  let newSquad = [];
+
+  if(teamTarget === 'both'){
+    const shuffledPlayers = shuffle(rawPlayers);
+    newSquad = shuffledPlayers.map((p, i) => {
+      const r = roles[i] || `Slot ${i+1}`;
+      const c = pickChampForTeamSlot(r);
+      return { player: p, role: r, champ: c };
+    });
+  } else if(teamTarget === 'roles'){
+    const shuffledPlayers = shuffle(rawPlayers);
+    newSquad = shuffledPlayers.map((p, i) => {
+      const oldSlot = teamSquad.find(s => s.player.toLowerCase() === p.toLowerCase());
+      const r = roles[i] || `Slot ${i+1}`;
+      let c = oldSlot ? oldSlot.champ : null;
+      if(laneSpecific && !isTeamAram && c && Array.isArray(c.lanes)){
+        const targetLane = getTargetLaneFromRole(r);
+        if(targetLane && !c.lanes.includes(targetLane)){
+          c = pickChampForTeamSlot(r);
+        } else if(c){
+          usedChampIds.add(c.id);
+        }
+      } else if(c){
+        usedChampIds.add(c.id);
+      } else {
+        c = pickChampForTeamSlot(r);
+      }
+      return { player: p, role: r, champ: c };
+    });
+  } else if(teamTarget === 'champs'){
+    newSquad = rawPlayers.map((p, i) => {
+      const oldSlot = teamSquad[i];
+      const r = oldSlot ? oldSlot.role : (roles[i] || `Slot ${i+1}`);
+      const c = pickChampForTeamSlot(r);
+      return { player: p, role: r, champ: c };
+    });
+  }
+
+  teamSquad = newSquad;
+  renderTeamSquad();
+}
+
+function onToggleLaneChampsTeam(){
+  if(teamSquad && teamSquad.length > 0){
+    const laneSpecific = document.getElementById("laneChampsTeamCheck") && document.getElementById("laneChampsTeamCheck").checked;
+    if(laneSpecific && !isTeamAram){
+      const usedChampIds = new Set();
+      teamSquad.forEach(s => {
+        let pool = getCandidateChampionsForRole(s.role, usedChampIds);
+        s.champ = pool[Math.floor(Math.random() * pool.length)];
+        if(s.champ) usedChampIds.add(s.champ.id);
+      });
+      renderTeamSquad();
+      showToast("Assigned lane-specific champions to squad");
+    }
+  }
+}
+
+function animateAndRandomizeTeam(){
+  if(isTeamShuffling) return;
+  const rawPlayers = getTeamPlayerInputs();
+  if(rawPlayers.length === 0){
+    showToast("Enter at least 1 player");
+    return;
+  }
+  isTeamShuffling = true;
+  const btn = document.getElementById("btnRollTeam");
+  btn.innerText = "Shuffling...";
+  btn.style.opacity = ".65";
+  let step = 0;
+  const iv = setInterval(() => {
+    randomizeTeamSquad(false);
+    step++;
+    if(step >= 6){
+      clearInterval(iv);
+      randomizeTeamSquad(false);
+      btn.innerText = "Randomize Team";
+      btn.style.opacity = "1";
+      isTeamShuffling = false;
+      showToast(`Squad randomized (${teamSquad.length} Players)`);
+    }
+  }, 45);
+}
+
+function rerollTeamSlotChamp(index){
+  if(!teamSquad || !teamSquad[index] || !LOL_DATA.champions) return;
+  const laneSpecific = document.getElementById("laneChampsTeamCheck") && document.getElementById("laneChampsTeamCheck").checked;
+  const usedChampIds = new Set(teamSquad.filter((s, i) => i !== index && s.champ).map(s => s.champ.id));
+  let pool;
+  if(laneSpecific && !isTeamAram){
+    pool = getCandidateChampionsForRole(teamSquad[index].role, usedChampIds);
+  } else {
+    pool = LOL_DATA.champions.filter(c => !usedChampIds.has(c.id) && c.id !== teamSquad[index].champ?.id);
+    if(pool.length === 0) pool = LOL_DATA.champions;
+  }
+  teamSquad[index].champ = pool[Math.floor(Math.random() * pool.length)];
+  renderTeamSquad();
+  showToast(`Rerolled ${teamSquad[index].player}'s champion: ${teamSquad[index].champ.name}`);
+}
+
+async function readFromLolClientForTeam(){
+  const btn = document.getElementById("btnTeamLcu");
+  if(btn){
+    btn.disabled = true;
+    btn.innerText = "Connecting...";
+  }
+  isTeamLcuPending = true;
+
+  if(window.chrome && window.chrome.webview){
+    const t = setTimeout(() => {
+      if(btn && btn.disabled){
+        btn.disabled = false;
+        btn.innerText = "Read from LoL Client";
+        isTeamLcuPending = false;
+        showToast("No response from League Client. Make sure League is running with an open lobby.");
+      }
+    }, 6000);
+    btn._lcuTimeout = t;
+    window.chrome.webview.postMessage("get-lobby");
+    return;
+  }
+
+  try {
+    const targetUrl = window.location.origin.startsWith("http") ? (window.location.origin + "/lobby-members") : "http://127.0.0.1:9137/lobby-members";
+    const resp = await fetch(targetUrl, { signal: AbortSignal.timeout(4000) });
+    if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    handleLobbyResult(data);
+  } catch(e) {
+    if(btn){
+      btn.disabled = false;
+      btn.innerText = "Read from LoL Client";
+    }
+    isTeamLcuPending = false;
+    showToast("Could not connect to League Client. Make sure League is running with an open lobby.");
+  }
+}
+
+function renderEmptyTeamSquad(){
+  const container = document.getElementById("teamSquadContainer");
+  const countHeader = document.getElementById("teamSquadHeaderCount");
+  if(countHeader) countHeader.innerText = "0 Players";
+  if(container) container.innerHTML = `<div style="padding:24px;text-align:center;color:var(--grey-2);font-style:italic;font-size:.84rem;">Enter squad members on the left and click "Randomize Team".</div>`;
+}
+
+function renderTeamSquad(){
+  const container = document.getElementById("teamSquadContainer");
+  const countHeader = document.getElementById("teamSquadHeaderCount");
+  if(!container) return;
+  if(!teamSquad || teamSquad.length === 0){
+    renderEmptyTeamSquad();
+    return;
+  }
+  if(countHeader) countHeader.innerText = `${teamSquad.length} Player${teamSquad.length !== 1 ? "s" : ""}`;
+  container.innerHTML = "";
+
+  const strip = document.getElementById("teamStripTagsCheck") && document.getElementById("teamStripTagsCheck").checked;
+
+  teamSquad.forEach((s, idx) => {
+    let displayName = s.player;
+    if(strip) displayName = displayName.replace(/\s*#\S+$/,"").trim() || displayName;
+
+    const iconSrc = getRoleIcon(s.role);
+    const bc = isTeamAram ? "role-badge aram-badge" : "role-badge";
+
+    let champHtml = "";
+    if(s.champ){
+      const cIcon = `https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/${s.champ.id}.png`;
+      champHtml = `<div class="slot-champ-pill" title="${escapeHtml(s.champ.title||'')}"><img class="slot-champ-img" src="${cIcon}" alt="${escapeHtml(s.champ.name)}" onerror="this.style.display='none'"/><span>${escapeHtml(s.champ.name)}</span></div>`;
+    } else {
+      champHtml = `<span style="color:var(--grey-2);font-size:.75rem;font-style:italic;">No Champion</span>`;
+    }
+
+    container.innerHTML += `
+      <div class="player-slot" style="grid-template-columns: 126px 1fr auto 36px;">
+        <div class="slot-role">
+          <span class="${bc}">
+            <img class="role-icon" src="${iconSrc}" alt="${s.role}">
+            <span>${s.role}</span>
+          </span>
+        </div>
+        <div class="slot-player">
+          <span class="player-name" title="${escapeHtml(s.player)}">${escapeHtml(displayName)}</span>
+        </div>
+        <div>${champHtml}</div>
+        <div style="text-align:center;">
+          <button class="slot-reroll-btn" onclick="rerollTeamSlotChamp(${idx})" title="Reroll this champion">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+          </button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+async function pasteTeamClipboard(){
+  try {
+    const text = await navigator.clipboard.readText();
+    if(text && text.trim()){
+      const lines = text.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+      clearTeamInputs();
+      lines.slice(0, 5).forEach((p, idx) => {
+        const inp = document.getElementById("squadInput" + idx);
+        if(inp) inp.value = p;
+      });
+      animateAndRandomizeTeam();
+      showToast("Pasted and randomized squad");
+    }
+  } catch {
+    showToast("Paste directly into player boxes");
+  }
+}
+
+
+
+function clearTeamInputs(){
+  for(let i=0; i<5; i++){
+    const inp = document.getElementById("squadInput" + i);
+    if(inp) inp.value = "";
+  }
+  teamSquad = [];
+  renderEmptyTeamSquad();
+}
+
+function copyTeamDiscord(){
+  if(!teamSquad || teamSquad.length === 0){
+    showToast("Randomize squad first");
+    return;
+  }
+  const modeName = isTeamAram ? "ARAM" : "SUMMONER'S RIFT";
+  let text = `**TEAM SQUAD — ${teamSquad.length} Players (${modeName})**\n\n`;
+  teamSquad.forEach(s => {
+    text += `  **${s.role}**: ${s.player}${s.champ ? " (" + s.champ.name + ")" : ""}\n`;
+  });
+  copyContact(text, "Squad copied for Discord");
+}
+
+/* ==========================================
+   SOLO RANDOMIZER LOGIC (Ultimate Challenge)
+   ========================================== */
+let soloMode = false; // false = Rift, true = ARAM
+let soloState = {
+  champ: null,
+  role: "Mid",
+  runes: null,
+  items: null,
+  spells: null
+};
+
+function setSoloMode(isAram){
+  if(soloMode === isAram) return;
+  soloMode = isAram;
+  document.getElementById("soloModeRift").classList.toggle("active", !isAram);
+  document.getElementById("soloModeAram").classList.toggle("active", isAram);
+
+  if(!soloState.champ){
+    rollSoloChallenge();
+    return;
+  }
+
+  if(soloMode){
+    soloState.role = "ARAM";
+  } else {
+    soloState.role = RIFT_ROLES[Math.floor(Math.random() * RIFT_ROLES.length)];
+  }
+
+  adaptSoloStarterAndItems();
+  adaptSoloSpells();
+  renderSoloChallenge();
+  showToast(`Switched mode to ${isAram ? 'ARAM' : "Summoner's Rift"}`);
+}
+
+function adaptSoloStarterAndItems(){
+  if(!soloState.items){
+    rollSoloItemsLogic();
+    return;
+  }
+  const isJungle = (!soloMode && soloState.role === 'Jungle');
+  const isSupport = (!soloMode && soloState.role === 'Support');
+  const curStarter = soloState.items.starter;
+
+  let needNewStarter = false;
+  if(soloMode){
+    if(!curStarter || curStarter.mode !== 'aram') needNewStarter = true;
+  } else if(isJungle){
+    if(!curStarter || curStarter.role !== 'Jungle') needNewStarter = true;
+  } else if(isSupport){
+    if(!curStarter || curStarter.role !== 'Support') needNewStarter = true;
+  } else {
+    if(!curStarter || curStarter.mode !== 'rift' || curStarter.role) needNewStarter = true;
+  }
+
+  if(needNewStarter){
+    let validStarters = LOL_DATA.starters.filter(s => {
+      if(soloMode) return s.mode === 'aram' || s.mode === 'both';
+      if(isJungle) return s.role === 'Jungle';
+      if(isSupport) return s.role === 'Support';
+      return s.mode === 'rift' && !s.role;
+    });
+    if(validStarters.length > 0){
+      soloState.items.starter = validStarters[Math.floor(Math.random() * validStarters.length)];
+    }
+  }
+
+  const targetCoreCount = isSupport ? 4 : 5;
+  let core = soloState.items.coreItems || [];
+  if(core.length > targetCoreCount){
+    soloState.items.coreItems = core.slice(0, targetCoreCount);
+  } else if(core.length < targetCoreCount){
+    const usedIds = new Set(core.map(i => i.id));
+    const available = LOL_DATA.items.filter(i => !usedIds.has(i.id));
+    while(core.length < targetCoreCount && available.length > 0){
+      const picked = available.splice(Math.floor(Math.random() * available.length), 1)[0];
+      core.push(picked);
+      usedIds.add(picked.id);
+    }
+    soloState.items.coreItems = core;
+  }
+}
+
+function adaptSoloSpells(){
+  if(!soloState.spells || soloState.spells.length < 2){
+    rollSoloSpellsLogic();
+    return;
+  }
+  const isJungle = (!soloMode && soloState.role === 'Jungle');
+  const validSpells = LOL_DATA.spells.filter(s => soloMode ? (s.mode === 'aram' || s.mode === 'both') : (s.mode === 'rift' || s.mode === 'both'));
+  const smite = LOL_DATA.spells.find(s => s.id === 'SummonerSmite');
+  const flash = LOL_DATA.spells.find(s => s.id === 'SummonerFlash') || validSpells[0];
+
+  let s1 = soloState.spells[0];
+  let s2 = soloState.spells[1];
+
+  if(soloMode){
+    if(s1.id === 'SummonerSmite' || s1.id === 'SummonerTeleport'){
+      s1 = validSpells.find(s => s.id !== s2.id && (s.id === 'SummonerSnowball' || s.id === 'SummonerFlash')) || validSpells[0];
+    }
+    if(s2.id === 'SummonerSmite' || s2.id === 'SummonerTeleport' || s2.id === s1.id){
+      s2 = validSpells.find(s => s.id !== s1.id) || validSpells[1];
+    }
+  } else if(isJungle){
+    if(s1.id !== 'SummonerSmite'){
+      if(s2.id === 'SummonerSmite'){
+        s2 = s1;
+        s1 = smite || s2;
+      } else {
+        s1 = smite || flash;
+      }
+    }
+    if(s2.id === 'SummonerSmite'){
+      s2 = validSpells.find(s => s.id !== 'SummonerSmite' && s.id !== s1.id) || flash;
+    }
+  } else {
+    if(s1.id === 'SummonerSmite' || s1.id === 'SummonerSnowball'){
+      s1 = (s2.id === flash.id) ? (validSpells.find(s => s.id === 'SummonerDot' || (s.id !== 'SummonerSmite' && s.id !== s2.id)) || validSpells[0]) : flash;
+    }
+    if(s2.id === 'SummonerSmite' || s2.id === 'SummonerSnowball' || s2.id === s1.id){
+      s2 = validSpells.find(s => s.id !== 'SummonerSmite' && s.id !== 'SummonerSnowball' && s.id !== s1.id) || validSpells[1];
+    }
+  }
+
+  soloState.spells = [s1, s2];
+}
+
+function rollSoloChallenge(){
+  if(LOL_DATA.champions && LOL_DATA.champions.length > 0){
+    soloState.champ = LOL_DATA.champions[Math.floor(Math.random() * LOL_DATA.champions.length)];
+  }
+
+  if(soloMode){
+    soloState.role = "ARAM";
+  } else {
+    soloState.role = RIFT_ROLES[Math.floor(Math.random() * RIFT_ROLES.length)];
+  }
+
+  rollSoloRunesLogic();
+  rollSoloItemsLogic();
+  rollSoloSpellsLogic();
+  renderSoloChallenge();
+}
+
+function rollSoloRunesLogic(){
+  if(!LOL_DATA.runes || LOL_DATA.runes.length < 2) return;
+  const trees = shuffle(LOL_DATA.runes);
+  const primaryTree = trees[0];
+  const secondaryTree = trees[1];
+
+  const keystone = primaryTree.keystones[Math.floor(Math.random() * primaryTree.keystones.length)];
+  const primaryMinors = primaryTree.slots.map(slot => slot[Math.floor(Math.random() * slot.length)]);
+
+  const shuffledSecSlots = shuffle(secondaryTree.slots);
+  const secMinors = [
+    shuffledSecSlots[0][Math.floor(Math.random() * shuffledSecSlots[0].length)],
+    shuffledSecSlots[1][Math.floor(Math.random() * shuffledSecSlots[1].length)]
+  ];
+
+  const shards = {
+    offense: LOL_DATA.shards.offense[Math.floor(Math.random() * LOL_DATA.shards.offense.length)],
+    flex: LOL_DATA.shards.flex[Math.floor(Math.random() * LOL_DATA.shards.flex.length)],
+    defense: LOL_DATA.shards.defense[Math.floor(Math.random() * LOL_DATA.shards.defense.length)]
+  };
+
+  soloState.runes = {
+    primaryTree,
+    keystone,
+    primaryMinors,
+    secondaryTree,
+    secMinors,
+    shards
+  };
+}
+
+function rollSoloItemsLogic(){
+  const isJungle = (!soloMode && soloState.role === 'Jungle');
+  const isSupport = (!soloMode && soloState.role === 'Support');
+
+  let validStarters = LOL_DATA.starters.filter(s => {
+    if(soloMode) return s.mode === 'aram' || s.mode === 'both';
+    if(isJungle) return s.role === 'Jungle';
+    if(isSupport) return s.role === 'Support';
+    return s.mode === 'rift' && !s.role;
+  });
+  if(validStarters.length === 0) validStarters = LOL_DATA.starters;
+  const starter = validStarters[Math.floor(Math.random() * validStarters.length)];
+
+  const boots = LOL_DATA.boots[Math.floor(Math.random() * LOL_DATA.boots.length)];
+  const shuffledItems = shuffle(LOL_DATA.items);
+  // Support keeps World Atlas starter item -> 4 core legendaries + boots + starter = 6 items
+  // Non-Support sells starter item late game -> 5 core legendaries + boots = 6 items
+  const targetCoreCount = isSupport ? 4 : 5;
+  const coreItems = shuffledItems.slice(0, targetCoreCount);
+
+  soloState.items = {
+    starter,
+    boots,
+    coreItems
+  };
+}
+
+function rollSoloSpellsLogic(){
+  let s1, s2;
+  const validSpells = LOL_DATA.spells.filter(s => soloMode ? (s.mode === 'aram' || s.mode === 'both') : (s.mode === 'rift' || s.mode === 'both'));
+
+  if(!soloMode && soloState.role === 'Jungle'){
+    s1 = LOL_DATA.spells.find(s => s.id === 'SummonerSmite') || validSpells[0];
+    const nonSmite = validSpells.filter(s => s.id !== 'SummonerSmite');
+    s2 = nonSmite[Math.floor(Math.random() * nonSmite.length)];
+  } else {
+    const nonSmite = validSpells.filter(s => s.id !== 'SummonerSmite');
+    const sh = shuffle(nonSmite);
+    s1 = sh[0];
+    s2 = sh[1];
+  }
+
+  soloState.spells = [s1, s2];
+}
+
+function rerollSoloChamp(){
+  if(LOL_DATA.champions){
+    const pool = LOL_DATA.champions.filter(c => c.id !== soloState.champ?.id);
+    soloState.champ = pool[Math.floor(Math.random() * pool.length)];
+    renderSoloChallenge();
+    showToast(`Rerolled Champion: ${soloState.champ.name}`);
+  }
+}
+
+function rerollSoloRole(){
+  if(soloMode){
+    showToast("Role is ARAM in Howling Abyss");
+    return;
+  }
+  const pool = RIFT_ROLES.filter(r => r !== soloState.role);
+  soloState.role = pool[Math.floor(Math.random() * pool.length)];
+  // Only adapt role-dependent starter and spells without rerolling champ, runes, or items!
+  adaptSoloStarterAndItems();
+  adaptSoloSpells();
+  renderSoloChallenge();
+  showToast(`Rerolled Role: ${soloState.role}`);
+}
+
+function rerollSoloRunes(){
+  rollSoloRunesLogic();
+  renderSoloChallenge();
+  showToast("Rerolled Runes");
+}
+
+function rerollSoloItems(){
+  rollSoloItemsLogic();
+  renderSoloChallenge();
+  showToast("Rerolled Item Build");
+}
+
+function rerollSoloSpells(){
+  rollSoloSpellsLogic();
+  renderSoloChallenge();
+  showToast("Rerolled Summoner Spells");
+}
+
+function animateAndRollSolo(){
+  const btn = document.getElementById("btnSoloRollAll");
+  btn.style.opacity = ".65";
+  let step = 0;
+  const iv = setInterval(() => {
+    rollSoloChallenge();
+    step++;
+    if(step >= 6){
+      clearInterval(iv);
+      rollSoloChallenge();
+      btn.style.opacity = "1";
+      showToast("Ultimate Challenge Ready!");
+    }
+  }, 50);
+}
+
+function renderSoloChallenge(){
+  if(!soloState.champ) return;
+
+  const avatarImg = document.getElementById("soloChampAvatar");
+  const roleIcon = document.getElementById("soloRoleIcon");
+  const roleText = document.getElementById("soloRoleText");
+  const champName = document.getElementById("soloChampName");
+  const champTitle = document.getElementById("soloChampTitle");
+  const champTags = document.getElementById("soloChampTags");
+
+  const c = soloState.champ;
+  if(avatarImg){
+    avatarImg.src = `https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/${c.id}.png`;
+    avatarImg.alt = c.name;
+  }
+  if(roleIcon) roleIcon.src = getRoleIcon(soloState.role);
+  if(roleText) roleText.innerText = soloState.role;
+  if(champName) champName.innerText = c.name;
+  if(champTitle) champTitle.innerText = c.title ? `the ${c.title.replace(/^the\s+/i, '')}` : "";
+  if(champTags) champTags.innerHTML = (c.roles || []).join(' &bull; ');
+
+  const runesBox = document.getElementById("soloRunesContent");
+  if(runesBox && soloState.runes){
+    const r = soloState.runes;
+    const primIcon = `https://ddragon.leagueoflegends.com/cdn/img/${r.primaryTree.icon}`;
+    const secIcon = `https://ddragon.leagueoflegends.com/cdn/img/${r.secondaryTree.icon}`;
+    const ksIcon = `https://ddragon.leagueoflegends.com/cdn/img/${r.keystone.icon}`;
+
+    let primMinorsHtml = "";
+    r.primaryMinors.forEach(m => {
+      primMinorsHtml += `
+        <div class="rune-minor-row">
+          <img class="rune-minor-icon" src="https://ddragon.leagueoflegends.com/cdn/img/${m.icon}" alt="${escapeHtml(m.name)}" />
+          <span class="rune-minor-name">${escapeHtml(m.name)}</span>
+        </div>
+      `;
+    });
+
+    let secMinorsHtml = "";
+    r.secMinors.forEach(m => {
+      secMinorsHtml += `
+        <div class="rune-minor-row">
+          <img class="rune-minor-icon" src="https://ddragon.leagueoflegends.com/cdn/img/${m.icon}" alt="${escapeHtml(m.name)}" />
+          <span class="rune-minor-name">${escapeHtml(m.name)}</span>
+        </div>
+      `;
+    });
+
+    runesBox.innerHTML = `
+      <div class="rune-tree-column">
+        <div class="rune-tree-head">
+          <img class="rune-tree-icon" src="${primIcon}" alt="${r.primaryTree.name}"/>
+          <span>${r.primaryTree.name} (Primary)</span>
+        </div>
+        <div class="rune-keystone-row">
+          <img class="rune-keystone-icon" src="${ksIcon}" alt="${r.keystone.name}"/>
+          <span class="rune-keystone-name">${r.keystone.name}</span>
+        </div>
+        <div class="rune-minors-list">
+          ${primMinorsHtml}
+        </div>
+      </div>
+
+      <div class="rune-tree-column">
+        <div class="rune-tree-head">
+          <img class="rune-tree-icon" src="${secIcon}" alt="${r.secondaryTree.name}"/>
+          <span>${r.secondaryTree.name} (Secondary)</span>
+        </div>
+        <div class="rune-minors-list">
+          ${secMinorsHtml}
+        </div>
+        <div class="rune-shards-title">Stat Shards</div>
+        <div class="rune-shards-list">
+          <div class="rune-shard-row">Offense: <strong>${r.shards.offense.name}</strong></div>
+          <div class="rune-shard-row">Flex: <strong>${r.shards.flex.name}</strong></div>
+          <div class="rune-shard-row">Defense: <strong>${r.shards.defense.name}</strong></div>
+        </div>
+      </div>
+    `;
+  }
+
+  const itemsBox = document.getElementById("soloItemsGrid");
+  if(itemsBox && soloState.items){
+    const it = soloState.items;
+    let itemsHtml = `
+      <div class="solo-item-card starter">
+        <span class="solo-item-type-tag">Starter</span>
+        <img class="solo-item-img" src="https://ddragon.leagueoflegends.com/cdn/14.24.1/img/item/${it.starter.id}.png" alt="${escapeHtml(it.starter.name)}"/>
+        <span class="solo-item-name">${escapeHtml(it.starter.name)}</span>
+      </div>
+      <div class="solo-item-card boots">
+        <span class="solo-item-type-tag">Boots</span>
+        <img class="solo-item-img" src="https://ddragon.leagueoflegends.com/cdn/14.24.1/img/item/${it.boots.id}.png" alt="${escapeHtml(it.boots.name)}"/>
+        <span class="solo-item-name">${escapeHtml(it.boots.name)}</span>
+      </div>
+    `;
+
+    it.coreItems.forEach((item, idx) => {
+      itemsHtml += `
+        <div class="solo-item-card">
+          <span class="solo-item-type-tag">Core Item ${idx+1}</span>
+          <img class="solo-item-img" src="https://ddragon.leagueoflegends.com/cdn/14.24.1/img/item/${item.id}.png" alt="${escapeHtml(item.name)}"/>
+          <span class="solo-item-name">${escapeHtml(item.name)}</span>
+        </div>
+      `;
+    });
+    itemsBox.innerHTML = itemsHtml;
+  }
+
+  const spellsBox = document.getElementById("soloSpellsBox");
+  if(spellsBox && soloState.spells && soloState.spells.length >= 2){
+    spellsBox.innerHTML = soloState.spells.map((s, idx) => `
+      <div class="solo-spell-card">
+        <img class="solo-spell-img" src="https://ddragon.leagueoflegends.com/cdn/14.24.1/img/spell/${s.id}.png" alt="${escapeHtml(s.name)}"/>
+        <div>
+          <div style="font-size:.62rem;color:var(--gold-2);font-family:'Cinzel',serif;font-weight:700;">SPELL ${idx+1}</div>
+          <div class="solo-spell-name">${escapeHtml(s.name)}</div>
+        </div>
+      </div>
+    `).join("");
+  }
+}
+
+function copySoloDiscord(){
+  if(!soloState.champ){
+    showToast("Roll challenge first");
+    return;
+  }
+  const c = soloState.champ;
+  const r = soloState.runes;
+  const it = soloState.items;
+  const sp = soloState.spells;
+
+  let text = `**SOLO CHALLENGE — ${c.name} (${soloState.role})**\n\n`;
+  text += `**Role**: ${soloState.role}\n`;
+  text += `**Champion**: ${c.name}, ${c.title}\n`;
+  if(r){
+    const pMinors = r.primaryMinors.map(m => m.name).join(", ");
+    const sMinors = r.secMinors.map(m => m.name).join(", ");
+    text += `**Runes**: ${r.primaryTree.name} (${r.keystone.name}, ${pMinors}) + ${r.secondaryTree.name} (${sMinors})\n`;
+    text += `**Shards**: ${r.shards.offense.name} / ${r.shards.flex.name} / ${r.shards.defense.name}\n`;
+  }
+  if(it){
+    const core = it.coreItems.map(i => i.name).join(", ");
+    text += `**Build**: ${it.starter.name} | ${it.boots.name} | ${core}\n`;
+  }
+  if(sp){
+    text += `**Spells**: ${sp[0].name} + ${sp[1].name}\n`;
+  }
+
+  copyContact(text, "Solo challenge copied for Discord");
+}
+
 window.onload=()=>{
   updateStats();
   renderEmptyInitialSlots();
+  renderEmptyTeamSquad();
+  rollSoloChallenge();
 };
 </script>
 </body>
