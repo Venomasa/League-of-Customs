@@ -32,7 +32,10 @@ files_to_pack = [
     (r'src\Installer\Uninstall.exe', 'Uninstall.exe'),
     (r'assets\app.ico', r'assets\app.ico'),
     (r'assets\app.png', r'assets\app.png'),
-    (r'README.md', 'README.md')
+    (r'README.md', 'README.md'),
+    (r'src\index.html', 'index.html'),
+    (r'src\index.html', r'src\index.html'),
+    (r'src\lol_data.js', r'src\lol_data.js')
 ]
 
 # Add role icons
@@ -48,8 +51,8 @@ with zipfile.ZipFile(payload_zip, 'w', zipfile.ZIP_DEFLATED) as z:
 print(f"  -> payload.zip size: {os.path.getsize(payload_zip):,} bytes")
 
 # 3. Compile Setup.exe
-print("3. Compiling LeagueOfCustoms-Setup-v0.3.exe...")
-setup_exe = os.path.join(dist_dir, 'LeagueOfCustoms-Setup-v0.3.exe')
+print("3. Compiling LeagueOfCustoms-Setup-v0.4.exe...")
+setup_exe = os.path.join(dist_dir, 'LeagueOfCustoms-Setup-v0.4.exe')
 res = subprocess.run([
     csc, '/nologo', '/optimize+', '/target:winexe',
     r'/win32icon:assets\app.ico',
@@ -66,7 +69,7 @@ print(f"  -> {setup_exe} built successfully! Size: {os.path.getsize(setup_exe):,
 
 # 4. Create Portable zip
 print("4. Packaging Portable ZIP...")
-portable_zip = os.path.join(dist_dir, 'LeagueOfCustoms-v0.3-Portable.zip')
+portable_zip = os.path.join(dist_dir, 'LeagueOfCustoms-v0.4-Portable.zip')
 portable_files = [
     ('LeagueOfCustoms.exe', 'LeagueOfCustoms/LeagueOfCustoms.exe'),
     ('Microsoft.Web.WebView2.Core.dll', 'LeagueOfCustoms/Microsoft.Web.WebView2.Core.dll'),

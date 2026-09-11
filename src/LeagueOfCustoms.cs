@@ -22,9 +22,25 @@ namespace LoLRandomizer
         [STAThread]
         static void Main()
         {
+            AppDomain.CurrentDomain.UnhandledException += delegate (object s, UnhandledExceptionEventArgs e)
+            {
+                try { File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash.log"), e.ExceptionObject != null ? e.ExceptionObject.ToString() : "Unknown crash"); } catch { }
+            };
+            Application.ThreadException += delegate (object s, System.Threading.ThreadExceptionEventArgs e)
+            {
+                try { File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash.log"), e.Exception != null ? e.Exception.ToString() : "Unknown thread exception"); } catch { }
+            };
+            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            try
+            {
+                Application.Run(new MainForm());
+            }
+            catch (Exception ex)
+            {
+                try { File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash.log"), ex.ToString()); } catch { }
+            }
         }
     }
 
@@ -60,7 +76,7 @@ namespace LoLRandomizer
             ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
-            this.Text = "League of Customs v0.3";
+            this.Text = "League of Customs v0.4";
             this.FormBorderStyle = FormBorderStyle.None;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Size = new Size(1260, 860);
@@ -118,13 +134,19 @@ namespace LoLRandomizer
         {
             try
             {
-                string userDataFolder = Path.Combine(Path.GetTempPath(), "LeagueOfCustoms_WV2");
-                var env = await CoreWebView2Environment.CreateAsync(null, userDataFolder);
+                string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                string appFolder = Path.Combine(localAppData, "LeagueOfCustoms");
+                if (!Directory.Exists(appFolder)) Directory.CreateDirectory(appFolder);
+                string userDataFolder = Path.Combine(appFolder, "WebView2Data");
+
+                var options = new CoreWebView2EnvironmentOptions();
+                options.AdditionalBrowserArguments = "--disable-background-timer-throttling=false --disable-renderer-backgrounding=false";
+                var env = await CoreWebView2Environment.CreateAsync(null, userDataFolder, options);
                 await _webView.EnsureCoreWebView2Async(env);
 
                 _webView.CoreWebView2.Settings.IsStatusBarEnabled = false;
-                _webView.CoreWebView2.Settings.AreDevToolsEnabled = false;
-                _webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+                _webView.CoreWebView2.Settings.AreDevToolsEnabled = true;
+                _webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
 
                 _webView.CoreWebView2.NewWindowRequested += delegate (object s, CoreWebView2NewWindowRequestedEventArgs args)
                 {
@@ -143,6 +165,22 @@ namespace LoLRandomizer
                 {
                     localPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "index.html");
                 }
+
+                // Ensure disk HTML in AppData is always refreshed from latest embedded binary
+                string diskHtmlPath = Path.Combine(appFolder, "index.html");
+                if (_embeddedHtml != null && _embeddedHtml.Length > 0)
+                {
+                    try
+                    {
+                        File.WriteAllBytes(diskHtmlPath, _embeddedHtml);
+                        if (!File.Exists(localPath))
+                        {
+                            localPath = diskHtmlPath;
+                        }
+                    }
+                    catch { }
+                }
+
                 if (File.Exists(localPath))
                 {
                     _webView.CoreWebView2.Navigate(new Uri(localPath).AbsoluteUri);
@@ -202,6 +240,350 @@ namespace LoLRandomizer
                     }
                     catch { }
                 }
+                else if (msg.StartsWith("save-user-data:"))
+                {
+                    string jsonPayload = msg.Substring("save-user-data:".Length);
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                            string locFolder = Path.Combine(appData, "LeagueOfCustoms");
+                            if (!Directory.Exists(locFolder)) Directory.CreateDirectory(locFolder);
+                            string filePath = Path.Combine(locFolder, "user_data.json");
+                            File.WriteAllText(filePath, jsonPayload, Encoding.UTF8);
+                        }
+                        catch { }
+                    });
+                }
+                else if (msg == "load-user-data")
+                {
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                            string filePath = Path.Combine(appData, "LeagueOfCustoms", "user_data.json");
+                            string json = File.Exists(filePath) ? File.ReadAllText(filePath, Encoding.UTF8) : "{}";
+                            var resDict = new Dictionary<string, object>
+                            {
+                                { "userDataType", "user-data-loaded" },
+                                { "data", json }
+                            };
+                            var ser = new JavaScriptSerializer();
+                            string responseMsg = ser.Serialize(resDict);
+                            this.Invoke((Action)delegate
+                            {
+                                try { _webView.CoreWebView2.PostWebMessageAsString(responseMsg); } catch { }
+                            });
+                        }
+                        catch { }
+                    });
+                }
+                                else if (msg == "sync-live-data" || msg.StartsWith("sync-live-data:"))
+                {
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            string currentVer = "16.18.1";
+                            if (msg.StartsWith("sync-live-data:"))
+                            {
+                                currentVer = msg.Substring("sync-live-data:".Length).Trim();
+                            }
+
+                            // 1. Fetch latest patch version directly via .NET HttpWebRequest (no CORS)
+                            HttpWebRequest req = (HttpWebRequest)WebRequest.Create("https://ddragon.leagueoflegends.com/api/versions.json");
+                            req.Method = "GET";
+                            req.UserAgent = "LeagueOfCustoms/0.4";
+                            req.Timeout = 6000;
+                            string versionsText = "";
+                            using (var resp = (HttpWebResponse)req.GetResponse())
+                            using (var stream = resp.GetResponseStream())
+                            using (var sr = new StreamReader(stream, Encoding.UTF8))
+                            {
+                                versionsText = sr.ReadToEnd();
+                            }
+
+                            var ser = new JavaScriptSerializer();
+                            ser.MaxJsonLength = 20971520;
+                            var versions = ser.Deserialize<object[]>(versionsText);
+                            string latestPatch = (versions != null && versions.Length > 0) ? versions[0].ToString() : currentVer;
+
+                            var result = new Dictionary<string, object>
+                            {
+                                { "syncType", "live-data-sync" },
+                                { "success", true },
+                                { "latestPatch", latestPatch },
+                                { "patchChanged", latestPatch != currentVer }
+                            };
+
+                            // Ensure live item catalog is always verified: check disk cache or fetch fresh from Riot
+                            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                            string cacheFolder = Path.Combine(localAppData, "LeagueOfCustoms");
+                            if (!Directory.Exists(cacheFolder)) Directory.CreateDirectory(cacheFolder);
+                            string cacheFile = Path.Combine(cacheFolder, "items_" + latestPatch + ".json");
+
+                            if (!File.Exists(cacheFile) || latestPatch != currentVer)
+                            {
+                                try
+                                {
+                                    HttpWebRequest itemReq = (HttpWebRequest)WebRequest.Create("https://ddragon.leagueoflegends.com/cdn/" + latestPatch + "/data/en_US/item.json");
+                                    itemReq.Method = "GET";
+                                    itemReq.UserAgent = "LeagueOfCustoms/0.4";
+                                    itemReq.Timeout = 7000;
+                                    string itemsText = "";
+                                    using (var iResp = (HttpWebResponse)itemReq.GetResponse())
+                                    using (var iStream = iResp.GetResponseStream())
+                                    using (var iSr = new StreamReader(iStream, Encoding.UTF8))
+                                    {
+                                        itemsText = iSr.ReadToEnd();
+                                    }
+                                    try { File.WriteAllText(cacheFile, itemsText, Encoding.UTF8); } catch { }
+                                    var itemDict = ser.Deserialize<Dictionary<string, object>>(itemsText);
+                                    if (itemDict != null && itemDict.ContainsKey("data"))
+                                    {
+                                        result["itemsData"] = itemDict["data"];
+                                    }
+                                }
+                                catch { }
+                            }
+                            else if (File.Exists(cacheFile))
+                            {
+                                try
+                                {
+                                    string itemsText = File.ReadAllText(cacheFile, Encoding.UTF8);
+                                    var itemDict = ser.Deserialize<Dictionary<string, object>>(itemsText);
+                                    if (itemDict != null && itemDict.ContainsKey("data"))
+                                    {
+                                        result["itemsData"] = itemDict["data"];
+                                    }
+                                }
+                                catch { }
+                            }
+
+                            string jsonRes = ser.Serialize(result);
+                            this.Invoke((Action)delegate
+                            {
+                                try { _webView.CoreWebView2.PostWebMessageAsString(jsonRes); } catch { }
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            var ser = new JavaScriptSerializer();
+                            string errJson = ser.Serialize(new Dictionary<string, object>
+                            {
+                                { "syncType", "live-data-sync" },
+                                { "success", false },
+                                { "error", ex.Message }
+                            });
+                            this.Invoke((Action)delegate
+                            {
+                                try { _webView.CoreWebView2.PostWebMessageAsString(errJson); } catch { }
+                            });
+                        }
+                    });
+                }
+                else if (msg == "check-auto-update" || msg == "check-github-update")
+                {
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            HttpWebRequest req = (HttpWebRequest)WebRequest.Create("https://api.github.com/repos/Venomasa/League-of-Customs/releases/latest");
+                            req.Method = "GET";
+                            req.UserAgent = "LeagueOfCustoms/0.4";
+                            req.Timeout = 10000;
+                            string respText = "";
+                            using (var resp = (HttpWebResponse)req.GetResponse())
+                            using (var stream = resp.GetResponseStream())
+                            using (var sr = new StreamReader(stream, Encoding.UTF8))
+                            {
+                                respText = sr.ReadToEnd();
+                            }
+                            var ser = new JavaScriptSerializer();
+                            var dict = ser.Deserialize<Dictionary<string, object>>(respText);
+                            string tagName = dict.ContainsKey("tag_name") ? dict["tag_name"].ToString() : "";
+                            string currentAppVersion = "v0.4";
+
+                            bool hasNewer = IsNewerVersion(tagName, currentAppVersion);
+                            if (!hasNewer)
+                            {
+                                var upToDateRes = new Dictionary<string, object>
+                                {
+                                    { "autoUpdate", false },
+                                    { "status", "up-to-date" },
+                                    { "currentVersion", currentAppVersion },
+                                    { "latestTag", tagName }
+                                };
+                                string json = ser.Serialize(upToDateRes);
+                                this.Invoke((Action)delegate
+                                {
+                                    try { _webView.CoreWebView2.PostWebMessageAsString(json); } catch { }
+                                });
+                                return;
+                            }
+
+                            // A newer version is available! Find the installer (.exe) asset
+                            string downloadUrl = "";
+                            string assetName = "";
+                            long assetSize = 0;
+
+                            if (dict.ContainsKey("assets") && dict["assets"] is System.Collections.IEnumerable)
+                            {
+                                var assetsList = (System.Collections.IEnumerable)dict["assets"];
+                                foreach (var item in assetsList)
+                                {
+                                    var assetDict = item as Dictionary<string, object>;
+                                    if (assetDict != null)
+                                    {
+                                        string name = assetDict.ContainsKey("name") ? assetDict["name"].ToString() : "";
+                                        if (name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            assetName = name;
+                                            downloadUrl = assetDict.ContainsKey("browser_download_url") ? assetDict["browser_download_url"].ToString() : "";
+                                            if (assetDict.ContainsKey("size")) long.TryParse(assetDict["size"].ToString(), out assetSize);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (string.IsNullOrEmpty(downloadUrl))
+                            {
+                                var noExeRes = new Dictionary<string, object>
+                                {
+                                    { "autoUpdate", false },
+                                    { "status", "no-installer-asset" },
+                                    { "latestTag", tagName }
+                                };
+                                string json = ser.Serialize(noExeRes);
+                                this.Invoke((Action)delegate
+                                {
+                                    try { _webView.CoreWebView2.PostWebMessageAsString(json); } catch { }
+                                });
+                                return;
+                            }
+
+                            // Post "found" event to WebView
+                            var foundRes = new Dictionary<string, object>
+                            {
+                                { "autoUpdate", true },
+                                { "status", "found" },
+                                { "version", tagName },
+                                { "assetName", assetName },
+                                { "size", assetSize }
+                            };
+                            string foundJson = ser.Serialize(foundRes);
+                            this.Invoke((Action)delegate
+                            {
+                                try { _webView.CoreWebView2.PostWebMessageAsString(foundJson); } catch { }
+                            });
+
+                            // Begin streaming download to temp file
+                            string tempSetupPath = Path.Combine(Path.GetTempPath(), "LoC_Update_" + tagName + "_" + (string.IsNullOrEmpty(assetName) ? "Setup.exe" : assetName));
+                            using (var wc = new WebClient())
+                            {
+                                wc.Headers.Add("User-Agent", "LeagueOfCustoms/0.4");
+                                wc.DownloadProgressChanged += (s, ev) =>
+                                {
+                                    var progRes = new Dictionary<string, object>
+                                    {
+                                        { "autoUpdate", true },
+                                        { "status", "downloading" },
+                                        { "version", tagName },
+                                        { "progress", ev.ProgressPercentage },
+                                        { "bytesReceived", ev.BytesReceived },
+                                        { "totalBytes", ev.TotalBytesToReceive }
+                                    };
+                                    string progJson = ser.Serialize(progRes);
+                                    this.Invoke((Action)delegate
+                                    {
+                                        try { _webView.CoreWebView2.PostWebMessageAsString(progJson); } catch { }
+                                    });
+                                };
+
+                                wc.DownloadFileCompleted += (s, ev) =>
+                                {
+                                    if (ev.Error != null)
+                                    {
+                                        var errRes = new Dictionary<string, object>
+                                        {
+                                            { "autoUpdate", false },
+                                            { "status", "error" },
+                                            { "error", ev.Error.Message }
+                                        };
+                                        string errJson = ser.Serialize(errRes);
+                                        this.Invoke((Action)delegate
+                                        {
+                                            try { _webView.CoreWebView2.PostWebMessageAsString(errJson); } catch { }
+                                        });
+                                        return;
+                                    }
+
+                                    // Successfully downloaded!
+                                    var readyRes = new Dictionary<string, object>
+                                    {
+                                        { "autoUpdate", true },
+                                        { "status", "installing" },
+                                        { "version", tagName }
+                                    };
+                                    string readyJson = ser.Serialize(readyRes);
+                                    this.Invoke((Action)delegate
+                                    {
+                                        try { _webView.CoreWebView2.PostWebMessageAsString(readyJson); } catch { }
+                                    });
+
+                                    // Launch downloaded setup in silent mode, pointing to current application base directory
+                                    try
+                                    {
+                                        string currentDir = AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\');
+                                        string args = string.Format("/SILENT /DIR=\"{0}\"", currentDir);
+                                        Process.Start(new ProcessStartInfo
+                                        {
+                                            FileName = tempSetupPath,
+                                            Arguments = args,
+                                            UseShellExecute = true
+                                        });
+
+                                        Thread.Sleep(500);
+                                        Application.Exit();
+                                    }
+                                    catch (Exception launchEx)
+                                    {
+                                        var lErrRes = new Dictionary<string, object>
+                                        {
+                                            { "autoUpdate", false },
+                                            { "status", "error" },
+                                            { "error", "Failed to launch installer: " + launchEx.Message }
+                                        };
+                                        string lErrJson = ser.Serialize(lErrRes);
+                                        this.Invoke((Action)delegate
+                                        {
+                                            try { _webView.CoreWebView2.PostWebMessageAsString(lErrJson); } catch { }
+                                        });
+                                    }
+                                };
+
+                                wc.DownloadFileAsync(new Uri(downloadUrl), tempSetupPath);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            var ser = new JavaScriptSerializer();
+                            string jsonRes = ser.Serialize(new Dictionary<string, object>
+                            {
+                                { "autoUpdate", false },
+                                { "status", "error" },
+                                { "error", ex.Message }
+                            });
+                            this.Invoke((Action)delegate
+                            {
+                                try { _webView.CoreWebView2.PostWebMessageAsString(jsonRes); } catch { }
+                            });
+                        }
+                    });
+                }
                 else if (msg.StartsWith("get-profile:"))
                 {
                     string paramStr = msg.Substring("get-profile:".Length);
@@ -224,6 +606,54 @@ namespace LoLRandomizer
                     Task.Run(() =>
                     {
                         string json = FetchMasteryJson(paramStr);
+                        this.Invoke((Action)delegate
+                        {
+                            try
+                            {
+                                _webView.CoreWebView2.PostWebMessageAsString(json);
+                            }
+                            catch { }
+                        });
+                    });
+                }
+                else if (msg.StartsWith("get-game-detail:"))
+                {
+                    string paramStr = msg.Substring("get-game-detail:".Length);
+                    Task.Run(() =>
+                    {
+                        string json = FetchGameDetailJson(paramStr);
+                        this.Invoke((Action)delegate
+                        {
+                            try
+                            {
+                                _webView.CoreWebView2.PostWebMessageAsString(json);
+                            }
+                            catch { }
+                        });
+                    });
+                }
+                else if (msg.StartsWith("get-more-matches:"))
+                {
+                    string paramStr = msg.Substring("get-more-matches:".Length);
+                    Task.Run(() =>
+                    {
+                        string json = FetchMoreMatchesJson(paramStr);
+                        this.Invoke((Action)delegate
+                        {
+                            try
+                            {
+                                _webView.CoreWebView2.PostWebMessageAsString(json);
+                            }
+                            catch { }
+                        });
+                    });
+                }
+                else if (msg.StartsWith("inject-solo-loadout:"))
+                {
+                    string payloadJson = msg.Substring("inject-solo-loadout:".Length);
+                    Task.Run(() =>
+                    {
+                        string json = InjectSoloLoadoutJson(payloadJson);
                         this.Invoke((Action)delegate
                         {
                             try
@@ -319,6 +749,22 @@ namespace LoLRandomizer
                 if (path == "/lobby-members")
                 {
                     string json = GetLobbyMembersJson();
+                    byte[] buf = Encoding.UTF8.GetBytes(json);
+                    res.ContentType = "application/json; charset=utf-8";
+                    res.ContentLength64 = buf.Length;
+                    res.OutputStream.Write(buf, 0, buf.Length);
+                    res.Close();
+                    return;
+                }
+
+                if (path == "/inject-solo-loadout")
+                {
+                    string reqBody = "";
+                    using (var rdr = new StreamReader(req.InputStream, req.ContentEncoding))
+                    {
+                        reqBody = rdr.ReadToEnd();
+                    }
+                    string json = InjectSoloLoadoutJson(reqBody);
                     byte[] buf = Encoding.UTF8.GetBytes(json);
                     res.ContentType = "application/json; charset=utf-8";
                     res.ContentLength64 = buf.Length;
@@ -545,6 +991,793 @@ namespace LoLRandomizer
             finally { CloseHandle(handle); }
         }
 
+        public static string LcuRequest(int port, string password, string method, string endpoint, string jsonBody = null)
+        {
+            try
+            {
+                string uri = "https://127.0.0.1:" + port + endpoint;
+                HttpWebRequest req = (HttpWebRequest)WebRequest.Create(uri);
+                req.Method = method;
+                string auth = Convert.ToBase64String(Encoding.ASCII.GetBytes("riot:" + password));
+                req.Headers["Authorization"] = "Basic " + auth;
+                req.ServerCertificateValidationCallback = delegate { return true; };
+                req.Timeout = 4000;
+
+                if (!string.IsNullOrEmpty(jsonBody) && (method == "POST" || method == "PUT" || method == "PATCH"))
+                {
+                    req.ContentType = "application/json";
+                    byte[] bytes = Encoding.UTF8.GetBytes(jsonBody);
+                    req.ContentLength = bytes.Length;
+                    using (var stream = req.GetRequestStream())
+                    {
+                        stream.Write(bytes, 0, bytes.Length);
+                    }
+                }
+
+                using (var resp = (HttpWebResponse)req.GetResponse())
+                using (var reader = new StreamReader(resp.GetResponseStream(), Encoding.UTF8))
+                {
+                    return reader.ReadToEnd();
+                }
+            }
+            catch (WebException wex)
+            {
+                if (wex.Response != null)
+                {
+                    using (var reader = new StreamReader(wex.Response.GetResponseStream(), Encoding.UTF8))
+                    {
+                        return "ERROR:" + ((HttpWebResponse)wex.Response).StatusCode + ":" + reader.ReadToEnd();
+                    }
+                }
+                return "ERROR:" + wex.Message;
+            }
+            catch (Exception ex)
+            {
+                return "ERROR:" + ex.Message;
+            }
+        }
+
+private static readonly Dictionary<string, int> _championNumericMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "aatrox", 266 },
+            { "ahri", 103 },
+            { "akali", 84 },
+            { "akshan", 166 },
+            { "alistar", 12 },
+            { "ambessa", 799 },
+            { "amumu", 32 },
+            { "anivia", 34 },
+            { "annie", 1 },
+            { "aphelios", 523 },
+            { "ashe", 22 },
+            { "aurelion sol", 136 },
+            { "aurelionsol", 136 },
+            { "aurora", 893 },
+            { "azir", 268 },
+            { "bard", 432 },
+            { "bel'veth", 200 },
+            { "belveth", 200 },
+            { "blitzcrank", 53 },
+            { "brand", 63 },
+            { "braum", 201 },
+            { "briar", 233 },
+            { "caitlyn", 51 },
+            { "camille", 164 },
+            { "cassiopeia", 69 },
+            { "cho'gath", 31 },
+            { "chogath", 31 },
+            { "corki", 42 },
+            { "darius", 122 },
+            { "diana", 131 },
+            { "dr. mundo", 36 },
+            { "draven", 119 },
+            { "drmundo", 36 },
+            { "ekko", 245 },
+            { "elise", 60 },
+            { "evelynn", 28 },
+            { "ezreal", 81 },
+            { "fiddlesticks", 9 },
+            { "fiora", 114 },
+            { "fizz", 105 },
+            { "galio", 3 },
+            { "gangplank", 41 },
+            { "garen", 86 },
+            { "gnar", 150 },
+            { "gragas", 79 },
+            { "graves", 104 },
+            { "gwen", 887 },
+            { "hecarim", 120 },
+            { "heimerdinger", 74 },
+            { "hwei", 910 },
+            { "illaoi", 420 },
+            { "irelia", 39 },
+            { "ivern", 427 },
+            { "janna", 40 },
+            { "jarvan iv", 59 },
+            { "jarvaniv", 59 },
+            { "jax", 24 },
+            { "jayce", 126 },
+            { "jhin", 202 },
+            { "jinx", 222 },
+            { "k'sante", 897 },
+            { "kai'sa", 145 },
+            { "kaisa", 145 },
+            { "kalista", 429 },
+            { "karma", 43 },
+            { "karthus", 30 },
+            { "kassadin", 38 },
+            { "katarina", 55 },
+            { "kayle", 10 },
+            { "kayn", 141 },
+            { "kennen", 85 },
+            { "kha'zix", 121 },
+            { "khazix", 121 },
+            { "kindred", 203 },
+            { "kled", 240 },
+            { "kog'maw", 96 },
+            { "kogmaw", 96 },
+            { "ksante", 897 },
+            { "leblanc", 7 },
+            { "lee sin", 64 },
+            { "leesin", 64 },
+            { "leona", 89 },
+            { "lillia", 876 },
+            { "lissandra", 127 },
+            { "locke", 805 },
+            { "lucian", 236 },
+            { "lulu", 117 },
+            { "lux", 99 },
+            { "malphite", 54 },
+            { "malzahar", 90 },
+            { "maokai", 57 },
+            { "master yi", 11 },
+            { "masteryi", 11 },
+            { "mel", 800 },
+            { "milio", 902 },
+            { "miss fortune", 21 },
+            { "missfortune", 21 },
+            { "monkeyking", 62 },
+            { "mordekaiser", 82 },
+            { "morgana", 25 },
+            { "naafiri", 950 },
+            { "nami", 267 },
+            { "nasus", 75 },
+            { "nautilus", 111 },
+            { "neeko", 518 },
+            { "nidalee", 76 },
+            { "nilah", 895 },
+            { "nocturne", 56 },
+            { "nunu", 20 },
+            { "nunu & willump", 20 },
+            { "olaf", 2 },
+            { "orianna", 61 },
+            { "ornn", 516 },
+            { "pantheon", 80 },
+            { "poppy", 78 },
+            { "pyke", 555 },
+            { "qiyana", 246 },
+            { "quinn", 133 },
+            { "rakan", 497 },
+            { "rammus", 33 },
+            { "rek'sai", 421 },
+            { "reksai", 421 },
+            { "rell", 526 },
+            { "renata", 888 },
+            { "renata glasc", 888 },
+            { "renekton", 58 },
+            { "rengar", 107 },
+            { "riven", 92 },
+            { "rumble", 68 },
+            { "ryze", 13 },
+            { "samira", 360 },
+            { "sejuani", 113 },
+            { "senna", 235 },
+            { "seraphine", 147 },
+            { "sett", 875 },
+            { "shaco", 35 },
+            { "shen", 98 },
+            { "shyvana", 102 },
+            { "singed", 27 },
+            { "sion", 14 },
+            { "sivir", 15 },
+            { "skarner", 72 },
+            { "smolder", 901 },
+            { "sona", 37 },
+            { "soraka", 16 },
+            { "swain", 50 },
+            { "sylas", 517 },
+            { "syndra", 134 },
+            { "tahm kench", 223 },
+            { "tahmkench", 223 },
+            { "taliyah", 163 },
+            { "talon", 91 },
+            { "taric", 44 },
+            { "teemo", 17 },
+            { "thresh", 412 },
+            { "tristana", 18 },
+            { "trundle", 48 },
+            { "tryndamere", 23 },
+            { "twisted fate", 4 },
+            { "twistedfate", 4 },
+            { "twitch", 29 },
+            { "udyr", 77 },
+            { "urgot", 6 },
+            { "varus", 110 },
+            { "vayne", 67 },
+            { "veigar", 45 },
+            { "vel'koz", 161 },
+            { "velkoz", 161 },
+            { "vex", 711 },
+            { "vi", 254 },
+            { "viego", 234 },
+            { "viktor", 112 },
+            { "vladimir", 8 },
+            { "volibear", 106 },
+            { "warwick", 19 },
+            { "wukong", 62 },
+            { "xayah", 498 },
+            { "xerath", 101 },
+            { "xin zhao", 5 },
+            { "xinzhao", 5 },
+            { "yasuo", 157 },
+            { "yone", 777 },
+            { "yorick", 83 },
+            { "yunara", 804 },
+            { "yuumi", 350 },
+            { "zaahen", 904 },
+            { "zac", 154 },
+            { "zed", 238 },
+            { "zeri", 221 },
+            { "ziggs", 115 },
+            { "zilean", 26 },
+            { "zoe", 142 },
+            { "zyra", 143 },
+        };
+
+        public static string InjectSoloLoadoutJson(string jsonPayload)
+        {
+            var serializer = new JavaScriptSerializer();
+            try
+            {
+                string lockfile = FindLockfile();
+                if (string.IsNullOrEmpty(lockfile))
+                {
+                    return serializer.Serialize(new
+                    {
+                        injectType = "solo-loadout",
+                        success = false,
+                        error = "League Client lockfile not found. Make sure League of Legends is running and you are logged in."
+                    });
+                }
+
+                string lockContent;
+                using (var fs = new FileStream(lockfile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (var sr = new StreamReader(fs, Encoding.UTF8))
+                {
+                    lockContent = sr.ReadToEnd();
+                }
+
+                string[] parts = lockContent.Split(new char[] { ':' }, 5);
+                if (parts.Length < 5)
+                {
+                    return serializer.Serialize(new
+                    {
+                        injectType = "solo-loadout",
+                        success = false,
+                        error = "Invalid League Client lockfile format."
+                    });
+                }
+
+                int lcuPort = int.Parse(parts[2].Trim());
+                string lcuPass = parts[3].Trim();
+
+                var payload = serializer.Deserialize<Dictionary<string, object>>(jsonPayload);
+                if (payload == null)
+                {
+                    return serializer.Serialize(new
+                    {
+                        injectType = "solo-loadout",
+                        success = false,
+                        error = "Empty or invalid loadout payload."
+                    });
+                }
+
+                string champName = payload.ContainsKey("championName") ? payload["championName"].ToString() : "Champion";
+                int primaryTreeId = payload.ContainsKey("primaryTreeId") ? Convert.ToInt32(payload["primaryTreeId"]) : 8100;
+                int secondaryTreeId = payload.ContainsKey("secondaryTreeId") ? Convert.ToInt32(payload["secondaryTreeId"]) : 8200;
+
+                var selectedPerkIds = new List<int>();
+                if (payload.ContainsKey("selectedPerkIds") && payload["selectedPerkIds"] is System.Collections.ArrayList)
+                {
+                    foreach (var p in (System.Collections.ArrayList)payload["selectedPerkIds"])
+                    {
+                        selectedPerkIds.Add(Convert.ToInt32(p));
+                    }
+                }
+
+                int starterId = payload.ContainsKey("starterId") ? Convert.ToInt32(payload["starterId"]) : 0;
+                int bootsId = payload.ContainsKey("bootsId") ? Convert.ToInt32(payload["bootsId"]) : 0;
+                var coreItemIds = new List<int>();
+                if (payload.ContainsKey("coreItemIds") && payload["coreItemIds"] is System.Collections.ArrayList)
+                {
+                    foreach (var it in (System.Collections.ArrayList)payload["coreItemIds"])
+                    {
+                        coreItemIds.Add(Convert.ToInt32(it));
+                    }
+                }
+
+                int spell1Id = payload.ContainsKey("spell1Id") ? Convert.ToInt32(payload["spell1Id"]) : 0;
+                int spell2Id = payload.ContainsKey("spell2Id") ? Convert.ToInt32(payload["spell2Id"]) : 0;
+                int replacePageId = payload.ContainsKey("replacePageId") ? Convert.ToInt32(payload["replacePageId"]) : 0;
+
+                int champNumericId = 0;
+                if (payload.ContainsKey("championId"))
+                {
+                    int.TryParse(payload["championId"].ToString(), out champNumericId);
+                }
+                if (champNumericId <= 0 && _championNumericMap.ContainsKey(champName))
+                {
+                    champNumericId = _championNumericMap[champName];
+                }
+
+                // --- 1. RUNES (PERKS) INJECTION & SMART SINGLE-PAGE MANAGEMENT ---
+                bool runesSuccess = false;
+                string runePageName = "League of Customs: " + champName;
+                string pagesJson = LcuRequest(lcuPort, lcuPass, "GET", "/lol-perks/v1/pages");
+                
+                if (!pagesJson.StartsWith("ERROR:"))
+                {
+                    var pages = serializer.Deserialize<object>(pagesJson) as System.Collections.ArrayList;
+                    var locPageIds = new List<int>();
+                    var deletablePagesList = new List<Dictionary<string, object>>();
+
+                    if (pages != null)
+                    {
+                        foreach (var pObj in pages)
+                        {
+                            var pDict = pObj as Dictionary<string, object>;
+                            if (pDict != null)
+                            {
+                                string pName = pDict.ContainsKey("name") ? pDict["name"].ToString() : "";
+                                int pid = pDict.ContainsKey("id") ? Convert.ToInt32(pDict["id"]) : -1;
+                                bool isDel = pDict.ContainsKey("isDeletable") && Convert.ToBoolean(pDict["isDeletable"]);
+
+                                bool isLoc = pName.StartsWith("LoC", StringComparison.OrdinalIgnoreCase) || 
+                                             pName.StartsWith("League of Customs", StringComparison.OrdinalIgnoreCase) ||
+                                             pName.IndexOf("League of Customs", StringComparison.OrdinalIgnoreCase) >= 0;
+
+                                if (isLoc)
+                                {
+                                    locPageIds.Add(pid);
+                                }
+                                else if (isDel)
+                                {
+                                    deletablePagesList.Add(new Dictionary<string, object>
+                                    {
+                                        { "id", pid },
+                                        { "name", pName },
+                                        { "primaryStyleId", pDict.ContainsKey("primaryStyleId") ? pDict["primaryStyleId"] : 0 },
+                                        { "subStyleId", pDict.ContainsKey("subStyleId") ? pDict["subStyleId"] : 0 },
+                                        { "current", pDict.ContainsKey("current") && Convert.ToBoolean(pDict["current"]) },
+                                        { "isActive", pDict.ContainsKey("isActive") && Convert.ToBoolean(pDict["isActive"]) }
+                                    });
+                                }
+                            }
+                        }
+                    }
+
+                    var perkPagePayload = new Dictionary<string, object>
+                    {
+                        { "name", runePageName },
+                        { "primaryStyleId", primaryTreeId },
+                        { "subStyleId", secondaryTreeId },
+                        { "selectedPerkIds", selectedPerkIds },
+                        { "current", true }
+                    };
+                    string perkJsonBody = serializer.Serialize(perkPagePayload);
+
+                    int targetPageId = -1;
+
+                    // Case A: User explicitly picked a page to replace from the modal
+                    if (replacePageId > 0)
+                    {
+                        string putRes = LcuRequest(lcuPort, lcuPass, "PUT", "/lol-perks/v1/pages/" + replacePageId, perkJsonBody);
+                        if (!putRes.StartsWith("ERROR:"))
+                        {
+                            targetPageId = replacePageId;
+                            runesSuccess = true;
+                        }
+                        else
+                        {
+                            LcuRequest(lcuPort, lcuPass, "DELETE", "/lol-perks/v1/pages/" + replacePageId);
+                            string postRes = LcuRequest(lcuPort, lcuPass, "POST", "/lol-perks/v1/pages", perkJsonBody);
+                            if (!postRes.StartsWith("ERROR:"))
+                            {
+                                var postObj = serializer.Deserialize<Dictionary<string, object>>(postRes);
+                                if (postObj != null && postObj.ContainsKey("id"))
+                                {
+                                    targetPageId = Convert.ToInt32(postObj["id"]);
+                                }
+                                runesSuccess = true;
+                            }
+                        }
+
+                        // Clean up any other leftover LoC pages
+                        for (int i = 0; i < locPageIds.Count; i++)
+                        {
+                            if (locPageIds[i] != targetPageId && locPageIds[i] != replacePageId)
+                            {
+                                try { LcuRequest(lcuPort, lcuPass, "DELETE", "/lol-perks/v1/pages/" + locPageIds[i]); } catch { }
+                            }
+                        }
+                    }
+                    // Case B: Reusing existing LoC page (guarantees strictly ONE LoC page)
+                    else if (locPageIds.Count > 0)
+                    {
+                        int mainLocId = locPageIds[0];
+                        string putRes = LcuRequest(lcuPort, lcuPass, "PUT", "/lol-perks/v1/pages/" + mainLocId, perkJsonBody);
+                        if (!putRes.StartsWith("ERROR:"))
+                        {
+                            targetPageId = mainLocId;
+                            runesSuccess = true;
+                        }
+                        else
+                        {
+                            LcuRequest(lcuPort, lcuPass, "DELETE", "/lol-perks/v1/pages/" + mainLocId);
+                            string postRes = LcuRequest(lcuPort, lcuPass, "POST", "/lol-perks/v1/pages", perkJsonBody);
+                            if (!postRes.StartsWith("ERROR:"))
+                            {
+                                var postObj = serializer.Deserialize<Dictionary<string, object>>(postRes);
+                                if (postObj != null && postObj.ContainsKey("id"))
+                                {
+                                    targetPageId = Convert.ToInt32(postObj["id"]);
+                                }
+                                runesSuccess = true;
+                            }
+                        }
+
+                        // Clean up any extra duplicate LoC pages if any were created previously
+                        for (int i = 1; i < locPageIds.Count; i++)
+                        {
+                            try { LcuRequest(lcuPort, lcuPass, "DELETE", "/lol-perks/v1/pages/" + locPageIds[i]); } catch { }
+                        }
+                    }
+                    // Case C: No LoC page exists yet and no replacement chosen
+                    else
+                    {
+                        bool canAdd = true;
+                        try
+                        {
+                            string invJson = LcuRequest(lcuPort, lcuPass, "GET", "/lol-perks/v1/inventory");
+                            if (!invJson.StartsWith("ERROR:"))
+                            {
+                                var invDict = serializer.Deserialize<Dictionary<string, object>>(invJson);
+                                if (invDict != null && invDict.ContainsKey("canAddPages"))
+                                {
+                                    canAdd = Convert.ToBoolean(invDict["canAddPages"]);
+                                }
+                            }
+                        }
+                        catch { }
+
+                        if (canAdd)
+                        {
+                            string postRes = LcuRequest(lcuPort, lcuPass, "POST", "/lol-perks/v1/pages", perkJsonBody);
+                            if (!postRes.StartsWith("ERROR:"))
+                            {
+                                var postObj = serializer.Deserialize<Dictionary<string, object>>(postRes);
+                                if (postObj != null && postObj.ContainsKey("id"))
+                                {
+                                    targetPageId = Convert.ToInt32(postObj["id"]);
+                                }
+                                runesSuccess = true;
+                            }
+                            else
+                            {
+                                canAdd = false;
+                            }
+                        }
+
+                        if (!canAdd && !runesSuccess)
+                        {
+                            if (deletablePagesList.Count > 0)
+                            {
+                                return serializer.Serialize(new
+                                {
+                                    injectType = "solo-loadout",
+                                    success = false,
+                                    requiresPageSelection = true,
+                                    championName = champName,
+                                    pages = deletablePagesList,
+                                    message = "All rune page slots are full. Choose an existing page to replace."
+                                });
+                            }
+                            else
+                            {
+                                return serializer.Serialize(new
+                                {
+                                    injectType = "solo-loadout",
+                                    success = false,
+                                    error = "Rune pages are full and no custom pages could be found to replace."
+                                });
+                            }
+                        }
+                    }
+
+                    // Force activate the injected rune page in the client
+                    if (targetPageId > 0)
+                    {
+                        LcuRequest(lcuPort, lcuPass, "PUT", "/lol-perks/v1/currentpage", targetPageId.ToString());
+                    }
+                }
+
+                // --- 2. BUILD (ITEM SET) INJECTION & SINGLE SET GUARANTEE ---
+                bool itemSetSuccess = false;
+                var starterAndBoots = new List<object>();
+                if (starterId > 0) starterAndBoots.Add(new Dictionary<string, object> { { "id", starterId.ToString() }, { "count", 1 } });
+                if (bootsId > 0) starterAndBoots.Add(new Dictionary<string, object> { { "id", bootsId.ToString() }, { "count", 1 } });
+
+                var coreBuild = new List<object>();
+                foreach (var itId in coreItemIds)
+                {
+                    if (itId > 0) coreBuild.Add(new Dictionary<string, object> { { "id", itId.ToString() }, { "count", 1 } });
+                }
+
+                // 2.A LCU API Item Set (Overwrites any previous LoC item set)
+                try
+                {
+                    string curSummJson = LcuRequest(lcuPort, lcuPass, "GET", "/lol-summoner/v1/current-summoner");
+                    if (!curSummJson.StartsWith("ERROR:"))
+                    {
+                        var summDict = serializer.Deserialize<Dictionary<string, object>>(curSummJson);
+                        long summonerId = summDict.ContainsKey("summonerId") ? Convert.ToInt64(summDict["summonerId"]) : 0;
+                        long accountId = summDict.ContainsKey("accountId") ? Convert.ToInt64(summDict["accountId"]) : 0;
+
+                        if (summonerId > 0)
+                        {
+                            string setsJson = LcuRequest(lcuPort, lcuPass, "GET", "/lol-item-sets/v1/item-sets/" + summonerId + "/sets");
+                            var setsObj = serializer.Deserialize<Dictionary<string, object>>(setsJson);
+                            var itemSetsList = new List<object>();
+
+                            if (setsObj != null && setsObj.ContainsKey("itemSets") && setsObj["itemSets"] is System.Collections.ArrayList)
+                            {
+                                var rawSets = (System.Collections.ArrayList)setsObj["itemSets"];
+                                foreach (var setItem in rawSets)
+                                {
+                                    var setDict = setItem as Dictionary<string, object>;
+                                    if (setDict != null)
+                                    {
+                                        string title = setDict.ContainsKey("title") ? setDict["title"].ToString() : "";
+                                        if (!title.StartsWith("LoC") && !title.StartsWith("League of Customs"))
+                                        {
+                                            itemSetsList.Add(setDict);
+                                        }
+                                    }
+                                }
+                            }
+
+                            var newLocSet = new Dictionary<string, object>
+                            {
+                                { "title", "League of Customs: " + champName },
+                                { "type", "custom" },
+                                { "map", "any" },
+                                { "mode", "any" },
+                                { "priority", true },
+                                { "sortrank", 0 },
+                                { "blocks", new List<object>
+                                    {
+                                        new Dictionary<string, object>
+                                        {
+                                            { "type", "Starter & Boots" },
+                                            { "recMath", false },
+                                            { "items", starterAndBoots }
+                                        },
+                                        new Dictionary<string, object>
+                                        {
+                                            { "type", "Randomized Core Build" },
+                                            { "recMath", false },
+                                            { "items", coreBuild }
+                                        }
+                                    }
+                                }
+                            };
+
+                            itemSetsList.Add(newLocSet);
+
+                            long nowUnix = (long)(DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
+                            var putSetsPayload = new Dictionary<string, object>
+                            {
+                                { "accountId", accountId },
+                                { "itemSets", itemSetsList },
+                                { "timestamp", nowUnix }
+                            };
+
+                            string putSetsRes = LcuRequest(lcuPort, lcuPass, "PUT", "/lol-item-sets/v1/item-sets/" + summonerId + "/sets", serializer.Serialize(putSetsPayload));
+                            if (!putSetsRes.StartsWith("ERROR:"))
+                            {
+                                itemSetSuccess = true;
+                            }
+                            else
+                            {
+                                string postSetsRes = LcuRequest(lcuPort, lcuPass, "POST", "/lol-item-sets/v1/item-sets/" + summonerId + "/sets", serializer.Serialize(putSetsPayload));
+                                if (!postSetsRes.StartsWith("ERROR:")) itemSetSuccess = true;
+                            }
+                        }
+                    }
+                }
+                catch { }
+
+                // 2.B Disk-based In-game Shop Config: Clean previous LoC files and write fresh
+                try
+                {
+                    string leagueDir = Path.GetDirectoryName(lockfile);
+                    string champsConfigDir = Path.Combine(leagueDir, "Config", "Champions");
+                    if (Directory.Exists(champsConfigDir))
+                    {
+                        string[] oldLocFiles = Directory.GetFiles(champsConfigDir, "LoC*.json", SearchOption.AllDirectories);
+                        foreach (var oldF in oldLocFiles)
+                        {
+                            try { File.Delete(oldF); } catch { }
+                        }
+                        string[] oldLocFiles2 = Directory.GetFiles(champsConfigDir, "LeagueOfCustoms*.json", SearchOption.AllDirectories);
+                        foreach (var oldF in oldLocFiles2)
+                        {
+                            try { File.Delete(oldF); } catch { }
+                        }
+
+                        string champKey = champName;
+                        if (champName == "Wukong") champKey = "MonkeyKing";
+                        else if (champName == "Renata Glasc") champKey = "Renata";
+                        else if (champName == "Nunu & Willump") champKey = "Nunu";
+                        else if (champName == "Cho'Gath") champKey = "Chogath";
+                        else if (champName == "Kai'Sa") champKey = "Kaisa";
+                        else if (champName == "Kha'Zix") champKey = "Khazix";
+                        else if (champName == "Kog'Maw") champKey = "KogMaw";
+                        else if (champName == "LeBlanc") champKey = "Leblanc";
+                        else if (champName == "Vel'Koz") champKey = "Velkoz";
+                        else if (champName == "Bel'Veth") champKey = "Belveth";
+                        else if (champName == "K'Sante") champKey = "KSante";
+
+                        string champRecDir = Path.Combine(champsConfigDir, champKey, "Recommended");
+                        Directory.CreateDirectory(champRecDir);
+                        string newRecFilePath = Path.Combine(champRecDir, "LeagueOfCustoms.json");
+
+                        var recPayload = new Dictionary<string, object>
+                        {
+                            { "title", "League of Customs: " + champName },
+                            { "champion", champKey },
+                            { "type", "custom" },
+                            { "map", "any" },
+                            { "mode", "any" },
+                            { "priority", true },
+                            { "blocks", new List<object>
+                                {
+                                    new Dictionary<string, object>
+                                    {
+                                        { "type", "Starter & Boots" },
+                                        { "recMath", false },
+                                        { "items", starterAndBoots }
+                                    },
+                                    new Dictionary<string, object>
+                                    {
+                                        { "type", "Randomized Core Build" },
+                                        { "recMath", false },
+                                        { "items", coreBuild }
+                                    }
+                                }
+                            }
+                        };
+
+                        File.WriteAllText(newRecFilePath, serializer.Serialize(recPayload), Encoding.UTF8);
+                        itemSetSuccess = true;
+                    }
+                }
+                catch { }
+
+                // --- 3. CHAMP SELECT (AUTO HOVER/SELECT CHAMPION & SPELLS) ---
+                bool spellsSuccess = false;
+                bool champHovered = false;
+                bool inChampSelect = false;
+
+                try
+                {
+                    string csSession = LcuRequest(lcuPort, lcuPass, "GET", "/lol-champ-select/v1/session");
+                    if (!csSession.StartsWith("ERROR:"))
+                    {
+                        inChampSelect = true;
+                        var csObj = serializer.Deserialize<Dictionary<string, object>>(csSession);
+                        if (csObj != null)
+                        {
+                            int localCellId = csObj.ContainsKey("localPlayerCellId") ? Convert.ToInt32(csObj["localPlayerCellId"]) : -1;
+
+                            // 3.A Hover / Select Champion if pick action is active and not yet completed
+                            if (champNumericId > 0 && localCellId >= 0 && csObj.ContainsKey("actions") && csObj["actions"] is System.Collections.ArrayList)
+                            {
+                                var actionGroups = (System.Collections.ArrayList)csObj["actions"];
+                                int targetActionId = -1;
+
+                                foreach (var groupObj in actionGroups)
+                                {
+                                    var groupList = groupObj as System.Collections.ArrayList;
+                                    if (groupList == null) continue;
+
+                                    foreach (var actObj in groupList)
+                                    {
+                                        var actDict = actObj as Dictionary<string, object>;
+                                        if (actDict == null) continue;
+
+                                        int actorCellId = actDict.ContainsKey("actorCellId") ? Convert.ToInt32(actDict["actorCellId"]) : -1;
+                                        string actType = actDict.ContainsKey("type") ? actDict["type"].ToString() : "";
+                                        bool completed = actDict.ContainsKey("completed") && Convert.ToBoolean(actDict["completed"]);
+
+                                        if (actorCellId == localCellId && actType.Equals("pick", StringComparison.OrdinalIgnoreCase) && !completed)
+                                        {
+                                            targetActionId = actDict.ContainsKey("id") ? Convert.ToInt32(actDict["id"]) : -1;
+                                            break;
+                                        }
+                                    }
+                                    if (targetActionId > 0) break;
+                                }
+
+                                if (targetActionId > 0)
+                                {
+                                    var hoverPayload = new Dictionary<string, object>
+                                    {
+                                        { "championId", champNumericId },
+                                        { "completed", false } // Keeps pick uncompleted so player locks in manually
+                                    };
+                                    string actRes = LcuRequest(lcuPort, lcuPass, "PATCH", "/lol-champ-select/v1/session/actions/" + targetActionId, serializer.Serialize(hoverPayload));
+                                    if (!actRes.StartsWith("ERROR:"))
+                                    {
+                                        champHovered = true;
+                                    }
+                                }
+                            }
+
+                            // 3.B Summoner Spells
+                            if (spell1Id > 0 && spell2Id > 0)
+                            {
+                                var spellPayload = new Dictionary<string, object>
+                                {
+                                    { "spell1Id", spell1Id },
+                                    { "spell2Id", spell2Id }
+                                };
+                                string patchRes = LcuRequest(lcuPort, lcuPass, "PATCH", "/lol-champ-select/v1/session/my-selection", serializer.Serialize(spellPayload));
+                                if (!patchRes.StartsWith("ERROR:"))
+                                {
+                                    spellsSuccess = true;
+                                }
+                            }
+                        }
+                    }
+                }
+                catch { }
+
+                return serializer.Serialize(new
+                {
+                    injectType = "solo-loadout",
+                    success = (runesSuccess || itemSetSuccess),
+                    championName = champName,
+                    runesInjected = runesSuccess,
+                    runePageName = runePageName,
+                    itemSetInjected = itemSetSuccess,
+                    spellsInjected = spellsSuccess,
+                    champHovered = champHovered,
+                    inChampSelect = inChampSelect,
+                    message = "Successfully injected " + champName + " loadout into League Client."
+                });
+            }
+            catch (Exception ex)
+            {
+                return serializer.Serialize(new
+                {
+                    injectType = "solo-loadout",
+                    success = false,
+                    error = "Failed to inject loadout: " + ex.Message
+                });
+            }
+        }
+
         private static string FindLockfile()
         {
             // 1. Ask the running LeagueClient process directly for its exe path.
@@ -713,7 +1946,7 @@ namespace LoLRandomizer
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://mcp-api.op.gg/mcp");
                 request.Method = "POST";
                 request.ContentType = "application/json";
-                request.UserAgent = "LeagueOfCustoms/0.3";
+                request.UserAgent = "LeagueOfCustoms/0.4";
                 request.Timeout = 15000;
                 request.ContentLength = bodyBytes.Length;
 
@@ -910,7 +2143,8 @@ namespace LoLRandomizer
                         { "arguments", new Dictionary<string, object> {
                             { "game_name", gameName },
                             { "tag_line", tagLine },
-                            { "region", region }
+                            { "region", region },
+                            { "limit", 20 }
                         }}
                     };
 
@@ -926,7 +2160,7 @@ namespace LoLRandomizer
                     HttpWebRequest mRequest = (HttpWebRequest)WebRequest.Create("https://mcp-api.op.gg/mcp");
                     mRequest.Method = "POST";
                     mRequest.ContentType = "application/json";
-                    mRequest.UserAgent = "LeagueOfCustoms/0.3";
+                    mRequest.UserAgent = "LeagueOfCustoms/0.4";
                     mRequest.Timeout = 12000;
                     mRequest.ContentLength = mBytes.Length;
 
@@ -944,19 +2178,60 @@ namespace LoLRandomizer
 
                     if (!string.IsNullOrEmpty(mRespText))
                     {
-                        string[] gameBlocks = mRespText.Split(new string[] { "GameHistory(" }, StringSplitOptions.RemoveEmptyEntries);
+                        string unescapedMatches = null;
+                        try
+                        {
+                            var mJsonObj = serializer.Deserialize<Dictionary<string, object>>(mRespText);
+                            if (mJsonObj != null && mJsonObj.ContainsKey("result"))
+                            {
+                                var mResultDict = mJsonObj["result"] as Dictionary<string, object>;
+                                if (mResultDict != null && mResultDict.ContainsKey("content"))
+                                {
+                                    var cList = mResultDict["content"] as System.Collections.IEnumerable;
+                                    if (cList != null)
+                                    {
+                                        foreach (var itm in cList)
+                                        {
+                                            var dict = itm as Dictionary<string, object>;
+                                            if (dict != null && dict.ContainsKey("text"))
+                                            {
+                                                unescapedMatches = dict["text"] as string;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        catch { }
+
+                        if (string.IsNullOrEmpty(unescapedMatches))
+                        {
+                            Match mTextMatch = Regex.Match(mRespText, "\"text\"\\s*:\\s*\"(.*?)(?<!\\\\)\"", RegexOptions.Singleline);
+                            if (mTextMatch.Success)
+                            {
+                                unescapedMatches = Regex.Unescape(mTextMatch.Groups[1].Value);
+                            }
+                            else
+                            {
+                                unescapedMatches = mRespText;
+                            }
+                        }
+
+                        string[] gameBlocks = unescapedMatches.Split(new string[] { "GameHistory(" }, StringSplitOptions.RemoveEmptyEntries);
                         int mCount = 0;
-                        for (int i = 1; i < gameBlocks.Length && mCount < 10; i++)
+                        for (int i = 1; i < gameBlocks.Length && mCount < 20; i++)
                         {
                             string g = gameBlocks[i];
-                            var hMatch = Regex.Match(g, @"^""[^""]*"",\s*""([^""]*)"",\s*""([^""]*)"",\s*""([^""]*)"",\s*(\d+)");
+                            var hMatch = Regex.Match(g, @"^""([^""]*)"",\s*""([^""]*)"",\s*""([^""]*)"",\s*""([^""]*)"",\s*(\d+)");
                             if (!hMatch.Success) continue;
-                            string createdAt = hMatch.Groups[1].Value;
-                            string gMap = hMatch.Groups[2].Value;
-                            string gType = hMatch.Groups[3].Value;
-                            int duration = 0; int.TryParse(hMatch.Groups[4].Value, out duration);
+                            string gameId = hMatch.Groups[1].Value;
+                            string createdAt = hMatch.Groups[2].Value;
+                            string gMap = hMatch.Groups[3].Value;
+                            string gType = hMatch.Groups[4].Value;
+                            int duration = 0; int.TryParse(hMatch.Groups[5].Value, out duration);
 
-                            var pMatch = Regex.Match(g, @"Participant\(Summoner\([^)]*\),\s*(\d+),\s*""([^""]*)"",\s*""([^""]*)"",\s*""([^""]*)"",\s*\[([^\]]*)\],\s*\[([^\]]*)\],\s*Rune\([^)]*\),\s*\[([^\]]*)\],\s*Stats\((\d+),\s*(\d+),\s*(\d+),[^,]+,[^,]+,[^,]+,[^,]+,\s*(\d+),\s*(\d+),\s*(\d+),[^,]+,[^,]+,\s*(\d+),[^,]+,[^,]+,[^,]+,[^,]+,[^,]+,\s*""([^""]*)""");
+                            var pMatch = Regex.Match(g, @"Participant\d*\(Summoner\d*\([^)]*\),\s*(\d+),\s*""([^""]*)"",\s*""([^""]*)"",\s*""([^""]*)"",\s*\[([^\]]*)\],\s*\[([^\]]*)\]");
                             if (pMatch.Success)
                             {
                                 string mChampId = pMatch.Groups[1].Value;
@@ -965,12 +2240,60 @@ namespace LoLRandomizer
                                 string mPos = pMatch.Groups[4].Value;
                                 string itemIdsStr = pMatch.Groups[5].Value;
                                 string itemNamesStr = pMatch.Groups[6].Value;
-                                int mLevel = 0; int.TryParse(pMatch.Groups[8].Value, out mLevel);
-                                int mKills = 0; int.TryParse(pMatch.Groups[11].Value, out mKills);
-                                int mDeaths = 0; int.TryParse(pMatch.Groups[12].Value, out mDeaths);
-                                int mAssists = 0; int.TryParse(pMatch.Groups[13].Value, out mAssists);
-                                int mCs = 0; int.TryParse(pMatch.Groups[14].Value, out mCs);
-                                string mResult = pMatch.Groups[15].Value;
+
+                                var runeMatch = Regex.Match(g, @"Rune\d*\((\d+),\s*(\d+),\s*(\d+)\)");
+                                var runesArr = new List<int>();
+                                if (runeMatch.Success)
+                                {
+                                    int r1, r2, r3;
+                                    if (int.TryParse(runeMatch.Groups[1].Value, out r1)) runesArr.Add(r1);
+                                    if (int.TryParse(runeMatch.Groups[2].Value, out r2)) runesArr.Add(r2);
+                                    if (int.TryParse(runeMatch.Groups[3].Value, out r3)) runesArr.Add(r3);
+                                }
+
+                                var spellsMatch = Regex.Match(g, @"Rune\d*\([^)]*\),\s*\[([^\]]*)\]");
+                                var spellsArr = new List<int>();
+                                if (spellsMatch.Success)
+                                {
+                                    foreach (var rawSp in spellsMatch.Groups[1].Value.Split(','))
+                                    {
+                                        int spVal;
+                                        if (int.TryParse(rawSp.Trim(), out spVal)) spellsArr.Add(spVal);
+                                    }
+                                }
+
+                                var statsMatch = Regex.Match(g, @"Stats\d*\(([^\[]+)");
+                                int mLevel = 1, mDmgTaken = 0, mDmgDealt = 0, critDamage = 0, timeCCing = 0, controlWards = 0, wardsPlaced = 0;
+                                int mKills = 0, mDeaths = 0, mAssists = 0, multiKill = 0, killingSpree = 0, laneCs = 0, jungleCs = 0, gold = 0, heal = 0;
+                                string resultStr = "UNKNOWN";
+                                double opScore = 0;
+                                int opScoreRank = 0;
+
+                                if (statsMatch.Success)
+                                {
+                                    string[] sParts = statsMatch.Groups[1].Value.Split(',');
+                                    for (int sIdx = 0; sIdx < sParts.Length; sIdx++) sParts[sIdx] = sParts[sIdx].Trim().Trim('"');
+
+                                    if (sParts.Length > 0) int.TryParse(sParts[0], out mLevel);
+                                    if (sParts.Length > 1) int.TryParse(sParts[1], out mDmgTaken);
+                                    if (sParts.Length > 2) int.TryParse(sParts[2], out mDmgDealt);
+                                    if (sParts.Length > 3) int.TryParse(sParts[3], out critDamage);
+                                    if (sParts.Length > 4) int.TryParse(sParts[4], out timeCCing);
+                                    if (sParts.Length > 5) int.TryParse(sParts[5], out controlWards);
+                                    if (sParts.Length > 6) int.TryParse(sParts[6], out wardsPlaced);
+                                    if (sParts.Length > 7) int.TryParse(sParts[7], out mKills);
+                                    if (sParts.Length > 8) int.TryParse(sParts[8], out mDeaths);
+                                    if (sParts.Length > 9) int.TryParse(sParts[9], out mAssists);
+                                    if (sParts.Length > 10) int.TryParse(sParts[10], out multiKill);
+                                    if (sParts.Length > 11) int.TryParse(sParts[11], out killingSpree);
+                                    if (sParts.Length > 12) int.TryParse(sParts[12], out laneCs);
+                                    if (sParts.Length > 15) int.TryParse(sParts[15], out jungleCs);
+                                    if (sParts.Length > 16) int.TryParse(sParts[16], out gold);
+                                    if (sParts.Length > 17) int.TryParse(sParts[17], out heal);
+                                    if (sParts.Length > 18) resultStr = sParts[18];
+                                    if (sParts.Length > 19) double.TryParse(sParts[19], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out opScore);
+                                    if (sParts.Length > 20) int.TryParse(sParts[20], out opScoreRank);
+                                }
 
                                 var itemsArr = new List<int>();
                                 foreach (var rawId in itemIdsStr.Split(','))
@@ -986,22 +2309,85 @@ namespace LoLRandomizer
                                     if (!string.IsNullOrEmpty(trimmed)) itemNamesArr.Add(trimmed);
                                 }
 
+                                var trinketMatch = Regex.Match(g, @"\),\s*(\d+)\s*\)\s*\]");
+                                if (trinketMatch.Success)
+                                {
+                                    int trinketId;
+                                    if (int.TryParse(trinketMatch.Groups[1].Value, out trinketId) && trinketId > 0 && itemsArr.Count <= 6)
+                                    {
+                                        itemsArr.Add(trinketId);
+                                        itemNamesArr.Add("Trinket #" + trinketId);
+                                    }
+                                }
+
                                 double mKda = mDeaths > 0 ? Math.Round((double)(mKills + mAssists) / mDeaths, 2) : Math.Round((double)(mKills + mAssists), 2);
+                                int totalCs = laneCs + jungleCs;
+                                double csPerMin = duration > 0 ? Math.Round((double)totalCs / (duration / 60.0), 1) : 0;
+
+                                string multiKillStr = multiKill >= 5 ? "Penta Kill" :
+                                                      multiKill == 4 ? "Quadra Kill" :
+                                                      multiKill == 3 ? "Triple Kill" :
+                                                      multiKill == 2 ? "Double Kill" : "";
+
+                                // Format duration as mm:ss
+                                string durationStr = string.Format("{0}:{1:D2}", duration / 60, duration % 60);
+
+                                // Compute timeAgo from createdAt ISO string
+                                string timeAgoStr = "";
+                                DateTime parsedDt;
+                                if (DateTime.TryParse(createdAt, null, System.Globalization.DateTimeStyles.RoundtripKind, out parsedDt))
+                                {
+                                    TimeSpan ago = DateTime.UtcNow - parsedDt.ToUniversalTime();
+                                    if (ago.TotalMinutes < 60)
+                                        timeAgoStr = string.Format("{0}m ago", (int)ago.TotalMinutes);
+                                    else if (ago.TotalHours < 24)
+                                        timeAgoStr = string.Format("{0}h ago", (int)ago.TotalHours);
+                                    else
+                                        timeAgoStr = string.Format("{0}d ago", (int)ago.TotalDays);
+                                }
+
+                                // Format queue label
+                                string queueLabel = gType == "SOLORANKED" ? "Ranked Solo" :
+                                                    gType == "FLEXRANKED" ? "Ranked Flex" :
+                                                    gType == "ARAM" ? "ARAM" :
+                                                    gType == "NORMAL" ? "Normal" : gType;
 
                                 var matchObj = new Dictionary<string, object>
                                 {
-                                    { "gameType", gType },
-                                    { "duration", duration },
+                                    { "gameId", gameId },
                                     { "createdAt", createdAt },
-                                    { "champId", mChampId },
-                                    { "champName", mChampName },
-                                    { "level", mLevel },
+                                    { "queue", queueLabel },
+                                    { "duration", durationStr },
+                                    { "durationSec", duration },
+                                    { "timeAgo", timeAgoStr },
+                                    { "championId", mChampId },
+                                    { "championName", mChampName },
+                                    { "championLevel", mLevel },
+                                    { "team", mTeam },
+                                    { "position", mPos },
                                     { "kills", mKills },
                                     { "deaths", mDeaths },
                                     { "assists", mAssists },
                                     { "kda", mKda },
-                                    { "cs", mCs },
-                                    { "result", mResult },
+                                    { "cs", totalCs },
+                                    { "laneCs", laneCs },
+                                    { "jungleCs", jungleCs },
+                                    { "csPerMin", csPerMin },
+                                    { "gold", gold },
+                                    { "damageDealt", mDmgDealt },
+                                    { "damageTaken", mDmgTaken },
+                                    { "heal", heal },
+                                    { "wardsPlaced", wardsPlaced },
+                                    { "controlWards", controlWards },
+                                    { "ccDuration", timeCCing },
+                                    { "multiKill", multiKillStr },
+                                    { "killingSpree", killingSpree },
+                                    { "critDamage", critDamage },
+                                    { "opScore", opScore },
+                                    { "opScoreRank", opScoreRank },
+                                    { "runes", runesArr },
+                                    { "spells", spellsArr },
+                                    { "win", resultStr == "WIN" },
                                     { "items", itemsArr },
                                     { "itemNames", itemNamesArr }
                                 };
@@ -1022,6 +2408,424 @@ namespace LoLRandomizer
                 return serializer.Serialize(new Dictionary<string, object> {
                     { "profileType", "opgg" },
                     { "error", "Network or OP.GG API error: " + ex.Message }
+                });
+            }
+        }
+
+        public static string FetchGameDetailJson(string paramStr)
+        {
+            var serializer = new JavaScriptSerializer();
+            try
+            {
+                string[] parts = paramStr.Split('|');
+                if (parts.Length < 5)
+                {
+                    return serializer.Serialize(new Dictionary<string, object> {
+                        { "gameDetailType", "opgg" },
+                        { "error", "Invalid arguments for game detail" }
+                    });
+                }
+                string gameId = parts[0].Trim();
+                string createdAt = parts[1].Trim();
+                string gameName = parts[2].Trim();
+                string tagLine = parts[3].Trim();
+                string region = parts[4].Trim().ToLowerInvariant();
+
+                var args = new Dictionary<string, object>
+                {
+                    { "region", region },
+                    { "game_id", gameId },
+                    { "created_at", createdAt },
+                    { "game_name", gameName },
+                    { "tag_line", tagLine }
+                };
+                var rpcRequest = new Dictionary<string, object>
+                {
+                    { "jsonrpc", "2.0" },
+                    { "id", 3 },
+                    { "method", "tools/call" },
+                    { "params", new Dictionary<string, object> { { "name", "lol_get_summoner_game_detail" }, { "arguments", args } } }
+                };
+
+                byte[] bodyBytes = Encoding.UTF8.GetBytes(serializer.Serialize(rpcRequest));
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://mcp-api.op.gg/mcp");
+                request.Method = "POST";
+                request.ContentType = "application/json";
+                request.UserAgent = "LeagueOfCustoms/0.4";
+                request.Timeout = 15000;
+                request.ContentLength = bodyBytes.Length;
+                using (Stream s = request.GetRequestStream()) s.Write(bodyBytes, 0, bodyBytes.Length);
+
+                string responseText = null;
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                using (StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
+                    responseText = reader.ReadToEnd();
+
+                string dslText = null;
+                try
+                {
+                    var resp = serializer.Deserialize<Dictionary<string, object>>(responseText);
+                    var resultObj = resp != null && resp.ContainsKey("result") ? resp["result"] as Dictionary<string, object> : null;
+                    var content = resultObj != null && resultObj.ContainsKey("content") ? resultObj["content"] as System.Collections.IEnumerable : null;
+                    if (content != null)
+                        foreach (var itm in content)
+                        {
+                            var d = itm as Dictionary<string, object>;
+                            if (d != null && d.ContainsKey("text")) { dslText = d["text"] as string; break; }
+                        }
+                }
+                catch { }
+                if (string.IsNullOrEmpty(dslText))
+                {
+                    Match tm = Regex.Match(responseText, "\"text\"\\s*:\\s*\"(.*?)(?<!\\\\)\"", RegexOptions.Singleline);
+                    if (tm.Success) dslText = Regex.Unescape(tm.Groups[1].Value);
+                    else dslText = responseText;
+                }
+
+                var teams = new List<Dictionary<string, object>>();
+                string[] teamBlocks = Regex.Split(dslText, @"Team\d*\(""(BLUE|RED)"",\s*GameStat\d*\(([^)]+)\)");
+                for (int i = 1; i < teamBlocks.Length; i += 3)
+                {
+                    string teamKey = teamBlocks[i];
+                    string gameStatStr = teamBlocks[i + 1];
+                    string body = teamBlocks[i + 2];
+
+                    string[] gsParts = gameStatStr.Split(',');
+                    for (int gIdx = 0; gIdx < gsParts.Length; gIdx++) gsParts[gIdx] = gsParts[gIdx].Trim().Trim('"');
+
+                    bool isWin = gsParts.Length > 0 && gsParts[0] == "true";
+                    int teamKills = 0; if (gsParts.Length > 1) int.TryParse(gsParts[1], out teamKills);
+                    int teamDragons = 0; if (gsParts.Length > 5) int.TryParse(gsParts[5], out teamDragons);
+                    int teamBarons = 0; if (gsParts.Length > 6) int.TryParse(gsParts[6], out teamBarons);
+                    int teamTowers = 0; if (gsParts.Length > 7) int.TryParse(gsParts[7], out teamTowers);
+                    int teamGold = 0; if (gsParts.Length > 10) int.TryParse(gsParts[10], out teamGold);
+
+                    string[] pBlocks = Regex.Split(body, @"Participant\d*\(");
+                    var participants = new List<Dictionary<string, object>>();
+                    for (int j = 1; j < pBlocks.Length; j++)
+                    {
+                        string pb = pBlocks[j];
+                        var sumMatch = Regex.Match(pb, @"Summoner\d*\([^,]+,\s*""([^""]*)"",\s*""([^""]*)""");
+                        var champMatch = Regex.Match(pb, @"(\d+),\s*""([^""]*)"",\s*""([^""]*)"",\s*""([^""]*)"",\s*\[([^\]]*)\],\s*\[([^\]]*)\]");
+                        var runeMatch = Regex.Match(pb, @"Rune\d*\((\d+),\s*(\d+),\s*(\d+)\)");
+                        var spellsMatch = Regex.Match(pb, @"Rune\d*\([^)]*\),\s*\[([^\]]*)\]");
+                        var statsMatch = Regex.Match(pb, @"Stats\d*\(([^\[]+)");
+
+                        if (champMatch.Success && statsMatch.Success)
+                        {
+                            string pGameName = sumMatch.Success ? sumMatch.Groups[1].Value : "Unknown";
+                            string pTagLine = sumMatch.Success ? sumMatch.Groups[2].Value : "";
+                            string pChampId = champMatch.Groups[1].Value;
+                            string pChampName = champMatch.Groups[2].Value;
+                            string pTeam = champMatch.Groups[3].Value;
+                            string pPos = champMatch.Groups[4].Value;
+                            string itemIdsStr = champMatch.Groups[5].Value;
+                            string itemNamesStr = champMatch.Groups[6].Value;
+
+                            var itemsArr = new List<int>();
+                            foreach (var rawId in itemIdsStr.Split(',')) { int v; if (int.TryParse(rawId.Trim(), out v)) itemsArr.Add(v); }
+                            var itemNamesArr = new List<string>();
+                            foreach (var rawN in itemNamesStr.Split(',')) { string t = rawN.Trim().Trim('"'); if (!string.IsNullOrEmpty(t)) itemNamesArr.Add(t); }
+
+                            var pTrinketMatch = Regex.Match(pb, @"\),\s*(\d+)\s*\)");
+                            if (pTrinketMatch.Success)
+                            {
+                                int trinketId;
+                                if (int.TryParse(pTrinketMatch.Groups[1].Value, out trinketId) && trinketId > 0 && itemsArr.Count <= 6)
+                                {
+                                    itemsArr.Add(trinketId);
+                                    itemNamesArr.Add("Trinket #" + trinketId);
+                                }
+                            }
+
+                            var spellsArr = new List<int>();
+                            if (spellsMatch.Success) foreach (var rawSp in spellsMatch.Groups[1].Value.Split(',')) { int spVal; if (int.TryParse(rawSp.Trim(), out spVal)) spellsArr.Add(spVal); }
+
+                            string[] sParts = statsMatch.Groups[1].Value.Split(',');
+                            for (int sIdx = 0; sIdx < sParts.Length; sIdx++) sParts[sIdx] = sParts[sIdx].Trim().Trim('"');
+                            int pLevel = 1, pDmgTaken = 0, pDmgDealt = 0, pControlWards = 0, pWards = 0;
+                            int pKills = 0, pDeaths = 0, pAssists = 0, pMultiKill = 0, pKillingSpree = 0;
+                            int pLaneCs = 0, pJungleCs = 0, pGold = 0, pHeal = 0;
+                            string pResult = "UNKNOWN"; double pOpScore = 0; int pOpScoreRank = 0;
+
+                            if (sParts.Length > 0) int.TryParse(sParts[0], out pLevel);
+                            if (sParts.Length > 1) int.TryParse(sParts[1], out pDmgTaken);
+                            if (sParts.Length > 2) int.TryParse(sParts[2], out pDmgDealt);
+                            if (sParts.Length > 5) int.TryParse(sParts[5], out pControlWards);
+                            if (sParts.Length > 6) int.TryParse(sParts[6], out pWards);
+                            if (sParts.Length > 7) int.TryParse(sParts[7], out pKills);
+                            if (sParts.Length > 8) int.TryParse(sParts[8], out pDeaths);
+                            if (sParts.Length > 9) int.TryParse(sParts[9], out pAssists);
+                            if (sParts.Length > 10) int.TryParse(sParts[10], out pMultiKill);
+                            if (sParts.Length > 11) int.TryParse(sParts[11], out pKillingSpree);
+                            if (sParts.Length > 12) int.TryParse(sParts[12], out pLaneCs);
+                            if (sParts.Length > 15) int.TryParse(sParts[15], out pJungleCs);
+                            if (sParts.Length > 16) int.TryParse(sParts[16], out pGold);
+                            if (sParts.Length > 17) int.TryParse(sParts[17], out pHeal);
+                            if (sParts.Length > 18) pResult = sParts[18];
+                            if (sParts.Length > 19) double.TryParse(sParts[19], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out pOpScore);
+                            if (sParts.Length > 20) int.TryParse(sParts[20], out pOpScoreRank);
+
+                            double pKda = pDeaths > 0 ? Math.Round((double)(pKills + pAssists) / pDeaths, 2) : Math.Round((double)(pKills + pAssists), 2);
+
+                            participants.Add(new Dictionary<string, object>
+                            {
+                                { "gameName", pGameName },
+                                { "tagLine", pTagLine },
+                                { "championId", pChampId },
+                                { "championName", pChampName },
+                                { "team", pTeam },
+                                { "position", pPos },
+                                { "level", pLevel },
+                                { "kills", pKills },
+                                { "deaths", pDeaths },
+                                { "assists", pAssists },
+                                { "kda", pKda },
+                                { "damageDealt", pDmgDealt },
+                                { "damageTaken", pDmgTaken },
+                                { "heal", pHeal },
+                                { "cs", pLaneCs + pJungleCs },
+                                { "gold", pGold },
+                                { "items", itemsArr },
+                                { "itemNames", itemNamesArr },
+                                { "spells", spellsArr },
+                                { "opScore", pOpScore },
+                                { "opScoreRank", pOpScoreRank },
+                                { "win", pResult == "WIN" }
+                            });
+                        }
+                    }
+
+                    teams.Add(new Dictionary<string, object>
+                    {
+                        { "key", teamKey },
+                        { "isWin", isWin },
+                        { "teamKills", teamKills },
+                        { "towerKills", teamTowers },
+                        { "dragonKills", teamDragons },
+                        { "baronKills", teamBarons },
+                        { "gold", teamGold },
+                        { "participants", participants }
+                    });
+                }
+
+                return serializer.Serialize(new Dictionary<string, object>
+                {
+                    { "gameDetailType", "opgg" },
+                    { "gameId", gameId },
+                    { "profileGameName", gameName },
+                    { "profileTagLine", tagLine },
+                    { "teams", teams }
+                });
+            }
+            catch (Exception ex)
+            {
+                return serializer.Serialize(new Dictionary<string, object> {
+                    { "gameDetailType", "opgg" },
+                    { "error", "Game detail error: " + ex.Message }
+                });
+            }
+        }
+
+        public static string FetchMoreMatchesJson(string paramStr)
+        {
+            var serializer = new JavaScriptSerializer();
+            try
+            {
+                string[] parts = paramStr.Split('|');
+                if (parts.Length < 4)
+                {
+                    return serializer.Serialize(new Dictionary<string, object> {
+                        { "moreMatchesType", "opgg" },
+                        { "error", "Invalid arguments" }
+                    });
+                }
+                string gameName = parts[0].Trim();
+                string tagLine = parts[1].Trim().TrimStart('#');
+                string region = parts[2].Trim().ToLowerInvariant();
+                string endedAt = parts[3].Trim();
+
+                var matchesArgs = new Dictionary<string, object>
+                {
+                    { "game_name", gameName },
+                    { "tag_line", tagLine },
+                    { "region", region },
+                    { "limit", 20 }
+                };
+                if (!string.IsNullOrEmpty(endedAt))
+                {
+                    matchesArgs["ended_at"] = endedAt;
+                }
+
+                var matchesRpc = new Dictionary<string, object>
+                {
+                    { "jsonrpc", "2.0" },
+                    { "id", 4 },
+                    { "method", "tools/call" },
+                    { "params", new Dictionary<string, object> { { "name", "lol_list_summoner_matches" }, { "arguments", matchesArgs } } }
+                };
+
+                byte[] mBytes = Encoding.UTF8.GetBytes(serializer.Serialize(matchesRpc));
+                HttpWebRequest mRequest = (HttpWebRequest)WebRequest.Create("https://mcp-api.op.gg/mcp");
+                mRequest.Method = "POST";
+                mRequest.ContentType = "application/json";
+                mRequest.UserAgent = "LeagueOfCustoms/0.4";
+                mRequest.Timeout = 12000;
+                mRequest.ContentLength = mBytes.Length;
+                using (Stream mStream = mRequest.GetRequestStream()) mStream.Write(mBytes, 0, mBytes.Length);
+
+                string mRespText = null;
+                using (HttpWebResponse mResponse = (HttpWebResponse)mRequest.GetResponse())
+                using (StreamReader mReader = new StreamReader(mResponse.GetResponseStream(), Encoding.UTF8))
+                    mRespText = mReader.ReadToEnd();
+
+                string unescapedMatches = null;
+                try
+                {
+                    var mJsonObj = serializer.Deserialize<Dictionary<string, object>>(mRespText);
+                    if (mJsonObj != null && mJsonObj.ContainsKey("result"))
+                    {
+                        var mResultDict = mJsonObj["result"] as Dictionary<string, object>;
+                        if (mResultDict != null && mResultDict.ContainsKey("content"))
+                        {
+                            var cList = mResultDict["content"] as System.Collections.IEnumerable;
+                            if (cList != null)
+                                foreach (var itm in cList)
+                                {
+                                    var dict = itm as Dictionary<string, object>;
+                                    if (dict != null && dict.ContainsKey("text")) { unescapedMatches = dict["text"] as string; break; }
+                                }
+                        }
+                    }
+                }
+                catch { }
+                if (string.IsNullOrEmpty(unescapedMatches))
+                {
+                    Match mTextMatch = Regex.Match(mRespText, "\"text\"\\s*:\\s*\"(.*?)(?<!\\\\)\"", RegexOptions.Singleline);
+                    if (mTextMatch.Success) unescapedMatches = Regex.Unescape(mTextMatch.Groups[1].Value);
+                    else unescapedMatches = mRespText;
+                }
+
+                var matchesList = new List<Dictionary<string, object>>();
+                string[] gameBlocks = unescapedMatches.Split(new string[] { "GameHistory(" }, StringSplitOptions.RemoveEmptyEntries);
+                int mCount = 0;
+                for (int i = 1; i < gameBlocks.Length && mCount < 20; i++)
+                {
+                    string g = gameBlocks[i];
+                    var hMatch = Regex.Match(g, @"^""([^""]*)"",\s*""([^""]*)"",\s*""([^""]*)"",\s*""([^""]*)"",\s*(\d+)");
+                    if (!hMatch.Success) continue;
+                    string mGameId = hMatch.Groups[1].Value;
+                    string mCreatedAt = hMatch.Groups[2].Value;
+                    string gMap = hMatch.Groups[3].Value;
+                    string gType = hMatch.Groups[4].Value;
+                    int duration = 0; int.TryParse(hMatch.Groups[5].Value, out duration);
+
+                    var pMatch = Regex.Match(g, @"Participant\d*\(Summoner\d*\([^)]*\),\s*(\d+),\s*""([^""]*)"",\s*""([^""]*)"",\s*""([^""]*)"",\s*\[([^\]]*)\],\s*\[([^\]]*)\]");
+                    if (!pMatch.Success) continue;
+
+                    string mChampId = pMatch.Groups[1].Value;
+                    string mChampName = pMatch.Groups[2].Value;
+                    string mTeam = pMatch.Groups[3].Value;
+                    string mPos = pMatch.Groups[4].Value;
+                    string itemIdsStr = pMatch.Groups[5].Value;
+                    string itemNamesStr = pMatch.Groups[6].Value;
+
+                    var runeMatch = Regex.Match(g, @"Rune\d*\((\d+),\s*(\d+),\s*(\d+)\)");
+                    var runesArr = new List<int>();
+                    if (runeMatch.Success) { int r1,r2,r3; if(int.TryParse(runeMatch.Groups[1].Value,out r1))runesArr.Add(r1); if(int.TryParse(runeMatch.Groups[2].Value,out r2))runesArr.Add(r2); if(int.TryParse(runeMatch.Groups[3].Value,out r3))runesArr.Add(r3); }
+
+                    var spellsMatch = Regex.Match(g, @"Rune\d*\([^)]*\),\s*\[([^\]]*)\]");
+                    var spellsArr = new List<int>();
+                    if (spellsMatch.Success) foreach (var rawSp in spellsMatch.Groups[1].Value.Split(',')) { int spVal; if (int.TryParse(rawSp.Trim(), out spVal)) spellsArr.Add(spVal); }
+
+                    var statsMatch = Regex.Match(g, @"Stats\d*\(([^\[]+)");
+                    int mLevel=1,mDmgTaken=0,mDmgDealt=0,critDamage=0,timeCCing=0,controlWards=0,wardsPlaced=0;
+                    int mKills=0,mDeaths=0,mAssists=0,multiKill=0,killingSpree=0,laneCs=0,jungleCs=0,gold=0,heal=0;
+                    string resultStr="UNKNOWN"; double opScore=0; int opScoreRank=0;
+                    if (statsMatch.Success)
+                    {
+                        string[] sParts = statsMatch.Groups[1].Value.Split(',');
+                        for (int sIdx=0;sIdx<sParts.Length;sIdx++) sParts[sIdx]=sParts[sIdx].Trim().Trim('"');
+                        if(sParts.Length>0)int.TryParse(sParts[0],out mLevel);
+                        if(sParts.Length>1)int.TryParse(sParts[1],out mDmgTaken);
+                        if(sParts.Length>2)int.TryParse(sParts[2],out mDmgDealt);
+                        if(sParts.Length>3)int.TryParse(sParts[3],out critDamage);
+                        if(sParts.Length>4)int.TryParse(sParts[4],out timeCCing);
+                        if(sParts.Length>5)int.TryParse(sParts[5],out controlWards);
+                        if(sParts.Length>6)int.TryParse(sParts[6],out wardsPlaced);
+                        if(sParts.Length>7)int.TryParse(sParts[7],out mKills);
+                        if(sParts.Length>8)int.TryParse(sParts[8],out mDeaths);
+                        if(sParts.Length>9)int.TryParse(sParts[9],out mAssists);
+                        if(sParts.Length>10)int.TryParse(sParts[10],out multiKill);
+                        if(sParts.Length>11)int.TryParse(sParts[11],out killingSpree);
+                        if(sParts.Length>12)int.TryParse(sParts[12],out laneCs);
+                        if(sParts.Length>15)int.TryParse(sParts[15],out jungleCs);
+                        if(sParts.Length>16)int.TryParse(sParts[16],out gold);
+                        if(sParts.Length>17)int.TryParse(sParts[17],out heal);
+                        if(sParts.Length>18)resultStr=sParts[18];
+                        if(sParts.Length>19)double.TryParse(sParts[19],System.Globalization.NumberStyles.Any,System.Globalization.CultureInfo.InvariantCulture,out opScore);
+                        if(sParts.Length>20)int.TryParse(sParts[20],out opScoreRank);
+                    }
+
+                    var itemsArr = new List<int>();
+                    foreach (var rawId in itemIdsStr.Split(',')) { int v; if(int.TryParse(rawId.Trim(),out v)) itemsArr.Add(v); }
+                    var itemNamesArr = new List<string>();
+                    foreach (var rawName in itemNamesStr.Split(',')) { string t=rawName.Trim().Trim('"'); if(!string.IsNullOrEmpty(t)) itemNamesArr.Add(t); }
+
+                    var trinketMatch = Regex.Match(g, @"\),\s*(\d+)\s*\)\s*\]");
+                    if (trinketMatch.Success)
+                    {
+                        int trinketId;
+                        if (int.TryParse(trinketMatch.Groups[1].Value, out trinketId) && trinketId > 0 && itemsArr.Count <= 6)
+                        {
+                            itemsArr.Add(trinketId);
+                            itemNamesArr.Add("Trinket #" + trinketId);
+                        }
+                    }
+
+                    double mKda = mDeaths>0 ? Math.Round((double)(mKills+mAssists)/mDeaths,2) : Math.Round((double)(mKills+mAssists),2);
+                    int totalCs = laneCs+jungleCs;
+                    double csPerMin = duration>0 ? Math.Round((double)totalCs/(duration/60.0),1) : 0;
+                    string multiKillStr = multiKill>=5?"Penta Kill":multiKill==4?"Quadra Kill":multiKill==3?"Triple Kill":multiKill==2?"Double Kill":"";
+                    string durationStr = string.Format("{0}:{1:D2}",duration/60,duration%60);
+                    string timeAgoStr="";
+                    DateTime parsedDt;
+                    if(DateTime.TryParse(mCreatedAt,null,System.Globalization.DateTimeStyles.RoundtripKind,out parsedDt))
+                    {
+                        TimeSpan ago=DateTime.UtcNow-parsedDt.ToUniversalTime();
+                        if(ago.TotalMinutes<60) timeAgoStr=string.Format("{0}m ago",(int)ago.TotalMinutes);
+                        else if(ago.TotalHours<24) timeAgoStr=string.Format("{0}h ago",(int)ago.TotalHours);
+                        else timeAgoStr=string.Format("{0}d ago",(int)ago.TotalDays);
+                    }
+                    string queueLabel=gType=="SOLORANKED"?"Ranked Solo":gType=="FLEXRANKED"?"Ranked Flex":gType=="ARAM"?"ARAM":gType=="NORMAL"?"Normal":gType;
+
+                    matchesList.Add(new Dictionary<string, object>
+                    {
+                        {"gameId",mGameId},{"createdAt",mCreatedAt},{"queue",queueLabel},
+                        {"duration",durationStr},{"durationSec",duration},{"timeAgo",timeAgoStr},
+                        {"championId",mChampId},{"championName",mChampName},{"championLevel",mLevel},{"team",mTeam},{"position",mPos},
+                        {"kills",mKills},{"deaths",mDeaths},{"assists",mAssists},{"kda",mKda},
+                        {"cs",totalCs},{"laneCs",laneCs},{"jungleCs",jungleCs},{"csPerMin",csPerMin},
+                        {"gold",gold},{"damageDealt",mDmgDealt},{"damageTaken",mDmgTaken},{"heal",heal},
+                        {"wardsPlaced",wardsPlaced},{"controlWards",controlWards},{"ccDuration",timeCCing},
+                        {"multiKill",multiKillStr},{"killingSpree",killingSpree},{"critDamage",critDamage},
+                        {"opScore",opScore},{"opScoreRank",opScoreRank},{"runes",runesArr},
+                        {"spells",spellsArr},{"win",resultStr=="WIN"},{"items",itemsArr},{"itemNames",itemNamesArr}
+                    });
+                    mCount++;
+                }
+
+                return serializer.Serialize(new Dictionary<string, object>
+                {
+                    { "moreMatchesType", "opgg" },
+                    { "matches", matchesList }
+                });
+            }
+            catch (Exception ex)
+            {
+                return serializer.Serialize(new Dictionary<string, object> {
+                    { "moreMatchesType", "opgg" },
+                    { "error", "More matches error: " + ex.Message }
                 });
             }
         }
@@ -1064,7 +2868,7 @@ namespace LoLRandomizer
                 var matches = regex.Matches(html);
 
                 var champList = new List<Dictionary<string, object>>();
-                int limit = 10;
+                int limit = 15;
                 int count = 0;
                 foreach (Match m in matches)
                 {
@@ -1102,6 +2906,28 @@ namespace LoLRandomizer
                     { "error", "Could not fetch mastery data: " + ex.Message }
                 });
             }
+        }
+
+        private static bool IsNewerVersion(string latestTag, string currentVersion)
+        {
+            if (string.IsNullOrEmpty(latestTag)) return false;
+            string cleanLatest = latestTag.TrimStart('v', 'V').Trim();
+            string cleanCurrent = currentVersion.TrimStart('v', 'V').Trim();
+
+            string[] latestParts = cleanLatest.Split('.');
+            string[] currentParts = cleanCurrent.Split('.');
+
+            int maxLen = Math.Max(latestParts.Length, currentParts.Length);
+            for (int i = 0; i < maxLen; i++)
+            {
+                int lVal = 0, cVal = 0;
+                if (i < latestParts.Length) int.TryParse(latestParts[i], out lVal);
+                if (i < currentParts.Length) int.TryParse(currentParts[i], out cVal);
+
+                if (lVal > cVal) return true;
+                if (lVal < cVal) return false;
+            }
+            return false;
         }
     }
 }

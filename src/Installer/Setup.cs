@@ -13,11 +13,148 @@ namespace LeagueOfCustoms.Installer
     static class Program
     {
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
+            bool isSilent = false;
+            string customDir = "";
+
+            if (args != null)
+            {
+                for (int i = 0; i < args.Length; i++)
+                {
+                    string a = args[i].Trim();
+                    if (a.Equals("/SILENT", StringComparison.OrdinalIgnoreCase) ||
+                        a.Equals("/S", StringComparison.OrdinalIgnoreCase) ||
+                        a.Equals("-s", StringComparison.OrdinalIgnoreCase) ||
+                        a.Equals("/UPDATE", StringComparison.OrdinalIgnoreCase))
+                    {
+                        isSilent = true;
+                    }
+                    else if (a.StartsWith("/DIR=", StringComparison.OrdinalIgnoreCase))
+                    {
+                        customDir = a.Substring(5).Trim('"', ' ');
+                    }
+                    else if (a.Equals("/DIR", StringComparison.OrdinalIgnoreCase) && i + 1 < args.Length)
+                    {
+                        customDir = args[++i].Trim('"', ' ');
+                    }
+                }
+            }
+
+            if (isSilent)
+            {
+                try
+                {
+                    PerformSilentInstall(customDir);
+                }
+                catch { }
+                return;
+            }
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new SetupForm());
+        }
+
+        private static void PerformSilentInstall(string targetDir)
+        {
+            // 1. Resolve target directory if not specified
+            if (string.IsNullOrEmpty(targetDir))
+            {
+                try
+                {
+                    using (var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\LeagueOfCustoms"))
+                    {
+                        if (key != null)
+                        {
+                            var loc = key.GetValue("InstallLocation");
+                            if (loc != null && !string.IsNullOrEmpty(loc.ToString()))
+                                targetDir = loc.ToString();
+                        }
+                    }
+                }
+                catch { }
+            }
+
+            if (string.IsNullOrEmpty(targetDir))
+            {
+                targetDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "LeagueOfCustoms");
+            }
+
+            // 2. Kill existing LeagueOfCustoms processes
+            for (int k = 0; k < 10; k++)
+            {
+                var procs = Process.GetProcessesByName("LeagueOfCustoms");
+                if (procs.Length == 0) break;
+                foreach (var p in procs)
+                {
+                    try { p.Kill(); p.WaitForExit(1500); } catch { }
+                }
+                Thread.Sleep(300);
+            }
+
+            Directory.CreateDirectory(targetDir);
+
+            // 3. Extract embedded payload.zip
+            var asm = Assembly.GetExecutingAssembly();
+            string tempZip = Path.Combine(Path.GetTempPath(), "LoC_Payload_" + Guid.NewGuid().ToString("N") + ".zip");
+            using (var res = asm.GetManifestResourceStream("payload.zip"))
+            {
+                if (res == null) return;
+                using (var fs = new FileStream(tempZip, FileMode.Create, FileAccess.Write))
+                {
+                    res.CopyTo(fs);
+                }
+            }
+
+            using (var archive = ZipFile.OpenRead(tempZip))
+            {
+                foreach (var entry in archive.Entries)
+                {
+                    if (string.IsNullOrEmpty(entry.Name))
+                    {
+                        Directory.CreateDirectory(Path.Combine(targetDir, entry.FullName));
+                        continue;
+                    }
+                    string destFile = Path.Combine(targetDir, entry.FullName);
+                    string destDir = Path.GetDirectoryName(destFile);
+                    if (!Directory.Exists(destDir)) Directory.CreateDirectory(destDir);
+                    entry.ExtractToFile(destFile, true);
+                }
+            }
+            try { File.Delete(tempZip); } catch { }
+
+            // 4. Update shortcuts
+            string exePath = Path.Combine(targetDir, "LeagueOfCustoms.exe");
+            string iconPath = Path.Combine(targetDir, @"assets\app.ico");
+            if (!File.Exists(iconPath)) iconPath = exePath;
+
+            try
+            {
+                string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                SetupForm.CreateShortcutHelper(Path.Combine(desktop, "League of Customs.lnk"), exePath, targetDir, iconPath);
+
+                string startMenu = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
+                string appFolder = Path.Combine(startMenu, "League of Customs");
+                Directory.CreateDirectory(appFolder);
+                SetupForm.CreateShortcutHelper(Path.Combine(appFolder, "League of Customs.lnk"), exePath, targetDir, iconPath);
+                SetupForm.CreateShortcutHelper(Path.Combine(appFolder, "Uninstall League of Customs.lnk"), Path.Combine(targetDir, "Uninstall.exe"), targetDir, iconPath);
+            }
+            catch { }
+
+            // 5. Register in Add/Remove Programs
+            SetupForm.RegisterUninstallHelper(targetDir, exePath, iconPath);
+
+            // 6. Launch the updated executable
+            if (File.Exists(exePath))
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = exePath,
+                    WorkingDirectory = targetDir,
+                    UseShellExecute = true
+                });
+            }
         }
     }
 
@@ -35,7 +172,7 @@ namespace LeagueOfCustoms.Installer
 
         public SetupForm()
         {
-            this.Text = "League of Customs v0.3 Setup";
+            this.Text = "League of Customs v0.4 Setup";
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.StartPosition = FormStartPosition.CenterScreen;
@@ -101,7 +238,7 @@ namespace LeagueOfCustoms.Installer
 
             Label lblSub = new Label
             {
-                Text = "Version v0.3 — Custom Game Companion & Team Randomizer",
+                Text = "Version v0.4 — Custom Game Companion & Team Randomizer",
                 Font = new Font("Segoe UI", 8.75f, FontStyle.Regular),
                 ForeColor = Color.FromArgb(160, 155, 140),
                 Location = new Point(90, 44),
@@ -147,9 +284,9 @@ namespace LeagueOfCustoms.Installer
 
             if (isUpgrade)
             {
-                this.Text = "League of Customs v0.3 Update";
+                this.Text = "League of Customs v0.4 Update";
                 lblTitle.Text = "UPDATE LEAGUE OF CUSTOMS";
-                lblSub.Text = string.Format("Upgrade existing installation{0} to Version v0.3", string.IsNullOrEmpty(existingVer) ? "" : " (v" + existingVer + ")");
+                lblSub.Text = string.Format("Upgrade existing installation{0} to Version v0.4", string.IsNullOrEmpty(existingVer) ? "" : " (v" + existingVer + ")");
             }
 
             // Install Location Group
@@ -234,7 +371,7 @@ namespace LeagueOfCustoms.Installer
             // Progress Bar & Status
             _lblStatus = new Label
             {
-                Text = isUpgrade ? "Existing installation detected. Click 'Update' to upgrade to v0.3." : "Ready to install. Click 'Install' to begin.",
+                Text = isUpgrade ? "Existing installation detected. Click 'Update' to upgrade to v0.4." : "Ready to install. Click 'Install' to begin.",
                 Location = new Point(30, 276),
                 AutoSize = true,
                 ForeColor = Color.FromArgb(160, 155, 140)
@@ -443,6 +580,11 @@ namespace LeagueOfCustoms.Installer
 
         private void CreateShortcut(string shortcutPath, string targetPath, string workingDir, string iconPath)
         {
+            CreateShortcutHelper(shortcutPath, targetPath, workingDir, iconPath);
+        }
+
+        public static void CreateShortcutHelper(string shortcutPath, string targetPath, string workingDir, string iconPath)
+        {
             try
             {
                 Type shellType = Type.GetTypeFromProgID("WScript.Shell");
@@ -459,6 +601,11 @@ namespace LeagueOfCustoms.Installer
 
         private void RegisterUninstall(string installDir, string exePath, string iconPath)
         {
+            RegisterUninstallHelper(installDir, exePath, iconPath);
+        }
+
+        public static void RegisterUninstallHelper(string installDir, string exePath, string iconPath)
+        {
             try
             {
                 using (var key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\LeagueOfCustoms"))
@@ -466,7 +613,7 @@ namespace LeagueOfCustoms.Installer
                     if (key != null)
                     {
                         key.SetValue("DisplayName", "League of Customs");
-                        key.SetValue("DisplayVersion", "0.3");
+                        key.SetValue("DisplayVersion", "0.4");
                         key.SetValue("Publisher", "Venomasa");
                         key.SetValue("DisplayIcon", iconPath);
                         key.SetValue("InstallLocation", installDir);

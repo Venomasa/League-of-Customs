@@ -2,6 +2,47 @@
 
 All notable changes to **League of Customs** are documented here.
 
+## [v0.4] — 2026-09-11
+
+### Added
+- **Direct Client Loadout & Rune Injector (`INJECT TO CLIENT`)**:
+  - Injects complete builds, spells, and runes directly into the League Client via LCU API.
+  - Automatically creates, updates, and activates a dedicated `League of Customs: [Champion]` rune page and custom in-game shop build (`LeagueOfCustoms.json`).
+  - Automatically hovers/pre-selects the rolled champion and sets summoner spells when in active Champion Select.
+  - Interactive Rune Page Slot Selector: When all custom rune page slots are full, opens an interactive Hextech modal allowing the player to select which existing page to replace.
+- **Anti-Repeat Smart Shuffle Engine**:
+  - Memory-backed randomization preventing back-to-back duplicate streaks across champions (last 10), primary rune trees (last 2), keystones (last 4), secondary trees (last 2), minor runes (last 5), stat shards, boots (last 2), and core items (last 15).
+  - Applied across both Master Roll and individual mini-reroll buttons (`Reroll Champ`, `Reroll Runes`, `Reroll Items`, `Reroll Spells`), with persistent toggle state in local storage.
+- **Solo Randomizer Layout Polish**:
+  - Vertical summoner spell stack keeping equipment compact and ensuring all 7 items (Starter, Boots, 5 Core items) sit on a single horizontal row without wrapping.
+  - Stabilized champion hero card with fixed height (`112px`) and single-line text truncation with tooltips, eliminating screen jitter during rapid rolls.
+- **Live Riot DataDragon 16.18.1 Sync**:
+  - Synchronizes latest League of Legends patch version, new champions, and legendary items from Riot DataDragon on startup, automatically caching and merging new items/champions into the randomizer pool.
+  - Updated active Summoner's Rift legendary item catalog to 105 verified items, including all 9 Season 2026 legendaries, with runtime pruning of removed/disabled items.
+- **Seamless Silent Auto-Updater & Hextech Startup Splash**:
+  - Authentic League client-style Hextech splash screen with gold crest, rotating ring animation, and live progress bar.
+  - Automatic background GitHub release checker on launch: streams newer installer packages into `%TEMP%`, silently executes the installer (`/SILENT`), and automatically restarts into the updated version without manual intervention.
+- **Authentic Champion Mastery Podium & Profile Redesign**:
+  - Reorganized the Profile Overview page with an authentic League client podium highlighting the player's top 3 lifetime mastered champions with official client crests (`mastery-1.png` to `mastery-10.png`), high-res portraits, rank badges, and points.
+  - 2-column grid showcasing ranks #4 to #15, and ranked split statistics.
+  - Profile Three-Dots Action Menu (`⋮`) with bookmarked Favorites modal and auto-loading Default Profile on launch.
+- **10-Player Match Scoreboard & Combat Performance Analytics**:
+  - End-of-game 5v5 scoreboard with canonical lane ordering (`TOP` → `JUNGLE` → `MID` → `ADC` → `SUPPORT`) and official CommunityDragon position crests.
+  - Team objective metrics (Towers destroyed, Dragons slain, total kills) and player healing output meters.
+  - Dedicated "Stats" sub-tab in Profile calculating combat KPIs (Win Rate, Average KDA, Damage Dealt, Damage Taken, Healing), lane distribution, and champion performance analytics across recent matches.
+  - Dynamic Match History pagination ("Load More Games") fetching older matches dynamically.
+
+### Fixed
+- **Champion Key Resolution & Asset Loading**:
+  - Resolved avatar and icon loading for champions with non-standard Riot keys (Wukong -> `MonkeyKing`, Renata Glasc -> `Renata`, Nunu & Willump -> `Nunu`, Cho'Gath -> `Chogath`, Dr. Mundo -> `DrMundo`, etc.) with numeric ID fallbacks routing to CommunityDragon.
+- **Match Scoreboard 5 vs 5 Complete Participant Parsing**:
+  - Fixed parsing discrepancy where the search subject's stats class format differed from other players, ensuring all 10 participants render reliably across Blue and Red teams.
+- **Item Build & Boots Pool Cleanliness**:
+  - Permanently removed Symbiotic Soles (`#3010`) from Summoner's Rift boots pool, keeping it strictly to the 6 standard Rift boots.
+  - Corrected corrupted item IDs and purged Arena-exclusive prismatic items from Summoner's Rift builds.
+
+---
+
 ## [v0.3] — 2026-09-10
 
 ### Added
