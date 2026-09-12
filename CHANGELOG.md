@@ -2,6 +2,21 @@
 
 All notable changes to **League of Customs** are documented here.
 
+## [v0.5] — 2026-09-12
+
+### Added
+- **Official League of Legends Patch Notes Hub**:
+  - Introduced a dedicated Home / Landing page as the primary client tab showcasing the latest live League of Legends balance changes directly from Riot Games.
+  - Interactive patch viewer featuring hero masthead backdrop artwork, patch release summaries, and a quick-jump Table of Contents (TOC) bar for champion buffs, nerfs, items, systems, and upcoming skins.
+  - Searchable Patch Archive sidebar with instant filtering to explore and read past League patches offline or online.
+  - Local persistent caching in `%LocalAppData%\LeagueOfCustoms\patches\` ensuring near-instantaneous load times on subsequent launches.
+  - Direct one-click navigation to open official Riot patch articles in the default browser.
+- **2x Accelerated Summoner Profile & Match History Queries**:
+  - Implemented parallelized profile data scraping and match extraction, cutting OP.GG lookup duration from ~10s down to ~4-5s.
+- **Hextech UI & Header Polish**:
+  - Cleaned up titlebar and modal footer version indicators (`v0.5 (LoL <patch>)`), eliminating the redundant "VERSION" label prefix.
+  - Decoupled application logic into clean modular JavaScript architecture (`patches.js`, `profile.js`, `custom_match.js`, `solo_randomizer.js`, `lol_data.js`, `app.js`).
+
 ## [v0.4] — 2026-09-11
 
 ### Added

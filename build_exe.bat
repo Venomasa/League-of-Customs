@@ -23,7 +23,16 @@ if %ERRORLEVEL% equ 0 (
     exit /b 1
 )
 
-"%CSC%" /nologo /optimize+ /target:winexe /win32icon:assets\app.ico /res:src\index.html,index.html /r:System.dll,System.Core.dll,System.Drawing.dll,System.Windows.Forms.dll,System.Web.Extensions.dll,System.Management.dll,Microsoft.Web.WebView2.Core.dll,Microsoft.Web.WebView2.WinForms.dll /out:LeagueOfCustoms.exe src\LeagueOfCustoms.cs
+echo [STEP 1/2] Bundling HTML/CSS/JS frontend assets...
+python bundle.py
+if %ERRORLEVEL% neq 0 (
+    echo [ERROR] Bundling failed!
+    pause
+    exit /b 1
+)
+
+echo [STEP 2/2] Compiling C# Native Executable...
+"%CSC%" /nologo /optimize+ /target:winexe /win32icon:assets\app.ico /res:src\index.bundle.html,index.html /r:System.dll,System.Core.dll,System.Drawing.dll,System.Windows.Forms.dll,System.Web.Extensions.dll,System.Management.dll,Microsoft.Web.WebView2.Core.dll,Microsoft.Web.WebView2.WinForms.dll /out:LeagueOfCustoms.exe src\LeagueOfCustoms.cs
 
 if %ERRORLEVEL% equ 0 (
     echo [OK] Built successfully: LeagueOfCustoms.exe

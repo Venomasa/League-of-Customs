@@ -1,12 +1,29 @@
 import os
 import zipfile
 import subprocess
+import bundle
 
 print("=== Building League of Customs Packages ===")
+
+# 0. Bundle Frontend Assets & Compile LeagueOfCustoms.exe
+print("0. Bundling frontend assets & compiling LeagueOfCustoms.exe...")
+bundle.bundle()
 
 dist_dir = 'dist'
 os.makedirs(dist_dir, exist_ok=True)
 csc = r'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe'
+
+res = subprocess.run([
+    csc, '/nologo', '/optimize+', '/target:winexe',
+    r'/win32icon:assets\app.ico',
+    r'/res:src\index.bundle.html,index.html',
+    r'/r:System.dll,System.Core.dll,System.Drawing.dll,System.Windows.Forms.dll,System.Web.Extensions.dll,System.Management.dll,Microsoft.Web.WebView2.Core.dll,Microsoft.Web.WebView2.WinForms.dll',
+    '/out:LeagueOfCustoms.exe',
+    r'src\LeagueOfCustoms.cs'
+])
+if res.returncode != 0:
+    raise RuntimeError("Failed to compile LeagueOfCustoms.exe")
+print("  -> LeagueOfCustoms.exe compiled successfully.")
 
 # 1. Compile Uninstall.exe
 print("1. Compiling Uninstall.exe...")
@@ -33,10 +50,16 @@ files_to_pack = [
     (r'assets\app.ico', r'assets\app.ico'),
     (r'assets\app.png', r'assets\app.png'),
     (r'README.md', 'README.md'),
-    (r'src\index.html', 'index.html'),
+    (r'index.html', 'index.html'),
     (r'src\index.html', r'src\index.html'),
-    (r'src\lol_data.js', r'src\lol_data.js')
+    (r'src\index.bundle.html', r'src\index.bundle.html'),
+    (r'src\css\style.css', r'src\css\style.css')
 ]
+
+# Add modular JS files
+for js_file in os.listdir(r'src\js'):
+    if js_file.endswith('.js'):
+        files_to_pack.append((os.path.join(r'src\js', js_file), os.path.join(r'src\js', js_file)))
 
 # Add role icons
 for icon in os.listdir(r'assets\icons'):
@@ -51,8 +74,8 @@ with zipfile.ZipFile(payload_zip, 'w', zipfile.ZIP_DEFLATED) as z:
 print(f"  -> payload.zip size: {os.path.getsize(payload_zip):,} bytes")
 
 # 3. Compile Setup.exe
-print("3. Compiling LeagueOfCustoms-Setup-v0.4.exe...")
-setup_exe = os.path.join(dist_dir, 'LeagueOfCustoms-Setup-v0.4.exe')
+print("3. Compiling LeagueOfCustoms-Setup-v0.5.exe...")
+setup_exe = os.path.join(dist_dir, 'LeagueOfCustoms-Setup-v0.5.exe')
 res = subprocess.run([
     csc, '/nologo', '/optimize+', '/target:winexe',
     r'/win32icon:assets\app.ico',
@@ -69,19 +92,26 @@ print(f"  -> {setup_exe} built successfully! Size: {os.path.getsize(setup_exe):,
 
 # 4. Create Portable zip
 print("4. Packaging Portable ZIP...")
-portable_zip = os.path.join(dist_dir, 'LeagueOfCustoms-v0.4-Portable.zip')
+portable_zip = os.path.join(dist_dir, 'LeagueOfCustoms-v0.5-Portable.zip')
 portable_files = [
     ('LeagueOfCustoms.exe', 'LeagueOfCustoms/LeagueOfCustoms.exe'),
     ('Microsoft.Web.WebView2.Core.dll', 'LeagueOfCustoms/Microsoft.Web.WebView2.Core.dll'),
     ('Microsoft.Web.WebView2.WinForms.dll', 'LeagueOfCustoms/Microsoft.Web.WebView2.WinForms.dll'),
     ('WebView2Loader.dll', 'LeagueOfCustoms/WebView2Loader.dll'),
     ('build_exe.bat', 'LeagueOfCustoms/build_exe.bat'),
+    ('bundle.py', 'LeagueOfCustoms/bundle.py'),
     ('README.md', 'LeagueOfCustoms/README.md'),
+    ('index.html', 'LeagueOfCustoms/index.html'),
     (r'assets\app.ico', r'LeagueOfCustoms/assets/app.ico'),
     (r'assets\app.png', r'LeagueOfCustoms/assets/app.png'),
     (r'src\index.html', r'LeagueOfCustoms/src/index.html'),
+    (r'src\index.bundle.html', r'LeagueOfCustoms/src/index.bundle.html'),
+    (r'src\css\style.css', r'LeagueOfCustoms/src/css/style.css'),
     (r'src\LeagueOfCustoms.cs', r'LeagueOfCustoms/src/LeagueOfCustoms.cs')
 ]
+for js_file in os.listdir(r'src\js'):
+    if js_file.endswith('.js'):
+        portable_files.append((os.path.join(r'src\js', js_file), f'LeagueOfCustoms/src/js/{js_file}'))
 for icon in os.listdir(r'assets\icons'):
     if icon.endswith('.png'):
         portable_files.append((os.path.join(r'assets\icons', icon), f'LeagueOfCustoms/assets/icons/{icon}'))

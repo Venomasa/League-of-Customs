@@ -75,8 +75,10 @@ namespace LoLRandomizer
         {
             ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            ServicePointManager.DefaultConnectionLimit = 64;
+            ServicePointManager.Expect100Continue = false;
 
-            this.Text = "League of Customs v0.4";
+            this.Text = "League of Customs v0.5";
             this.FormBorderStyle = FormBorderStyle.None;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Size = new Size(1260, 860);
@@ -146,14 +148,38 @@ namespace LoLRandomizer
 
                 _webView.CoreWebView2.Settings.IsStatusBarEnabled = false;
                 _webView.CoreWebView2.Settings.AreDevToolsEnabled = true;
-                _webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
+                _webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+
+                _webView.CoreWebView2.PermissionRequested += delegate (object s, CoreWebView2PermissionRequestedEventArgs args)
+                {
+                    if (args.PermissionKind == CoreWebView2PermissionKind.ClipboardRead)
+                    {
+                        args.State = CoreWebView2PermissionState.Allow;
+                        args.Handled = true;
+                    }
+                };
 
                 _webView.CoreWebView2.NewWindowRequested += delegate (object s, CoreWebView2NewWindowRequestedEventArgs args)
                 {
                     args.Handled = true;
                     try
                     {
-                        Process.Start(new ProcessStartInfo(args.Uri) { UseShellExecute = true });
+                        string uri = args.Uri ?? "";
+                        if (Regex.IsMatch(uri, @"\.(png|jpe?g|webp|gif|svg)($|\?)", RegexOptions.IgnoreCase) || uri.Contains("cmsassets.rgpub.io") || uri.Contains("images.contentstack.io"))
+                        {
+                            var ser = new JavaScriptSerializer();
+                            var dict = new Dictionary<string, object>
+                            {
+                                { "lightboxType", "open-image" },
+                                { "url", uri }
+                            };
+                            this.Invoke((Action)delegate
+                            {
+                                try { _webView.CoreWebView2.PostWebMessageAsString(ser.Serialize(dict)); } catch { }
+                            });
+                            return;
+                        }
+                        Process.Start(new ProcessStartInfo(uri) { UseShellExecute = true });
                     }
                     catch { }
                 };
@@ -240,6 +266,29 @@ namespace LoLRandomizer
                     }
                     catch { }
                 }
+                else if (msg == "read-clipboard")
+                {
+                    try
+                    {
+                        string clipText = "";
+                        this.Invoke((Action)delegate
+                        {
+                            try
+                            {
+                                if (Clipboard.ContainsText()) clipText = Clipboard.GetText();
+                            }
+                            catch { }
+                        });
+                        var ser = new JavaScriptSerializer();
+                        var dict = new Dictionary<string, object>
+                        {
+                            { "clipboardType", "clipboard-text" },
+                            { "text", clipText }
+                        };
+                        _webView.CoreWebView2.PostWebMessageAsString(ser.Serialize(dict));
+                    }
+                    catch { }
+                }
                 else if (msg.StartsWith("save-user-data:"))
                 {
                     string jsonPayload = msg.Substring("save-user-data:".Length);
@@ -295,8 +344,9 @@ namespace LoLRandomizer
                             // 1. Fetch latest patch version directly via .NET HttpWebRequest (no CORS)
                             HttpWebRequest req = (HttpWebRequest)WebRequest.Create("https://ddragon.leagueoflegends.com/api/versions.json");
                             req.Method = "GET";
-                            req.UserAgent = "LeagueOfCustoms/0.4";
+                            req.UserAgent = "LeagueOfCustoms/0.5";
                             req.Timeout = 6000;
+                            req.Proxy = null;
                             string versionsText = "";
                             using (var resp = (HttpWebResponse)req.GetResponse())
                             using (var stream = resp.GetResponseStream())
@@ -330,8 +380,9 @@ namespace LoLRandomizer
                                 {
                                     HttpWebRequest itemReq = (HttpWebRequest)WebRequest.Create("https://ddragon.leagueoflegends.com/cdn/" + latestPatch + "/data/en_US/item.json");
                                     itemReq.Method = "GET";
-                                    itemReq.UserAgent = "LeagueOfCustoms/0.4";
+                                    itemReq.UserAgent = "LeagueOfCustoms/0.5";
                                     itemReq.Timeout = 7000;
+                                    itemReq.Proxy = null;
                                     string itemsText = "";
                                     using (var iResp = (HttpWebResponse)itemReq.GetResponse())
                                     using (var iStream = iResp.GetResponseStream())
@@ -392,8 +443,9 @@ namespace LoLRandomizer
                         {
                             HttpWebRequest req = (HttpWebRequest)WebRequest.Create("https://api.github.com/repos/Venomasa/League-of-Customs/releases/latest");
                             req.Method = "GET";
-                            req.UserAgent = "LeagueOfCustoms/0.4";
+                            req.UserAgent = "LeagueOfCustoms/0.5";
                             req.Timeout = 10000;
+                            req.Proxy = null;
                             string respText = "";
                             using (var resp = (HttpWebResponse)req.GetResponse())
                             using (var stream = resp.GetResponseStream())
@@ -404,7 +456,7 @@ namespace LoLRandomizer
                             var ser = new JavaScriptSerializer();
                             var dict = ser.Deserialize<Dictionary<string, object>>(respText);
                             string tagName = dict.ContainsKey("tag_name") ? dict["tag_name"].ToString() : "";
-                            string currentAppVersion = "v0.4";
+                            string currentAppVersion = "v0.5";
 
                             bool hasNewer = IsNewerVersion(tagName, currentAppVersion);
                             if (!hasNewer)
@@ -484,7 +536,7 @@ namespace LoLRandomizer
                             string tempSetupPath = Path.Combine(Path.GetTempPath(), "LoC_Update_" + tagName + "_" + (string.IsNullOrEmpty(assetName) ? "Setup.exe" : assetName));
                             using (var wc = new WebClient())
                             {
-                                wc.Headers.Add("User-Agent", "LeagueOfCustoms/0.4");
+                                wc.Headers.Add("User-Agent", "LeagueOfCustoms/0.5");
                                 wc.DownloadProgressChanged += (s, ev) =>
                                 {
                                     var progRes = new Dictionary<string, object>
@@ -669,6 +721,37 @@ namespace LoLRandomizer
                     Task.Run(() =>
                     {
                         string json = GetLobbyMembersJson();
+                        this.Invoke((Action)delegate
+                        {
+                            try
+                            {
+                                _webView.CoreWebView2.PostWebMessageAsString(json);
+                            }
+                            catch { }
+                        });
+                    });
+                }
+                else if (msg == "get-patch-notes-list" || msg.StartsWith("get-patch-notes-list"))
+                {
+                    Task.Run(() =>
+                    {
+                        string json = FetchPatchNotesListJson();
+                        this.Invoke((Action)delegate
+                        {
+                            try
+                            {
+                                _webView.CoreWebView2.PostWebMessageAsString(json);
+                            }
+                            catch { }
+                        });
+                    });
+                }
+                else if (msg.StartsWith("get-patch-detail:"))
+                {
+                    string articleUrl = msg.Substring("get-patch-detail:".Length);
+                    Task.Run(() =>
+                    {
+                        string json = FetchPatchDetailJson(articleUrl);
                         this.Invoke((Action)delegate
                         {
                             try
@@ -1887,6 +1970,47 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
             return null;
         }
 
+        private static string PostOpggJsonRpc(string toolName, Dictionary<string, object> arguments, int timeoutMs = 15000)
+        {
+            var serializer = new JavaScriptSerializer();
+            var rpcParams = new Dictionary<string, object>
+            {
+                { "name", toolName },
+                { "arguments", arguments }
+            };
+
+            var rpcRequest = new Dictionary<string, object>
+            {
+                { "jsonrpc", "2.0" },
+                { "id", 1 },
+                { "method", "tools/call" },
+                { "params", rpcParams }
+            };
+
+            string reqBody = serializer.Serialize(rpcRequest);
+            byte[] bodyBytes = Encoding.UTF8.GetBytes(reqBody);
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://mcp-api.op.gg/mcp");
+            request.Method = "POST";
+            request.ContentType = "application/json";
+            request.UserAgent = "LeagueOfCustoms/0.5";
+            request.Timeout = timeoutMs;
+            request.Proxy = null;
+            request.ServicePoint.Expect100Continue = false;
+            request.ContentLength = bodyBytes.Length;
+
+            using (Stream stream = request.GetRequestStream())
+            {
+                stream.Write(bodyBytes, 0, bodyBytes.Length);
+            }
+
+            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+            using (StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
+            {
+                return reader.ReadToEnd();
+            }
+        }
+
         public static string FetchOpggProfileJson(string paramStr)
         {
             var serializer = new JavaScriptSerializer();
@@ -1921,52 +2045,51 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                     });
                 }
 
-                // Build JSON-RPC payload
-                var rpcParams = new Dictionary<string, object>
+                // Run summoner profile and match history in parallel to cut search time in half
+                string mRespText = null;
+                var profileTask = Task.Run(() =>
                 {
-                    { "name", "lol_get_summoner_profile" },
-                    { "arguments", new Dictionary<string, object> {
-                        { "game_name", gameName },
-                        { "tag_line", tagLine },
-                        { "region", region }
-                    }}
-                };
+                    try
+                    {
+                        return PostOpggJsonRpc("lol_get_summoner_profile", new Dictionary<string, object> {
+                            { "game_name", gameName },
+                            { "tag_line", tagLine },
+                            { "region", region }
+                        }, 15000);
+                    }
+                    catch (Exception ex)
+                    {
+                        return "ERROR:" + ex.Message;
+                    }
+                });
 
-                var rpcRequest = new Dictionary<string, object>
+                var matchesTask = Task.Run(() =>
                 {
-                    { "jsonrpc", "2.0" },
-                    { "id", 1 },
-                    { "method", "tools/call" },
-                    { "params", rpcParams }
-                };
+                    try
+                    {
+                        return PostOpggJsonRpc("lol_list_summoner_matches", new Dictionary<string, object> {
+                            { "game_name", gameName },
+                            { "tag_line", tagLine },
+                            { "region", region },
+                            { "limit", 20 }
+                        }, 15000);
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                });
 
-                string reqBody = serializer.Serialize(rpcRequest);
-                byte[] bodyBytes = Encoding.UTF8.GetBytes(reqBody);
+                Task.WaitAll(profileTask, matchesTask);
 
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://mcp-api.op.gg/mcp");
-                request.Method = "POST";
-                request.ContentType = "application/json";
-                request.UserAgent = "LeagueOfCustoms/0.4";
-                request.Timeout = 15000;
-                request.ContentLength = bodyBytes.Length;
+                string responseText = profileTask.Result;
+                mRespText = matchesTask.Result;
 
-                using (Stream stream = request.GetRequestStream())
-                {
-                    stream.Write(bodyBytes, 0, bodyBytes.Length);
-                }
-
-                string responseText = null;
-                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-                using (StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
-                {
-                    responseText = reader.ReadToEnd();
-                }
-
-                if (string.IsNullOrEmpty(responseText))
+                if (string.IsNullOrEmpty(responseText) || responseText.StartsWith("ERROR:"))
                 {
                     return serializer.Serialize(new Dictionary<string, object> {
                         { "profileType", "opgg" },
-                        { "error", "Empty response from OP.GG API." }
+                        { "error", responseText != null && responseText.StartsWith("ERROR:") ? responseText.Substring(6) : "Empty response from OP.GG API." }
                     });
                 }
 
@@ -2133,49 +2256,10 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                     { "champions", champList }
                 };
 
-                // 5. Recent Matches via lol_list_summoner_matches
+                // 5. Recent Matches via lol_list_summoner_matches (fetched concurrently in parallel)
                 var matchesList = new List<Dictionary<string, object>>();
                 try
                 {
-                    var matchesParams = new Dictionary<string, object>
-                    {
-                        { "name", "lol_list_summoner_matches" },
-                        { "arguments", new Dictionary<string, object> {
-                            { "game_name", gameName },
-                            { "tag_line", tagLine },
-                            { "region", region },
-                            { "limit", 20 }
-                        }}
-                    };
-
-                    var matchesRpc = new Dictionary<string, object>
-                    {
-                        { "jsonrpc", "2.0" },
-                        { "id", 2 },
-                        { "method", "tools/call" },
-                        { "params", matchesParams }
-                    };
-
-                    byte[] mBytes = Encoding.UTF8.GetBytes(serializer.Serialize(matchesRpc));
-                    HttpWebRequest mRequest = (HttpWebRequest)WebRequest.Create("https://mcp-api.op.gg/mcp");
-                    mRequest.Method = "POST";
-                    mRequest.ContentType = "application/json";
-                    mRequest.UserAgent = "LeagueOfCustoms/0.4";
-                    mRequest.Timeout = 12000;
-                    mRequest.ContentLength = mBytes.Length;
-
-                    using (Stream mStream = mRequest.GetRequestStream())
-                    {
-                        mStream.Write(mBytes, 0, mBytes.Length);
-                    }
-
-                    string mRespText = null;
-                    using (HttpWebResponse mResponse = (HttpWebResponse)mRequest.GetResponse())
-                    using (StreamReader mReader = new StreamReader(mResponse.GetResponseStream(), Encoding.UTF8))
-                    {
-                        mRespText = mReader.ReadToEnd();
-                    }
-
                     if (!string.IsNullOrEmpty(mRespText))
                     {
                         string unescapedMatches = null;
@@ -2439,27 +2523,7 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                     { "game_name", gameName },
                     { "tag_line", tagLine }
                 };
-                var rpcRequest = new Dictionary<string, object>
-                {
-                    { "jsonrpc", "2.0" },
-                    { "id", 3 },
-                    { "method", "tools/call" },
-                    { "params", new Dictionary<string, object> { { "name", "lol_get_summoner_game_detail" }, { "arguments", args } } }
-                };
-
-                byte[] bodyBytes = Encoding.UTF8.GetBytes(serializer.Serialize(rpcRequest));
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://mcp-api.op.gg/mcp");
-                request.Method = "POST";
-                request.ContentType = "application/json";
-                request.UserAgent = "LeagueOfCustoms/0.4";
-                request.Timeout = 15000;
-                request.ContentLength = bodyBytes.Length;
-                using (Stream s = request.GetRequestStream()) s.Write(bodyBytes, 0, bodyBytes.Length);
-
-                string responseText = null;
-                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-                using (StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
-                    responseText = reader.ReadToEnd();
+                string responseText = PostOpggJsonRpc("lol_get_summoner_game_detail", args, 15000);
 
                 string dslText = null;
                 try
@@ -2657,27 +2721,7 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                     matchesArgs["ended_at"] = endedAt;
                 }
 
-                var matchesRpc = new Dictionary<string, object>
-                {
-                    { "jsonrpc", "2.0" },
-                    { "id", 4 },
-                    { "method", "tools/call" },
-                    { "params", new Dictionary<string, object> { { "name", "lol_list_summoner_matches" }, { "arguments", matchesArgs } } }
-                };
-
-                byte[] mBytes = Encoding.UTF8.GetBytes(serializer.Serialize(matchesRpc));
-                HttpWebRequest mRequest = (HttpWebRequest)WebRequest.Create("https://mcp-api.op.gg/mcp");
-                mRequest.Method = "POST";
-                mRequest.ContentType = "application/json";
-                mRequest.UserAgent = "LeagueOfCustoms/0.4";
-                mRequest.Timeout = 12000;
-                mRequest.ContentLength = mBytes.Length;
-                using (Stream mStream = mRequest.GetRequestStream()) mStream.Write(mBytes, 0, mBytes.Length);
-
-                string mRespText = null;
-                using (HttpWebResponse mResponse = (HttpWebResponse)mRequest.GetResponse())
-                using (StreamReader mReader = new StreamReader(mResponse.GetResponseStream(), Encoding.UTF8))
-                    mRespText = mReader.ReadToEnd();
+                string mRespText = PostOpggJsonRpc("lol_list_summoner_matches", matchesArgs, 15000);
 
                 string unescapedMatches = null;
                 try
@@ -2855,6 +2899,8 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                 request.Method = "GET";
                 request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
                 request.Timeout = 12000;
+                request.Proxy = null;
+                request.ServicePoint.Expect100Continue = false;
 
                 string html = "";
                 using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
@@ -2928,6 +2974,279 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                 if (lVal < cVal) return false;
             }
             return false;
+        }
+
+        public static string FetchPatchNotesListJson()
+        {
+            var serializer = new JavaScriptSerializer();
+            serializer.MaxJsonLength = 20971520;
+            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string cacheDir = Path.Combine(localAppData, "LeagueOfCustoms", "patches");
+            if (!Directory.Exists(cacheDir)) Directory.CreateDirectory(cacheDir);
+            string cacheFile = Path.Combine(cacheDir, "patch_list.json");
+
+            try
+            {
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://www.leagueoflegends.com/en-us/news/game-updates/");
+                request.Method = "GET";
+                request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+                request.Timeout = 8000;
+                request.Proxy = null;
+                request.ServicePoint.Expect100Continue = false;
+
+                string html = null;
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                using (Stream stream = response.GetResponseStream())
+                using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+                {
+                    html = reader.ReadToEnd();
+                }
+
+                if (!string.IsNullOrEmpty(html))
+                {
+                    Match nextDataMatch = Regex.Match(html, @"<script id=""__NEXT_DATA__""[^>]*>(.*?)</script>", RegexOptions.Singleline);
+                    if (nextDataMatch.Success)
+                    {
+                        var nextJson = serializer.Deserialize<Dictionary<string, object>>(nextDataMatch.Groups[1].Value);
+                        if (nextJson != null && nextJson.ContainsKey("props"))
+                        {
+                            var props = nextJson["props"] as Dictionary<string, object>;
+                            var pageProps = props != null && props.ContainsKey("pageProps") ? props["pageProps"] as Dictionary<string, object> : null;
+                            var page = pageProps != null && pageProps.ContainsKey("page") ? pageProps["page"] as Dictionary<string, object> : null;
+                            var blades = page != null && page.ContainsKey("blades") ? page["blades"] as System.Collections.ArrayList : null;
+
+                            if (blades != null)
+                            {
+                                var patchList = new List<Dictionary<string, object>>();
+                                foreach (var bObj in blades)
+                                {
+                                    var blade = bObj as Dictionary<string, object>;
+                                    if (blade != null && blade.ContainsKey("items") && blade["items"] is System.Collections.ArrayList)
+                                    {
+                                        var items = blade["items"] as System.Collections.ArrayList;
+                                        foreach (var itm in items)
+                                        {
+                                            var item = itm as Dictionary<string, object>;
+                                            if (item == null) continue;
+                                            string title = item.ContainsKey("title") && item["title"] != null ? item["title"].ToString() : "";
+                                            string titleLower = title.ToLowerInvariant();
+                                            if (titleLower.Contains("patch") && titleLower.Contains("notes") && !titleLower.Contains("tft"))
+                                            {
+                                                string date = item.ContainsKey("publishedAt") && item["publishedAt"] != null ? item["publishedAt"].ToString() : "";
+                                                string descText = "";
+                                                if (item.ContainsKey("description") && item["description"] != null)
+                                                {
+                                                    if (item["description"] is string) descText = item["description"].ToString();
+                                                    else if (item["description"] is Dictionary<string, object>)
+                                                    {
+                                                        var dDict = item["description"] as Dictionary<string, object>;
+                                                        if (dDict.ContainsKey("body")) descText = dDict["body"].ToString();
+                                                        else if (dDict.ContainsKey("text")) descText = dDict["text"].ToString();
+                                                    }
+                                                }
+
+                                                string imgUrl = "";
+                                                if (item.ContainsKey("media") && item["media"] is Dictionary<string, object>)
+                                                {
+                                                    var m = item["media"] as Dictionary<string, object>;
+                                                    if (m.ContainsKey("url") && m["url"] != null) imgUrl = m["url"].ToString();
+                                                }
+                                                if (string.IsNullOrEmpty(imgUrl) && item.ContainsKey("imageMedia") && item["imageMedia"] is Dictionary<string, object>)
+                                                {
+                                                    var m = item["imageMedia"] as Dictionary<string, object>;
+                                                    if (m.ContainsKey("url") && m["url"] != null) imgUrl = m["url"].ToString();
+                                                }
+
+                                                string articleUrl = "";
+                                                if (item.ContainsKey("action") && item["action"] is Dictionary<string, object>)
+                                                {
+                                                    var act = item["action"] as Dictionary<string, object>;
+                                                    if (act.ContainsKey("payload") && act["payload"] is Dictionary<string, object>)
+                                                    {
+                                                        var pld = act["payload"] as Dictionary<string, object>;
+                                                        if (pld.ContainsKey("url") && pld["url"] != null) articleUrl = pld["url"].ToString();
+                                                    }
+                                                }
+
+                                                string patchNum = "";
+                                                Match pMatch = Regex.Match(title, @"patch\s+([0-9\.]+)", RegexOptions.IgnoreCase);
+                                                if (pMatch.Success) patchNum = pMatch.Groups[1].Value;
+
+                                                patchList.Add(new Dictionary<string, object>
+                                                {
+                                                    { "title", title },
+                                                    { "patch", patchNum },
+                                                    { "date", date },
+                                                    { "desc", descText },
+                                                    { "image", imgUrl },
+                                                    { "url", articleUrl }
+                                                });
+                                            }
+                                        }
+                                        break;
+                                    }
+                                }
+
+                                if (patchList.Count > 0)
+                                {
+                                    var res = new Dictionary<string, object>
+                                    {
+                                        { "patchNotesType", "patch-list" },
+                                        { "success", true },
+                                        { "patches", patchList }
+                                    };
+                                    string jsonOut = serializer.Serialize(res);
+                                    try { File.WriteAllText(cacheFile, jsonOut, Encoding.UTF8); } catch { }
+                                    return jsonOut;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (File.Exists(cacheFile))
+                {
+                    try { return File.ReadAllText(cacheFile, Encoding.UTF8); } catch { }
+                }
+                return serializer.Serialize(new Dictionary<string, object>
+                {
+                    { "patchNotesType", "patch-list" },
+                    { "success", false },
+                    { "error", "Failed to fetch patch list: " + ex.Message }
+                });
+            }
+
+            if (File.Exists(cacheFile))
+            {
+                try { return File.ReadAllText(cacheFile, Encoding.UTF8); } catch { }
+            }
+
+            return serializer.Serialize(new Dictionary<string, object>
+            {
+                { "patchNotesType", "patch-list" },
+                { "success", false },
+                { "error", "No patch notes found." }
+            });
+        }
+
+        public static string FetchPatchDetailJson(string articleUrl)
+        {
+            var serializer = new JavaScriptSerializer();
+            serializer.MaxJsonLength = 20971520;
+            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string cacheDir = Path.Combine(localAppData, "LeagueOfCustoms", "patches");
+            if (!Directory.Exists(cacheDir)) Directory.CreateDirectory(cacheDir);
+
+            string safeId = Regex.Replace(articleUrl, @"[^a-zA-Z0-9_\-]", "_");
+            string cacheFile = Path.Combine(cacheDir, safeId + ".json");
+
+            if (File.Exists(cacheFile))
+            {
+                try { return File.ReadAllText(cacheFile, Encoding.UTF8); } catch { }
+            }
+
+            try
+            {
+                string fullUrl = articleUrl;
+                if (!fullUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                {
+                    fullUrl = "https://www.leagueoflegends.com" + (articleUrl.StartsWith("/") ? "" : "/") + articleUrl;
+                }
+
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(fullUrl);
+                request.Method = "GET";
+                request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+                request.Timeout = 12000;
+                request.Proxy = null;
+                request.ServicePoint.Expect100Continue = false;
+
+                string html = null;
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                using (Stream stream = response.GetResponseStream())
+                using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+                {
+                    html = reader.ReadToEnd();
+                }
+
+                if (!string.IsNullOrEmpty(html))
+                {
+                    Match nextDataMatch = Regex.Match(html, @"<script id=""__NEXT_DATA__""[^>]*>(.*?)</script>", RegexOptions.Singleline);
+                    if (nextDataMatch.Success)
+                    {
+                        var nextJson = serializer.Deserialize<Dictionary<string, object>>(nextDataMatch.Groups[1].Value);
+                        if (nextJson != null && nextJson.ContainsKey("props"))
+                        {
+                            var props = nextJson["props"] as Dictionary<string, object>;
+                            var pageProps = props != null && props.ContainsKey("pageProps") ? props["pageProps"] as Dictionary<string, object> : null;
+                            var page = pageProps != null && pageProps.ContainsKey("page") ? pageProps["page"] as Dictionary<string, object> : null;
+                            string pageTitle = page != null && page.ContainsKey("title") && page["title"] != null ? page["title"].ToString() : "";
+                            var blades = page != null && page.ContainsKey("blades") ? page["blades"] as System.Collections.ArrayList : null;
+
+                            string bodyHtml = "";
+                            string heroImg = "";
+                            if (blades != null)
+                            {
+                                foreach (var bObj in blades)
+                                {
+                                    var blade = bObj as Dictionary<string, object>;
+                                    if (blade == null) continue;
+                                    string bType = blade.ContainsKey("type") && blade["type"] != null ? blade["type"].ToString() : "";
+                                    if (bType == "patchNotesRichText" && blade.ContainsKey("richText") && blade["richText"] is Dictionary<string, object>)
+                                    {
+                                        var rt = blade["richText"] as Dictionary<string, object>;
+                                        if (rt.ContainsKey("body") && rt["body"] != null)
+                                        {
+                                            bodyHtml = rt["body"].ToString();
+                                        }
+                                    }
+                                    else if (bType == "articleMasthead" && blade.ContainsKey("media") && blade["media"] is Dictionary<string, object>)
+                                    {
+                                        var m = blade["media"] as Dictionary<string, object>;
+                                        if (m.ContainsKey("url") && m["url"] != null) heroImg = m["url"].ToString();
+                                    }
+                                }
+                            }
+
+                            if (!string.IsNullOrEmpty(bodyHtml))
+                            {
+                                var res = new Dictionary<string, object>
+                                {
+                                    { "patchNotesType", "patch-detail" },
+                                    { "success", true },
+                                    { "url", articleUrl },
+                                    { "fullUrl", fullUrl },
+                                    { "title", pageTitle },
+                                    { "heroImage", heroImg },
+                                    { "bodyHtml", bodyHtml }
+                                };
+                                string jsonOut = serializer.Serialize(res);
+                                try { File.WriteAllText(cacheFile, jsonOut, Encoding.UTF8); } catch { }
+                                return jsonOut;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return serializer.Serialize(new Dictionary<string, object>
+                {
+                    { "patchNotesType", "patch-detail" },
+                    { "success", false },
+                    { "url", articleUrl },
+                    { "error", "Failed to load patch detail: " + ex.Message }
+                });
+            }
+
+            return serializer.Serialize(new Dictionary<string, object>
+            {
+                { "patchNotesType", "patch-detail" },
+                { "success", false },
+                { "url", articleUrl },
+                { "error", "Patch notes content not found." }
+            });
         }
     }
 }

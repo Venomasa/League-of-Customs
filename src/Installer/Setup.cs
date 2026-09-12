@@ -172,7 +172,7 @@ namespace LeagueOfCustoms.Installer
 
         public SetupForm()
         {
-            this.Text = "League of Customs v0.4 Setup";
+            this.Text = "League of Customs v0.5 Setup";
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.StartPosition = FormStartPosition.CenterScreen;
@@ -238,7 +238,7 @@ namespace LeagueOfCustoms.Installer
 
             Label lblSub = new Label
             {
-                Text = "Version v0.4 — Custom Game Companion & Team Randomizer",
+                Text = "v0.5 \u2014 Custom Game Companion & Team Randomizer",
                 Font = new Font("Segoe UI", 8.75f, FontStyle.Regular),
                 ForeColor = Color.FromArgb(160, 155, 140),
                 Location = new Point(90, 44),
@@ -284,9 +284,9 @@ namespace LeagueOfCustoms.Installer
 
             if (isUpgrade)
             {
-                this.Text = "League of Customs v0.4 Update";
+                this.Text = "League of Customs v0.5 Update";
                 lblTitle.Text = "UPDATE LEAGUE OF CUSTOMS";
-                lblSub.Text = string.Format("Upgrade existing installation{0} to Version v0.4", string.IsNullOrEmpty(existingVer) ? "" : " (v" + existingVer + ")");
+                lblSub.Text = string.Format("Upgrade existing installation{0} to v0.5", string.IsNullOrEmpty(existingVer) ? "" : " (v" + existingVer + ")");
             }
 
             // Install Location Group
@@ -371,7 +371,7 @@ namespace LeagueOfCustoms.Installer
             // Progress Bar & Status
             _lblStatus = new Label
             {
-                Text = isUpgrade ? "Existing installation detected. Click 'Update' to upgrade to v0.4." : "Ready to install. Click 'Install' to begin.",
+                Text = isUpgrade ? "Existing installation detected. Click 'Update' to upgrade to v0.5." : "Ready to install. Click 'Install' to begin.",
                 Location = new Point(30, 276),
                 AutoSize = true,
                 ForeColor = Color.FromArgb(160, 155, 140)
@@ -613,7 +613,7 @@ namespace LeagueOfCustoms.Installer
                     if (key != null)
                     {
                         key.SetValue("DisplayName", "League of Customs");
-                        key.SetValue("DisplayVersion", "0.4");
+                        key.SetValue("DisplayVersion", "0.5");
                         key.SetValue("Publisher", "Venomasa");
                         key.SetValue("DisplayIcon", iconPath);
                         key.SetValue("InstallLocation", installDir);

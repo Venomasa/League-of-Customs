@@ -19,4 +19,7 @@ test_*.js
 .idea/
 *.suo
 *.user
-
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
