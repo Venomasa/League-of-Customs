@@ -5,7 +5,7 @@
   # LEAGUE OF CUSTOMS
   ### Authentic League of Legends Hextech Companion & Team Randomizer
 
-  [![Version](https://img.shields.io/badge/version-v0.6-c8aa6e.svg?style=for-the-badge&labelColor=010a13)](https://github.com/Venomasa/League-of-Customs)
+  [![Version](https://img.shields.io/badge/version-v0.6.1-c8aa6e.svg?style=for-the-badge&labelColor=010a13)](https://github.com/Venomasa/League-of-Customs)
   [![Platform](https://img.shields.io/badge/platform-Windows-005a82.svg?style=for-the-badge&labelColor=010a13)](https://github.com/Venomasa/League-of-Customs)
   [![Framework](https://img.shields.io/badge/.NET-4.0+-785a28.svg?style=for-the-badge&labelColor=010a13)](https://github.com/Venomasa/League-of-Customs)
   [![UI](https://img.shields.io/badge/Engine-WebView2-0a323c.svg?style=for-the-badge&labelColor=010a13)](https://github.com/Venomasa/League-of-Customs)
@@ -24,11 +24,11 @@ You can get **League of Customs** in two ways:
 
 ### Option A: Windows Installer (Recommended)
 Automatically sets up desktop and Start menu shortcuts and registers in Windows Add/Remove Programs:
-- **[Download LeagueOfCustoms-Setup-v0.6.exe](https://github.com/Venomasa/League-of-Customs/releases/download/v0.6/LeagueOfCustoms-Setup-v0.6.exe)**
+- **[Download LeagueOfCustoms-Setup-v0.6.1.exe](https://github.com/Venomasa/League-of-Customs/releases/download/v0.6.1/LeagueOfCustoms-Setup-v0.6.1.exe)**
 
 ### Option B: Portable ZIP (No Installation Required)
 Extract anywhere and run directly from the folder:
-- **[Download LeagueOfCustoms-v0.6-Portable.zip](https://github.com/Venomasa/League-of-Customs/releases/download/v0.6/LeagueOfCustoms-v0.6-Portable.zip)**
+- **[Download LeagueOfCustoms-v0.6.1-Portable.zip](https://github.com/Venomasa/League-of-Customs/releases/download/v0.6.1/LeagueOfCustoms-v0.6.1-Portable.zip)**
 
 > All releases and version changelogs are available on the **[GitHub Releases Page](https://github.com/Venomasa/League-of-Customs/releases)**.
 

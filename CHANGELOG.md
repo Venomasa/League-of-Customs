@@ -2,6 +2,14 @@
 
 All notable changes to **League of Customs** are documented here.
 
+## [v0.6.1] — 2026-09-14
+
+### Fixed
+- **Hextech Wiki Role & Lane Filter Icons Resolution**:
+  - Fixed an asset packaging path discrepancy where role icons (`role-fighter`, `role-mage`, `role-assassin`, `role-marksman`, `role-tank`, `role-support`) and lane icons (`icon-top`, `icon-jungle`, `icon-middle`, `icon-bottom`, `icon-utility`, `icon-fill`) were missing from `src/assets/icons/` in the installed and portable app directories.
+  - Both `assets/icons/` and `src/assets/icons/` are now packaged recursively in both the Windows Installer (`payload.zip`) and Portable ZIP archives.
+  - Added robust online CommunityDragon fallbacks (`onerror`) for all role and lane filter buttons to guarantee icons always load even when run as a standalone single executable.
+
 ## [v0.6] — 2026-09-12
 
 ### Added

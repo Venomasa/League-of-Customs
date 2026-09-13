@@ -91,7 +91,7 @@
 
       <div id="splashStatusText" class="splash-status-text">Initializing Hextech Core...</div>
 
-      <div class="splash-patch-tag" id="splashPatchTag">v0.6 &bull; LIVE SYNC ENGINE</div>
+      <div class="splash-patch-tag" id="splashPatchTag">v0.6.1 &bull; LIVE SYNC ENGINE</div>
 
     </div>
 
@@ -109,7 +109,7 @@
 
         <span class="titlebar-brand">LEAGUE OF CUSTOMS</span>
 
-        <span class="titlebar-version"><span class="v-num" id="titlebarVersion">v0.6 <span class="v-patch">(LoL 26.18)</span></span></span>
+        <span class="titlebar-version"><span class="v-num" id="titlebarVersion">v0.6.1 <span class="v-patch">(LoL 26.18)</span></span></span>
 
       </div>
 
@@ -367,7 +367,7 @@
 
       <div class="modal-footer">
 
-        <span class="modal-version-footer"><span class="v-num" id="modalFooterVersion">v0.6 <span class="v-patch">(LoL 26.18)</span></span></span>
+        <span class="modal-version-footer"><span class="v-num" id="modalFooterVersion">v0.6.1 <span class="v-patch">(LoL 26.18)</span></span></span>
 
         <button class="btn btn-primary" style="padding: 8px 26px;" onclick="closeAboutModal()">CLOSE</button>
 
@@ -1068,7 +1068,7 @@
 
                       <div class="solo-champ-role-badge" id="soloChampRoleBadge">
 
-                        <img id="soloRoleIcon" src="assets/icons/icon-middle.png" alt="Role"/>
+                        <img id="soloRoleIcon" src="assets/icons/icon-middle.png" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-parties/global/default/icon-position-middle.png';}" alt="Role"/>
 
                         <span id="soloRoleText">Mid</span>
 
@@ -1676,54 +1676,54 @@
               <span>ALL</span>
             </button>
             <button class="wiki-pill-btn wiki-role-filter-btn" data-role="fighter" onclick="setWikiChampRoleFilter('fighter')">
-              <img src="assets/icons/role-fighter.png" class="wiki-filter-icon" alt="Fighter">
+              <img src="assets/icons/role-fighter.png" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-champ-select/global/default/class-icon-fighter.png';}" class="wiki-filter-icon" alt="Fighter">
               <span>Fighter</span>
             </button>
             <button class="wiki-pill-btn wiki-role-filter-btn" data-role="mage" onclick="setWikiChampRoleFilter('mage')">
-              <img src="assets/icons/role-mage.png" class="wiki-filter-icon" alt="Mage">
+              <img src="assets/icons/role-mage.png" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-champ-select/global/default/class-icon-mage.png';}" class="wiki-filter-icon" alt="Mage">
               <span>Mage</span>
             </button>
             <button class="wiki-pill-btn wiki-role-filter-btn" data-role="assassin" onclick="setWikiChampRoleFilter('assassin')">
-              <img src="assets/icons/role-assassin.png" class="wiki-filter-icon" alt="Assassin">
+              <img src="assets/icons/role-assassin.png" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-champ-select/global/default/class-icon-assassin.png';}" class="wiki-filter-icon" alt="Assassin">
               <span>Assassin</span>
             </button>
             <button class="wiki-pill-btn wiki-role-filter-btn" data-role="marksman" onclick="setWikiChampRoleFilter('marksman')">
-              <img src="assets/icons/role-marksman.png" class="wiki-filter-icon" alt="Marksman">
+              <img src="assets/icons/role-marksman.png" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-champ-select/global/default/class-icon-marksman.png';}" class="wiki-filter-icon" alt="Marksman">
               <span>Marksman</span>
             </button>
             <button class="wiki-pill-btn wiki-role-filter-btn" data-role="tank" onclick="setWikiChampRoleFilter('tank')">
-              <img src="assets/icons/role-tank.png" class="wiki-filter-icon" alt="Tank">
+              <img src="assets/icons/role-tank.png" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-champ-select/global/default/class-icon-tank.png';}" class="wiki-filter-icon" alt="Tank">
               <span>Tank</span>
             </button>
             <button class="wiki-pill-btn wiki-role-filter-btn" data-role="support" onclick="setWikiChampRoleFilter('support')">
-              <img src="assets/icons/role-support.png" class="wiki-filter-icon" alt="Support">
+              <img src="assets/icons/role-support.png" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-champ-select/global/default/class-icon-support.png';}" class="wiki-filter-icon" alt="Support">
               <span>Support</span>
             </button>
           </div>
           <div class="wiki-pills-group">
             <span class="wiki-pills-label">LANE:</span>
             <button class="wiki-pill-btn wiki-lane-filter-btn active" data-lane="all" onclick="setWikiChampLaneFilter('all')">
-              <img src="assets/icons/icon-fill.png" class="wiki-filter-icon" alt="All">
+              <img src="assets/icons/icon-fill.png" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-parties/global/default/icon-position-fill.png';}" class="wiki-filter-icon" alt="All">
               <span>ALL</span>
             </button>
             <button class="wiki-pill-btn wiki-lane-filter-btn" data-lane="Top" onclick="setWikiChampLaneFilter('Top')">
-              <img src="assets/icons/icon-top.png" class="wiki-filter-icon" alt="Top">
+              <img src="assets/icons/icon-top.png" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-parties/global/default/icon-position-top.png';}" class="wiki-filter-icon" alt="Top">
               <span>Top</span>
             </button>
             <button class="wiki-pill-btn wiki-lane-filter-btn" data-lane="Jungle" onclick="setWikiChampLaneFilter('Jungle')">
-              <img src="assets/icons/icon-jungle.png" class="wiki-filter-icon" alt="Jungle">
+              <img src="assets/icons/icon-jungle.png" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-parties/global/default/icon-position-jungle.png';}" class="wiki-filter-icon" alt="Jungle">
               <span>Jungle</span>
             </button>
             <button class="wiki-pill-btn wiki-lane-filter-btn" data-lane="Mid" onclick="setWikiChampLaneFilter('Mid')">
-              <img src="assets/icons/icon-middle.png" class="wiki-filter-icon" alt="Mid">
+              <img src="assets/icons/icon-middle.png" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-parties/global/default/icon-position-middle.png';}" class="wiki-filter-icon" alt="Mid">
               <span>Mid</span>
             </button>
             <button class="wiki-pill-btn wiki-lane-filter-btn" data-lane="ADC" onclick="setWikiChampLaneFilter('ADC')">
-              <img src="assets/icons/icon-bottom.png" class="wiki-filter-icon" alt="ADC">
+              <img src="assets/icons/icon-bottom.png" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-parties/global/default/icon-position-bottom.png';}" class="wiki-filter-icon" alt="ADC">
               <span>ADC</span>
             </button>
             <button class="wiki-pill-btn wiki-lane-filter-btn" data-lane="Support" onclick="setWikiChampLaneFilter('Support')">
-              <img src="assets/icons/icon-utility.png" class="wiki-filter-icon" alt="Support">
+              <img src="assets/icons/icon-utility.png" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-parties/global/default/icon-position-utility.png';}" class="wiki-filter-icon" alt="Support">
               <span>Support</span>
             </button>
           </div>

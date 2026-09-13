@@ -62,12 +62,14 @@ for js_file in os.listdir(r'src\js'):
     if js_file.endswith('.js'):
         files_to_pack.append((os.path.join(r'src\js', js_file), os.path.join(r'src\js', js_file)))
 
-# Add role and rune icons recursively
-for root, dirs, files in os.walk(r'assets\icons'):
-    for f in files:
-        if f.endswith('.png'):
-            full_path = os.path.join(root, f)
-            files_to_pack.append((full_path, full_path))
+# Add role and rune icons recursively from both assets and src/assets
+for asset_base in [r'assets', r'src\assets']:
+    if os.path.exists(asset_base):
+        for root, dirs, files in os.walk(asset_base):
+            for f in files:
+                full_path = os.path.join(root, f)
+                if not any(item[1] == full_path for item in files_to_pack):
+                    files_to_pack.append((full_path, full_path))
 
 with zipfile.ZipFile(payload_zip, 'w', zipfile.ZIP_DEFLATED) as z:
     for src, arc in files_to_pack:
@@ -77,8 +79,8 @@ with zipfile.ZipFile(payload_zip, 'w', zipfile.ZIP_DEFLATED) as z:
 print(f"  -> payload.zip size: {os.path.getsize(payload_zip):,} bytes")
 
 # 3. Compile Setup.exe
-print("3. Compiling LeagueOfCustoms-Setup-v0.6.exe...")
-setup_exe = os.path.join(dist_dir, 'LeagueOfCustoms-Setup-v0.6.exe')
+print("3. Compiling LeagueOfCustoms-Setup-v0.6.1.exe...")
+setup_exe = os.path.join(dist_dir, 'LeagueOfCustoms-Setup-v0.6.1.exe')
 res = subprocess.run([
     csc, '/nologo', '/optimize+', '/target:winexe',
     r'/win32icon:assets\app.ico',
@@ -95,7 +97,7 @@ print(f"  -> {setup_exe} built successfully! Size: {os.path.getsize(setup_exe):,
 
 # 4. Create Portable zip
 print("4. Packaging Portable ZIP...")
-portable_zip = os.path.join(dist_dir, 'LeagueOfCustoms-v0.6-Portable.zip')
+portable_zip = os.path.join(dist_dir, 'LeagueOfCustoms-v0.6.1-Portable.zip')
 portable_files = [
     ('LeagueOfCustoms.exe', 'LeagueOfCustoms/LeagueOfCustoms.exe'),
     ('Microsoft.Web.WebView2.Core.dll', 'LeagueOfCustoms/Microsoft.Web.WebView2.Core.dll'),
@@ -115,12 +117,14 @@ portable_files = [
 for js_file in os.listdir(r'src\js'):
     if js_file.endswith('.js'):
         portable_files.append((os.path.join(r'src\js', js_file), f'LeagueOfCustoms/src/js/{js_file}'))
-for root, dirs, files in os.walk(r'assets\icons'):
-    for f in files:
-        if f.endswith('.png'):
-            full_path = os.path.join(root, f)
-            rel_path = os.path.relpath(full_path, 'assets')
-            portable_files.append((full_path, f'LeagueOfCustoms/assets/{rel_path}'))
+for asset_base in [r'assets', r'src\assets']:
+    if os.path.exists(asset_base):
+        for root, dirs, files in os.walk(asset_base):
+            for f in files:
+                full_path = os.path.join(root, f)
+                arc_path = f'LeagueOfCustoms/{full_path.replace("\\", "/")}'
+                if not any(item[1] == arc_path for item in portable_files):
+                    portable_files.append((full_path, arc_path))
 
 with zipfile.ZipFile(portable_zip, 'w', zipfile.ZIP_DEFLATED) as z:
     for src, arc in portable_files:
