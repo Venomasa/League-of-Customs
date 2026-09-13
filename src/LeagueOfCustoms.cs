@@ -15,13 +15,34 @@ using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
+[assembly: AssemblyTitle("League of Customs")]
+[assembly: AssemblyDescription("League of Customs - Companion & Custom Match Team Randomizer")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("Venomasa")]
+[assembly: AssemblyProduct("League of Customs")]
+[assembly: AssemblyCopyright("Copyright © Venomasa 2026")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
+[assembly: ComVisible(false)]
+[assembly: AssemblyVersion("0.6.0.0")]
+[assembly: AssemblyFileVersion("0.6.0.0")]
+
 namespace LoLRandomizer
 {
     static class Program
     {
+        [DllImport("shell32.dll", SetLastError = true)]
+        private static extern void SetCurrentProcessExplicitAppUserModelID([MarshalAs(UnmanagedType.LPWStr)] string AppID);
+
         [STAThread]
         static void Main()
         {
+            try
+            {
+                SetCurrentProcessExplicitAppUserModelID("Venomasa.LeagueOfCustoms");
+            }
+            catch { }
+
             AppDomain.CurrentDomain.UnhandledException += delegate (object s, UnhandledExceptionEventArgs e)
             {
                 try { File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash.log"), e.ExceptionObject != null ? e.ExceptionObject.ToString() : "Unknown crash"); } catch { }
@@ -78,26 +99,45 @@ namespace LoLRandomizer
             ServicePointManager.DefaultConnectionLimit = 64;
             ServicePointManager.Expect100Continue = false;
 
-            this.Text = "League of Customs v0.5";
+            try
+            {
+                ServicePoint sp = ServicePointManager.FindServicePoint(new Uri("https://mcp-api.op.gg/mcp"));
+                sp.ConnectionLeaseTimeout = 120000;
+                sp.MaxIdleTime = 120000;
+            }
+            catch { }
+
+            this.Text = "League of Customs v0.6";
             this.FormBorderStyle = FormBorderStyle.None;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Size = new Size(1260, 860);
             this.MinimumSize = new Size(960, 680);
             this.BackColor = Color.FromArgb(1, 10, 19);
+            this.ShowIcon = true;
 
             try
             {
-                string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets", "app.ico");
-                if (!File.Exists(iconPath))
-                {
-                    iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "app.ico");
-                }
-                if (File.Exists(iconPath))
-                {
-                    this.Icon = new Icon(iconPath);
-                }
+                // 1. First extract high-res icon directly from compiled executable resources
+                this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             }
             catch { }
+
+            if (this.Icon == null)
+            {
+                try
+                {
+                    string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets", "app.ico");
+                    if (!File.Exists(iconPath))
+                    {
+                        iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "app.ico");
+                    }
+                    if (File.Exists(iconPath))
+                    {
+                        this.Icon = new Icon(iconPath);
+                    }
+                }
+                catch { }
+            }
 
             LoadEmbeddedHtml();
 
@@ -109,6 +149,38 @@ namespace LoLRandomizer
             StartFallbackHttpServer();
 
             InitializeWebViewAsync();
+        }
+
+        [DllImport("user32.dll", EntryPoint = "SendMessage", CharSet = CharSet.Auto)]
+        private static extern IntPtr SendMessageIcon(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+        private const uint WM_SETICON = 0x0080;
+        private const int ICON_SMALL = 0;
+        private const int ICON_BIG = 1;
+
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            if (this.Icon != null)
+            {
+                try
+                {
+                    SendMessageIcon(this.Handle, WM_SETICON, (IntPtr)ICON_SMALL, this.Icon.Handle);
+                    SendMessageIcon(this.Handle, WM_SETICON, (IntPtr)ICON_BIG, this.Icon.Handle);
+                }
+                catch { }
+            }
+        }
+
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                CreateParams cp = base.CreateParams;
+                cp.Style |= 0x00020000; // WS_MINIMIZEBOX
+                cp.Style |= 0x00080000; // WS_SYSMENU
+                return cp;
+            }
         }
 
         protected override void WndProc(ref Message m)
@@ -149,6 +221,7 @@ namespace LoLRandomizer
                 _webView.CoreWebView2.Settings.IsStatusBarEnabled = false;
                 _webView.CoreWebView2.Settings.AreDevToolsEnabled = true;
                 _webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+                _webView.CoreWebView2.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Low;
 
                 _webView.CoreWebView2.PermissionRequested += delegate (object s, CoreWebView2PermissionRequestedEventArgs args)
                 {
@@ -266,6 +339,87 @@ namespace LoLRandomizer
                     }
                     catch { }
                 }
+                else if (msg.StartsWith("download-image:"))
+                {
+                    string payload = msg.Substring("download-image:".Length);
+                    ThreadPool.QueueUserWorkItem(delegate
+                    {
+                        try
+                        {
+                            string url = payload;
+                            string filename = "download.png";
+                            if (payload.StartsWith("{"))
+                            {
+                                var ser = new JavaScriptSerializer();
+                                var dict = ser.Deserialize<Dictionary<string, string>>(payload);
+                                if (dict.ContainsKey("url")) url = dict["url"];
+                                if (dict.ContainsKey("filename")) filename = dict["filename"];
+                            }
+                            else if (payload.Contains("|"))
+                            {
+                                var parts = payload.Split(new char[] { '|' }, 2);
+                                url = parts[0];
+                                if (parts.Length > 1) filename = parts[1];
+                            }
+
+                            foreach (char c in Path.GetInvalidFileNameChars())
+                            {
+                                filename = filename.Replace(c, '_');
+                            }
+                            if (string.IsNullOrWhiteSpace(filename)) filename = "image.png";
+
+                            string downloadsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+                            if (!Directory.Exists(downloadsFolder))
+                            {
+                                downloadsFolder = Path.GetTempPath();
+                            }
+
+                            string savePath = Path.Combine(downloadsFolder, filename);
+                            int counter = 1;
+                            string baseName = Path.GetFileNameWithoutExtension(filename);
+                            string ext = Path.GetExtension(filename);
+                            if (string.IsNullOrEmpty(ext)) ext = ".png";
+                            while (File.Exists(savePath))
+                            {
+                                savePath = Path.Combine(downloadsFolder, string.Format("{0} ({1}){2}", baseName, counter, ext));
+                                counter++;
+                            }
+
+                            using (var wc = new WebClient())
+                            {
+                                wc.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+                                wc.DownloadFile(new Uri(url), savePath);
+                            }
+
+                            var resDict = new Dictionary<string, object>
+                            {
+                                { "type", "image-downloaded" },
+                                { "success", true },
+                                { "path", savePath },
+                                { "filename", Path.GetFileName(savePath) }
+                            };
+                            var serializer = new JavaScriptSerializer();
+                            this.Invoke((Action)delegate
+                            {
+                                try { _webView.CoreWebView2.PostWebMessageAsString(serializer.Serialize(resDict)); } catch { }
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            var resDict = new Dictionary<string, object>
+                            {
+                                { "type", "image-downloaded" },
+                                { "success", false },
+                                { "error", ex.Message }
+                            };
+                            var serializer = new JavaScriptSerializer();
+                            this.Invoke((Action)delegate
+                            {
+                                try { _webView.CoreWebView2.PostWebMessageAsString(serializer.Serialize(resDict)); } catch { }
+                            });
+                        }
+                    });
+                }
                 else if (msg == "read-clipboard")
                 {
                     try
@@ -344,7 +498,7 @@ namespace LoLRandomizer
                             // 1. Fetch latest patch version directly via .NET HttpWebRequest (no CORS)
                             HttpWebRequest req = (HttpWebRequest)WebRequest.Create("https://ddragon.leagueoflegends.com/api/versions.json");
                             req.Method = "GET";
-                            req.UserAgent = "LeagueOfCustoms/0.5";
+                            req.UserAgent = "LeagueOfCustoms/0.6";
                             req.Timeout = 6000;
                             req.Proxy = null;
                             string versionsText = "";
@@ -380,7 +534,7 @@ namespace LoLRandomizer
                                 {
                                     HttpWebRequest itemReq = (HttpWebRequest)WebRequest.Create("https://ddragon.leagueoflegends.com/cdn/" + latestPatch + "/data/en_US/item.json");
                                     itemReq.Method = "GET";
-                                    itemReq.UserAgent = "LeagueOfCustoms/0.5";
+                                    itemReq.UserAgent = "LeagueOfCustoms/0.6";
                                     itemReq.Timeout = 7000;
                                     itemReq.Proxy = null;
                                     string itemsText = "";
@@ -413,21 +567,22 @@ namespace LoLRandomizer
                                 catch { }
                             }
 
-                            string jsonRes = ser.Serialize(result);
+                            string json = ser.Serialize(result);
                             this.Invoke((Action)delegate
                             {
-                                try { _webView.CoreWebView2.PostWebMessageAsString(jsonRes); } catch { }
+                                try { _webView.CoreWebView2.PostWebMessageAsString(json); } catch { }
                             });
                         }
                         catch (Exception ex)
                         {
-                            var ser = new JavaScriptSerializer();
-                            string errJson = ser.Serialize(new Dictionary<string, object>
+                            var errResult = new Dictionary<string, object>
                             {
                                 { "syncType", "live-data-sync" },
                                 { "success", false },
                                 { "error", ex.Message }
-                            });
+                            };
+                            var ser = new JavaScriptSerializer();
+                            string errJson = ser.Serialize(errResult);
                             this.Invoke((Action)delegate
                             {
                                 try { _webView.CoreWebView2.PostWebMessageAsString(errJson); } catch { }
@@ -443,7 +598,7 @@ namespace LoLRandomizer
                         {
                             HttpWebRequest req = (HttpWebRequest)WebRequest.Create("https://api.github.com/repos/Venomasa/League-of-Customs/releases/latest");
                             req.Method = "GET";
-                            req.UserAgent = "LeagueOfCustoms/0.5";
+                            req.UserAgent = "LeagueOfCustoms/0.6";
                             req.Timeout = 10000;
                             req.Proxy = null;
                             string respText = "";
@@ -456,7 +611,7 @@ namespace LoLRandomizer
                             var ser = new JavaScriptSerializer();
                             var dict = ser.Deserialize<Dictionary<string, object>>(respText);
                             string tagName = dict.ContainsKey("tag_name") ? dict["tag_name"].ToString() : "";
-                            string currentAppVersion = "v0.5";
+                            string currentAppVersion = "v0.6";
 
                             bool hasNewer = IsNewerVersion(tagName, currentAppVersion);
                             if (!hasNewer)
@@ -534,28 +689,29 @@ namespace LoLRandomizer
 
                             // Begin streaming download to temp file
                             string tempSetupPath = Path.Combine(Path.GetTempPath(), "LoC_Update_" + tagName + "_" + (string.IsNullOrEmpty(assetName) ? "Setup.exe" : assetName));
-                            using (var wc = new WebClient())
+                            var wc = new WebClient();
+                            wc.Headers.Add("User-Agent", "LeagueOfCustoms/0.6");
+                            wc.DownloadProgressChanged += (s, ev) =>
                             {
-                                wc.Headers.Add("User-Agent", "LeagueOfCustoms/0.5");
-                                wc.DownloadProgressChanged += (s, ev) =>
+                                var progRes = new Dictionary<string, object>
                                 {
-                                    var progRes = new Dictionary<string, object>
-                                    {
-                                        { "autoUpdate", true },
-                                        { "status", "downloading" },
-                                        { "version", tagName },
-                                        { "progress", ev.ProgressPercentage },
-                                        { "bytesReceived", ev.BytesReceived },
-                                        { "totalBytes", ev.TotalBytesToReceive }
-                                    };
-                                    string progJson = ser.Serialize(progRes);
-                                    this.Invoke((Action)delegate
-                                    {
-                                        try { _webView.CoreWebView2.PostWebMessageAsString(progJson); } catch { }
-                                    });
+                                    { "autoUpdate", true },
+                                    { "status", "downloading" },
+                                    { "version", tagName },
+                                    { "progress", ev.ProgressPercentage },
+                                    { "bytesReceived", ev.BytesReceived },
+                                    { "totalBytes", ev.TotalBytesToReceive }
                                 };
+                                string progJson = ser.Serialize(progRes);
+                                this.Invoke((Action)delegate
+                                {
+                                    try { _webView.CoreWebView2.PostWebMessageAsString(progJson); } catch { }
+                                });
+                            };
 
-                                wc.DownloadFileCompleted += (s, ev) =>
+                            wc.DownloadFileCompleted += (s, ev) =>
+                            {
+                                try
                                 {
                                     if (ev.Error != null)
                                     {
@@ -615,10 +771,14 @@ namespace LoLRandomizer
                                             try { _webView.CoreWebView2.PostWebMessageAsString(lErrJson); } catch { }
                                         });
                                     }
-                                };
+                                }
+                                finally
+                                {
+                                    try { wc.Dispose(); } catch { }
+                                }
+                            };
 
-                                wc.DownloadFileAsync(new Uri(downloadUrl), tempSetupPath);
-                            }
+                            wc.DownloadFileAsync(new Uri(downloadUrl), tempSetupPath);
                         }
                         catch (Exception ex)
                         {
@@ -682,6 +842,14 @@ namespace LoLRandomizer
                             }
                             catch { }
                         });
+                    });
+                }
+                else if (msg.StartsWith("prefetch-game-detail:"))
+                {
+                    string paramStr = msg.Substring("prefetch-game-detail:".Length);
+                    Task.Run(() =>
+                    {
+                        try { FetchGameDetailJson(paramStr); } catch { }
                     });
                 }
                 else if (msg.StartsWith("get-more-matches:"))
@@ -759,6 +927,112 @@ namespace LoLRandomizer
                                 _webView.CoreWebView2.PostWebMessageAsString(json);
                             }
                             catch { }
+                        });
+                    });
+                }
+                else if (msg.StartsWith("save-user-data:"))
+                {
+                    string payload = msg.Substring("save-user-data:".Length);
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                            string userDir = Path.Combine(localAppData, "LeagueOfCustoms");
+                            if (!Directory.Exists(userDir)) Directory.CreateDirectory(userDir);
+                            string userFile = Path.Combine(userDir, "user_data.json");
+                            File.WriteAllText(userFile, payload, Encoding.UTF8);
+                        }
+                        catch { }
+                    });
+                }
+                else if (msg == "load-user-data")
+                {
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                            string userFile = Path.Combine(localAppData, "LeagueOfCustoms", "user_data.json");
+                            if (File.Exists(userFile))
+                            {
+                                string data = File.ReadAllText(userFile, Encoding.UTF8);
+                                var ser = new JavaScriptSerializer();
+                                string respJson = ser.Serialize(new Dictionary<string, object>
+                                {
+                                    { "userDataType", "user-data-loaded" },
+                                    { "data", data }
+                                });
+                                this.Invoke((Action)delegate
+                                {
+                                    try { _webView.CoreWebView2.PostWebMessageAsString(respJson); } catch { }
+                                });
+                            }
+                        }
+                        catch { }
+                    });
+                }
+                else if (msg.StartsWith("get-wiki-champions"))
+                {
+                    string patch = msg.Contains(":") ? msg.Substring(msg.IndexOf(':') + 1).Trim() : "16.18.1";
+                    Task.Run(() =>
+                    {
+                        string json = FetchWikiChampionsJson(patch);
+                        bool ok = !string.IsNullOrEmpty(json) && json.Trim() != "{}" && json.Length > 20;
+                        string response = "{\"wikiType\":\"champions\",\"success\":" + (ok ? "true" : "false") + ",\"patch\":\"" + patch + "\",\"data\":" + (ok ? json : "{}") + "}";
+                        this.Invoke((Action)delegate
+                        {
+                            try { _webView.CoreWebView2.PostWebMessageAsString(response); } catch { }
+                        });
+                    });
+                }
+                else if (msg.StartsWith("get-wiki-champion-detail:"))
+                {
+                    string rest = msg.Substring("get-wiki-champion-detail:".Length);
+                    string champId = rest;
+                    string patch = "16.18.1";
+                    if (rest.Contains(":"))
+                    {
+                        string[] parts = rest.Split(':');
+                        champId = parts[0].Trim();
+                        if (parts.Length > 1) patch = parts[1].Trim();
+                    }
+                    Task.Run(() =>
+                    {
+                        string json = FetchWikiChampionDetailJson(champId, patch);
+                        bool ok = !string.IsNullOrEmpty(json) && json.Trim() != "{}" && json.Length > 20;
+                        string response = "{\"wikiType\":\"champion-detail\",\"success\":" + (ok ? "true" : "false") + ",\"champId\":\"" + champId + "\",\"data\":" + (ok ? json : "{}") + "}";
+                        this.Invoke((Action)delegate
+                        {
+                            try { _webView.CoreWebView2.PostWebMessageAsString(response); } catch { }
+                        });
+                    });
+                }
+                else if (msg.StartsWith("get-wiki-items"))
+                {
+                    string patch = msg.Contains(":") ? msg.Substring(msg.IndexOf(':') + 1).Trim() : "16.18.1";
+                    Task.Run(() =>
+                    {
+                        string json = FetchWikiItemsJson(patch);
+                        bool ok = !string.IsNullOrEmpty(json) && json.Trim() != "{}" && json.Length > 20;
+                        string response = "{\"wikiType\":\"items\",\"success\":" + (ok ? "true" : "false") + ",\"patch\":\"" + patch + "\",\"data\":" + (ok ? json : "{}") + "}";
+                        this.Invoke((Action)delegate
+                        {
+                            try { _webView.CoreWebView2.PostWebMessageAsString(response); } catch { }
+                        });
+                    });
+                }
+                else if (msg.StartsWith("get-wiki-runes"))
+                {
+                    string patch = msg.Contains(":") ? msg.Substring(msg.IndexOf(':') + 1).Trim() : "16.18.1";
+                    Task.Run(() =>
+                    {
+                        string json = FetchWikiRunesJson(patch);
+                        bool ok = !string.IsNullOrEmpty(json) && json.Trim() != "[]" && json.Length > 20;
+                        string response = "{\"wikiType\":\"runes\",\"success\":" + (ok ? "true" : "false") + ",\"patch\":\"" + patch + "\",\"data\":" + (ok ? json : "[]") + "}";
+                        this.Invoke((Action)delegate
+                        {
+                            try { _webView.CoreWebView2.PostWebMessageAsString(response); } catch { }
                         });
                     });
                 }
@@ -1398,14 +1672,31 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                 {
                     int.TryParse(payload["championId"].ToString(), out champNumericId);
                 }
-                if (champNumericId <= 0 && _championNumericMap.ContainsKey(champName))
+                if (champNumericId <= 0)
                 {
-                    champNumericId = _championNumericMap[champName];
+                    string normChamp = champName.Trim().ToLowerInvariant();
+                    if (_championNumericMap.ContainsKey(normChamp))
+                    {
+                        champNumericId = _championNumericMap[normChamp];
+                    }
+                    else if (_championNumericMap.ContainsKey(champName))
+                    {
+                        champNumericId = _championNumericMap[champName];
+                    }
                 }
 
                 // --- 1. RUNES (PERKS) INJECTION & SMART SINGLE-PAGE MANAGEMENT ---
                 bool runesSuccess = false;
-                string runePageName = "League of Customs: " + champName;
+                // Sanitize champion name for LCU perk page name: alphanumeric and space only, no special symbols/punctuation
+                string cleanChamp = Regex.Replace(Regex.Replace(champName ?? "Custom", @"[^a-zA-Z0-9 ]", ""), @"\s+", " ").Trim();
+                if (string.IsNullOrWhiteSpace(cleanChamp)) cleanChamp = "Custom";
+                string runePageName = "LoC - " + cleanChamp;
+                if (runePageName.Length > 25)
+                {
+                    runePageName = runePageName.Substring(0, 25).Trim();
+                }
+
+                int targetPageId = -1;
                 string pagesJson = LcuRequest(lcuPort, lcuPass, "GET", "/lol-perks/v1/pages");
                 
                 if (!pagesJson.StartsWith("ERROR:"))
@@ -1413,6 +1704,9 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                     var pages = serializer.Deserialize<object>(pagesJson) as System.Collections.ArrayList;
                     var locPageIds = new List<int>();
                     var deletablePagesList = new List<Dictionary<string, object>>();
+                    int safeSwitchPageId = -1;
+                    int anyOtherPageId = -1;
+                    bool replacePageExistsInClient = false;
 
                     if (pages != null)
                     {
@@ -1425,11 +1719,26 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                                 int pid = pDict.ContainsKey("id") ? Convert.ToInt32(pDict["id"]) : -1;
                                 bool isDel = pDict.ContainsKey("isDeletable") && Convert.ToBoolean(pDict["isDeletable"]);
 
+                                if (pid == replacePageId && replacePageId > 0)
+                                {
+                                    replacePageExistsInClient = true;
+                                }
+
+                                // Non-deletable Riot pre-made default pages (e.g. 50-54) are the safest to switch to
+                                if (!isDel && pid > 0 && safeSwitchPageId < 0)
+                                {
+                                    safeSwitchPageId = pid;
+                                }
+                                else if (pid > 0 && anyOtherPageId < 0)
+                                {
+                                    anyOtherPageId = pid;
+                                }
+
                                 bool isLoc = pName.StartsWith("LoC", StringComparison.OrdinalIgnoreCase) || 
                                              pName.StartsWith("League of Customs", StringComparison.OrdinalIgnoreCase) ||
                                              pName.IndexOf("League of Customs", StringComparison.OrdinalIgnoreCase) >= 0;
 
-                                if (isLoc)
+                                if (isLoc && isDel)
                                 {
                                     locPageIds.Add(pid);
                                 }
@@ -1449,22 +1758,42 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                         }
                     }
 
-                    var perkPagePayload = new Dictionary<string, object>
+                    if (!replacePageExistsInClient)
                     {
-                        { "name", runePageName },
-                        { "primaryStyleId", primaryTreeId },
-                        { "subStyleId", secondaryTreeId },
-                        { "selectedPerkIds", selectedPerkIds },
-                        { "current", true }
+                        replacePageId = 0;
+                    }
+
+                    // Helper to build clean perk payload (LCU accepts only valid settable fields)
+                    Func<Dictionary<string, object>> makePayload = () =>
+                    {
+                        return new Dictionary<string, object>
+                        {
+                            { "name", runePageName },
+                            { "primaryStyleId", primaryTreeId },
+                            { "subStyleId", secondaryTreeId },
+                            { "selectedPerkIds", selectedPerkIds },
+                            { "current", true }
+                        };
                     };
-                    string perkJsonBody = serializer.Serialize(perkPagePayload);
 
-                    int targetPageId = -1;
+                    // Helper to safely switch away from a page before deleting it
+                    Action<int> switchAwayFrom = (pageToDel) =>
+                    {
+                        int targetSwitch = safeSwitchPageId;
+                        if (targetSwitch <= 0 || targetSwitch == pageToDel)
+                        {
+                            targetSwitch = (anyOtherPageId > 0 && anyOtherPageId != pageToDel) ? anyOtherPageId : -1;
+                        }
+                        if (targetSwitch > 0 && targetSwitch != pageToDel)
+                        {
+                            try { LcuRequest(lcuPort, lcuPass, "PUT", "/lol-perks/v1/currentpage", targetSwitch.ToString()); } catch { }
+                        }
+                    };
 
-                    // Case A: User explicitly picked a page to replace from the modal
+                    // Case A: User explicitly picked a page to replace from modal or saved ID
                     if (replacePageId > 0)
                     {
-                        string putRes = LcuRequest(lcuPort, lcuPass, "PUT", "/lol-perks/v1/pages/" + replacePageId, perkJsonBody);
+                        string putRes = LcuRequest(lcuPort, lcuPass, "PUT", "/lol-perks/v1/pages/" + replacePageId, serializer.Serialize(makePayload()));
                         if (!putRes.StartsWith("ERROR:"))
                         {
                             targetPageId = replacePageId;
@@ -1472,8 +1801,10 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                         }
                         else
                         {
+                            // If PUT failed, safely switch away before deleting, then recreate
+                            switchAwayFrom(replacePageId);
                             LcuRequest(lcuPort, lcuPass, "DELETE", "/lol-perks/v1/pages/" + replacePageId);
-                            string postRes = LcuRequest(lcuPort, lcuPass, "POST", "/lol-perks/v1/pages", perkJsonBody);
+                            string postRes = LcuRequest(lcuPort, lcuPass, "POST", "/lol-perks/v1/pages", serializer.Serialize(makePayload()));
                             if (!postRes.StartsWith("ERROR:"))
                             {
                                 var postObj = serializer.Deserialize<Dictionary<string, object>>(postRes);
@@ -1488,9 +1819,14 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                         // Clean up any other leftover LoC pages
                         for (int i = 0; i < locPageIds.Count; i++)
                         {
-                            if (locPageIds[i] != targetPageId && locPageIds[i] != replacePageId)
+                            if (locPageIds[i] != targetPageId)
                             {
-                                try { LcuRequest(lcuPort, lcuPass, "DELETE", "/lol-perks/v1/pages/" + locPageIds[i]); } catch { }
+                                try 
+                                { 
+                                    switchAwayFrom(locPageIds[i]);
+                                    LcuRequest(lcuPort, lcuPass, "DELETE", "/lol-perks/v1/pages/" + locPageIds[i]); 
+                                } 
+                                catch { }
                             }
                         }
                     }
@@ -1498,7 +1834,7 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                     else if (locPageIds.Count > 0)
                     {
                         int mainLocId = locPageIds[0];
-                        string putRes = LcuRequest(lcuPort, lcuPass, "PUT", "/lol-perks/v1/pages/" + mainLocId, perkJsonBody);
+                        string putRes = LcuRequest(lcuPort, lcuPass, "PUT", "/lol-perks/v1/pages/" + mainLocId, serializer.Serialize(makePayload()));
                         if (!putRes.StartsWith("ERROR:"))
                         {
                             targetPageId = mainLocId;
@@ -1506,8 +1842,10 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                         }
                         else
                         {
+                            // If PUT failed, safely switch away before deleting
+                            switchAwayFrom(mainLocId);
                             LcuRequest(lcuPort, lcuPass, "DELETE", "/lol-perks/v1/pages/" + mainLocId);
-                            string postRes = LcuRequest(lcuPort, lcuPass, "POST", "/lol-perks/v1/pages", perkJsonBody);
+                            string postRes = LcuRequest(lcuPort, lcuPass, "POST", "/lol-perks/v1/pages", serializer.Serialize(makePayload()));
                             if (!postRes.StartsWith("ERROR:"))
                             {
                                 var postObj = serializer.Deserialize<Dictionary<string, object>>(postRes);
@@ -1522,47 +1860,30 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                         // Clean up any extra duplicate LoC pages if any were created previously
                         for (int i = 1; i < locPageIds.Count; i++)
                         {
-                            try { LcuRequest(lcuPort, lcuPass, "DELETE", "/lol-perks/v1/pages/" + locPageIds[i]); } catch { }
+                            try 
+                            { 
+                                switchAwayFrom(locPageIds[i]);
+                                LcuRequest(lcuPort, lcuPass, "DELETE", "/lol-perks/v1/pages/" + locPageIds[i]); 
+                            } 
+                            catch { }
                         }
                     }
                     // Case C: No LoC page exists yet and no replacement chosen
                     else
                     {
-                        bool canAdd = true;
-                        try
+                        string postRes = LcuRequest(lcuPort, lcuPass, "POST", "/lol-perks/v1/pages", serializer.Serialize(makePayload()));
+                        if (!postRes.StartsWith("ERROR:"))
                         {
-                            string invJson = LcuRequest(lcuPort, lcuPass, "GET", "/lol-perks/v1/inventory");
-                            if (!invJson.StartsWith("ERROR:"))
+                            var postObj = serializer.Deserialize<Dictionary<string, object>>(postRes);
+                            if (postObj != null && postObj.ContainsKey("id"))
                             {
-                                var invDict = serializer.Deserialize<Dictionary<string, object>>(invJson);
-                                if (invDict != null && invDict.ContainsKey("canAddPages"))
-                                {
-                                    canAdd = Convert.ToBoolean(invDict["canAddPages"]);
-                                }
+                                targetPageId = Convert.ToInt32(postObj["id"]);
                             }
+                            runesSuccess = true;
                         }
-                        catch { }
-
-                        if (canAdd)
+                        else
                         {
-                            string postRes = LcuRequest(lcuPort, lcuPass, "POST", "/lol-perks/v1/pages", perkJsonBody);
-                            if (!postRes.StartsWith("ERROR:"))
-                            {
-                                var postObj = serializer.Deserialize<Dictionary<string, object>>(postRes);
-                                if (postObj != null && postObj.ContainsKey("id"))
-                                {
-                                    targetPageId = Convert.ToInt32(postObj["id"]);
-                                }
-                                runesSuccess = true;
-                            }
-                            else
-                            {
-                                canAdd = false;
-                            }
-                        }
-
-                        if (!canAdd && !runesSuccess)
-                        {
+                            // Slots are full! Prompt user with modal
                             if (deletablePagesList.Count > 0)
                             {
                                 return serializer.Serialize(new
@@ -1588,9 +1909,9 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                     }
 
                     // Force activate the injected rune page in the client
-                    if (targetPageId > 0)
+                    if (targetPageId > 0 && runesSuccess)
                     {
-                        LcuRequest(lcuPort, lcuPass, "PUT", "/lol-perks/v1/currentpage", targetPageId.ToString());
+                        try { LcuRequest(lcuPort, lcuPass, "PUT", "/lol-perks/v1/currentpage", targetPageId.ToString()); } catch { }
                     }
                 }
 
@@ -1720,6 +2041,7 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                         else if (champName == "Vel'Koz") champKey = "Velkoz";
                         else if (champName == "Bel'Veth") champKey = "Belveth";
                         else if (champName == "K'Sante") champKey = "KSante";
+                        else champKey = System.Text.RegularExpressions.Regex.Replace(champName, @"[^a-zA-Z0-9]", "");
 
                         string champRecDir = Path.Combine(champsConfigDir, champKey, "Recommended");
                         Directory.CreateDirectory(champRecDir);
@@ -1839,15 +2161,16 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                 return serializer.Serialize(new
                 {
                     injectType = "solo-loadout",
-                    success = (runesSuccess || itemSetSuccess),
+                    success = runesSuccess,
                     championName = champName,
+                    pageId = targetPageId,
                     runesInjected = runesSuccess,
                     runePageName = runePageName,
                     itemSetInjected = itemSetSuccess,
                     spellsInjected = spellsSuccess,
                     champHovered = champHovered,
                     inChampSelect = inChampSelect,
-                    message = "Successfully injected " + champName + " loadout into League Client."
+                    message = runesSuccess ? ("Successfully injected " + champName + " loadout into League Client.") : ("Failed to inject rune page into League Client.")
                 });
             }
             catch (Exception ex)
@@ -1993,10 +2316,11 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://mcp-api.op.gg/mcp");
             request.Method = "POST";
             request.ContentType = "application/json";
-            request.UserAgent = "LeagueOfCustoms/0.5";
+            request.UserAgent = "LeagueOfCustoms/0.6";
             request.Timeout = timeoutMs;
             request.Proxy = null;
             request.ServicePoint.Expect100Continue = false;
+            request.KeepAlive = true;
             request.ContentLength = bodyBytes.Length;
 
             using (Stream stream = request.GetRequestStream())
@@ -2515,6 +2839,24 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                 string tagLine = parts[3].Trim();
                 string region = parts[4].Trim().ToLowerInvariant();
 
+                string safeGameId = Regex.Replace(gameId, @"[^a-zA-Z0-9_\-]", "_");
+                string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                string cacheDir = Path.Combine(localAppData, "LeagueOfCustoms", "cache", "scoreboards");
+                string cacheFile = Path.Combine(cacheDir, safeGameId + ".json");
+
+                try
+                {
+                    if (File.Exists(cacheFile))
+                    {
+                        string cachedJson = File.ReadAllText(cacheFile, Encoding.UTF8);
+                        if (!string.IsNullOrEmpty(cachedJson) && cachedJson.Contains("\"gameDetailType\""))
+                        {
+                            return cachedJson;
+                        }
+                    }
+                }
+                catch { }
+
                 var args = new Dictionary<string, object>
                 {
                     { "region", region },
@@ -2673,7 +3015,7 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                     });
                 }
 
-                return serializer.Serialize(new Dictionary<string, object>
+                string resultJson = serializer.Serialize(new Dictionary<string, object>
                 {
                     { "gameDetailType", "opgg" },
                     { "gameId", gameId },
@@ -2681,6 +3023,21 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                     { "profileTagLine", tagLine },
                     { "teams", teams }
                 });
+
+                try
+                {
+                    if (!string.IsNullOrEmpty(cacheDir) && !Directory.Exists(cacheDir))
+                    {
+                        Directory.CreateDirectory(cacheDir);
+                    }
+                    if (!string.IsNullOrEmpty(cacheFile))
+                    {
+                        File.WriteAllText(cacheFile, resultJson, Encoding.UTF8);
+                    }
+                }
+                catch { }
+
+                return resultJson;
             }
             catch (Exception ex)
             {
@@ -2985,6 +3342,20 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
             if (!Directory.Exists(cacheDir)) Directory.CreateDirectory(cacheDir);
             string cacheFile = Path.Combine(cacheDir, "patch_list.json");
 
+            // Instant cache return if file is younger than 4 hours (eliminates startup network/CPU overhead)
+            if (File.Exists(cacheFile))
+            {
+                try
+                {
+                    var fileInfo = new FileInfo(cacheFile);
+                    if (fileInfo.Length > 0 && (DateTime.UtcNow - fileInfo.LastWriteTimeUtc).TotalHours < 4)
+                    {
+                        return File.ReadAllText(cacheFile, Encoding.UTF8);
+                    }
+                }
+                catch { }
+            }
+
             try
             {
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://www.leagueoflegends.com/en-us/news/game-updates/");
@@ -3055,6 +3426,12 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                                                 {
                                                     var m = item["imageMedia"] as Dictionary<string, object>;
                                                     if (m.ContainsKey("url") && m["url"] != null) imgUrl = m["url"].ToString();
+                                                }
+
+                                                if (!string.IsNullOrEmpty(imgUrl) && imgUrl.Contains("cmsassets.rgpub.io/sanity/images/"))
+                                                {
+                                                    string cleanImg = imgUrl.Split('?')[0];
+                                                    imgUrl = cleanImg + "?w=120&h=86&fit=crop&fm=webp&q=70";
                                                 }
 
                                                 string articleUrl = "";
@@ -3248,5 +3625,128 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
                 { "error", "Patch notes content not found." }
             });
         }
+
+        #region Hextech Wiki Backend Helpers
+
+        private static string GetWikiCacheDir()
+        {
+            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string dir = Path.Combine(localAppData, "LeagueOfCustoms", "wiki_cache");
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            return dir;
+        }
+
+        private static string DownloadHttpString(string url, int timeoutMs)
+        {
+            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+            req.Method = "GET";
+            req.UserAgent = "LeagueOfCustoms/0.6";
+            req.Timeout = timeoutMs;
+            req.Proxy = null;
+            using (var resp = (HttpWebResponse)req.GetResponse())
+            using (var stream = resp.GetResponseStream())
+            using (var sr = new StreamReader(stream, Encoding.UTF8))
+            {
+                return sr.ReadToEnd();
+            }
+        }
+
+        private static string FetchWikiChampionsJson(string patchVer)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(patchVer)) patchVer = "16.18.1";
+                string cacheFile = Path.Combine(GetWikiCacheDir(), "champions_" + patchVer + ".json");
+                if (File.Exists(cacheFile))
+                {
+                    var fi = new FileInfo(cacheFile);
+                    if (fi.Length > 20) return File.ReadAllText(cacheFile, Encoding.UTF8);
+                    try { File.Delete(cacheFile); } catch { }
+                }
+                string url = "https://ddragon.leagueoflegends.com/cdn/" + patchVer + "/data/en_US/champion.json";
+                string content = DownloadHttpString(url, 7000);
+                if (!string.IsNullOrEmpty(content) && content.StartsWith("{"))
+                {
+                    try { File.WriteAllText(cacheFile, content, Encoding.UTF8); } catch { }
+                    return content;
+                }
+            }
+            catch { }
+            return "{}";
+        }
+
+        private static string FetchWikiChampionDetailJson(string champId, string patchVer)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(patchVer)) patchVer = "16.18.1";
+                string cacheFile = Path.Combine(GetWikiCacheDir(), "champ_" + champId + "_" + patchVer + ".json");
+                if (File.Exists(cacheFile))
+                {
+                    var fi = new FileInfo(cacheFile);
+                    if (fi.Length > 20) return File.ReadAllText(cacheFile, Encoding.UTF8);
+                    try { File.Delete(cacheFile); } catch { }
+                }
+                string url = "https://ddragon.leagueoflegends.com/cdn/" + patchVer + "/data/en_US/champion/" + champId + ".json";
+                string content = DownloadHttpString(url, 7000);
+                if (!string.IsNullOrEmpty(content) && content.StartsWith("{"))
+                {
+                    try { File.WriteAllText(cacheFile, content, Encoding.UTF8); } catch { }
+                    return content;
+                }
+            }
+            catch { }
+            return "{}";
+        }
+
+        private static string FetchWikiItemsJson(string patchVer)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(patchVer)) patchVer = "16.18.1";
+                string cacheFile = Path.Combine(GetWikiCacheDir(), "items_" + patchVer + ".json");
+                if (File.Exists(cacheFile))
+                {
+                    var fi = new FileInfo(cacheFile);
+                    if (fi.Length > 20) return File.ReadAllText(cacheFile, Encoding.UTF8);
+                    try { File.Delete(cacheFile); } catch { }
+                }
+                string url = "https://ddragon.leagueoflegends.com/cdn/" + patchVer + "/data/en_US/item.json";
+                string content = DownloadHttpString(url, 7000);
+                if (!string.IsNullOrEmpty(content) && content.StartsWith("{"))
+                {
+                    try { File.WriteAllText(cacheFile, content, Encoding.UTF8); } catch { }
+                    return content;
+                }
+            }
+            catch { }
+            return "{}";
+        }
+
+        private static string FetchWikiRunesJson(string patchVer)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(patchVer)) patchVer = "16.18.1";
+                string cacheFile = Path.Combine(GetWikiCacheDir(), "runes_" + patchVer + ".json");
+                if (File.Exists(cacheFile))
+                {
+                    var fi = new FileInfo(cacheFile);
+                    if (fi.Length > 20) return File.ReadAllText(cacheFile, Encoding.UTF8);
+                    try { File.Delete(cacheFile); } catch { }
+                }
+                string url = "https://ddragon.leagueoflegends.com/cdn/" + patchVer + "/data/en_US/runesReforged.json";
+                string content = DownloadHttpString(url, 7000);
+                if (!string.IsNullOrEmpty(content) && (content.StartsWith("[") || content.StartsWith("{")))
+                {
+                    try { File.WriteAllText(cacheFile, content, Encoding.UTF8); } catch { }
+                    return content;
+                }
+            }
+            catch { }
+            return "[]";
+        }
+
+        #endregion
     }
 }

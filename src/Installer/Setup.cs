@@ -4,9 +4,18 @@ using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using Microsoft.Win32;
+
+[assembly: AssemblyTitle("League of Customs Setup")]
+[assembly: AssemblyDescription("League of Customs Installer")]
+[assembly: AssemblyCompany("Venomasa")]
+[assembly: AssemblyProduct("League of Customs")]
+[assembly: AssemblyCopyright("Copyright © Venomasa 2026")]
+[assembly: AssemblyVersion("0.6.0.0")]
+[assembly: AssemblyFileVersion("0.6.0.0")]
 
 namespace LeagueOfCustoms.Installer
 {
@@ -127,6 +136,7 @@ namespace LeagueOfCustoms.Installer
             // 4. Update shortcuts
             string exePath = Path.Combine(targetDir, "LeagueOfCustoms.exe");
             string iconPath = Path.Combine(targetDir, @"assets\app.ico");
+            if (!File.Exists(iconPath)) iconPath = Path.Combine(targetDir, "app.ico");
             if (!File.Exists(iconPath)) iconPath = exePath;
 
             try
@@ -172,7 +182,7 @@ namespace LeagueOfCustoms.Installer
 
         public SetupForm()
         {
-            this.Text = "League of Customs v0.5 Setup";
+            this.Text = "League of Customs v0.6 Setup";
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.StartPosition = FormStartPosition.CenterScreen;
@@ -238,7 +248,7 @@ namespace LeagueOfCustoms.Installer
 
             Label lblSub = new Label
             {
-                Text = "v0.5 \u2014 Custom Game Companion & Team Randomizer",
+                Text = "v0.6 \u2014 Custom Game Companion & Team Randomizer",
                 Font = new Font("Segoe UI", 8.75f, FontStyle.Regular),
                 ForeColor = Color.FromArgb(160, 155, 140),
                 Location = new Point(90, 44),
@@ -284,9 +294,9 @@ namespace LeagueOfCustoms.Installer
 
             if (isUpgrade)
             {
-                this.Text = "League of Customs v0.5 Update";
+                this.Text = "League of Customs v0.6 Update";
                 lblTitle.Text = "UPDATE LEAGUE OF CUSTOMS";
-                lblSub.Text = string.Format("Upgrade existing installation{0} to v0.5", string.IsNullOrEmpty(existingVer) ? "" : " (v" + existingVer + ")");
+                lblSub.Text = string.Format("Upgrade existing installation{0} to v0.6", string.IsNullOrEmpty(existingVer) ? "" : " (v" + existingVer + ")");
             }
 
             // Install Location Group
@@ -371,7 +381,7 @@ namespace LeagueOfCustoms.Installer
             // Progress Bar & Status
             _lblStatus = new Label
             {
-                Text = isUpgrade ? "Existing installation detected. Click 'Update' to upgrade to v0.5." : "Ready to install. Click 'Install' to begin.",
+                Text = isUpgrade ? "Existing installation detected. Click 'Update' to upgrade to v0.6." : "Ready to install. Click 'Install' to begin.",
                 Location = new Point(30, 276),
                 AutoSize = true,
                 ForeColor = Color.FromArgb(160, 155, 140)
@@ -526,6 +536,7 @@ namespace LeagueOfCustoms.Installer
                     UpdateStatus(80, "Creating shortcuts...");
                     string exePath = Path.Combine(targetDir, "LeagueOfCustoms.exe");
                     string iconPath = Path.Combine(targetDir, @"assets\app.ico");
+                    if (!File.Exists(iconPath)) iconPath = Path.Combine(targetDir, "app.ico");
                     if (!File.Exists(iconPath)) iconPath = exePath;
 
                     if (_chkDesktop.Checked)
@@ -592,7 +603,17 @@ namespace LeagueOfCustoms.Installer
                 dynamic shortcut = shell.CreateShortcut(shortcutPath);
                 shortcut.TargetPath = targetPath;
                 shortcut.WorkingDirectory = workingDir;
-                shortcut.IconLocation = iconPath;
+
+                string finalIcon = iconPath;
+                if (string.IsNullOrEmpty(finalIcon) || !File.Exists(finalIcon))
+                {
+                    finalIcon = targetPath;
+                }
+                if (finalIcon.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                {
+                    finalIcon += ",0";
+                }
+                shortcut.IconLocation = finalIcon;
                 shortcut.Description = "League of Customs - Companion & Custom Match Team Randomizer";
                 shortcut.Save();
             }
@@ -613,9 +634,10 @@ namespace LeagueOfCustoms.Installer
                     if (key != null)
                     {
                         key.SetValue("DisplayName", "League of Customs");
-                        key.SetValue("DisplayVersion", "0.5");
+                        key.SetValue("DisplayVersion", "0.6");
                         key.SetValue("Publisher", "Venomasa");
-                        key.SetValue("DisplayIcon", iconPath);
+                        string finalIcon = File.Exists(iconPath) ? iconPath : (exePath + ",0");
+                        key.SetValue("DisplayIcon", finalIcon);
                         key.SetValue("InstallLocation", installDir);
                         key.SetValue("UninstallString", string.Format("\"{0}\"", Path.Combine(installDir, "Uninstall.exe")));
                         key.SetValue("NoModify", 1, RegistryValueKind.DWord);

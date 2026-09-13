@@ -307,22 +307,23 @@ function onRunePageOverlayClick(e){
 }
 
 function confirmReplaceRunePage(pageId, pageName){
-
+  try {
+    localStorage.setItem("loc_dedicated_rune_page_id", pageId);
+  } catch(e) {}
   closeRunePageSelectModal();
-
   injectSoloLoadoutToClient(pageId);
-
 }
 
-
 function injectSoloLoadoutToClient(replacePageId = 0){
-
   if(!soloState || !soloState.champ || !soloState.runes || !soloState.items){
-
     showToast("Please roll a champion first!");
-
     return;
-
+  }
+  if(!replacePageId){
+    try {
+      const saved = localStorage.getItem("loc_dedicated_rune_page_id");
+      if(saved) replacePageId = parseInt(saved, 10) || 0;
+    } catch(e) {}
   }
 
   const btn = document.getElementById("btnSoloInject");
@@ -440,15 +441,15 @@ function handleInjectResult(data){
   }
 
   if(data && data.requiresPageSelection){
-
+    try { localStorage.removeItem("loc_dedicated_rune_page_id"); } catch(e) {}
     openRunePageSelectModal(data.pages, data.championName);
-
     return;
-
   }
 
   if(data && data.success){
-
+    if(data.pageId){
+      try { localStorage.setItem("loc_dedicated_rune_page_id", data.pageId); } catch(e) {}
+    }
     let toastMsg = `⚔️ Injected: League of Customs - ${data.championName}!`;
 
     if(data.champHovered){
@@ -471,7 +472,7 @@ function handleInjectResult(data){
 
   } else {
 
-    showToast(data && data.error ? data.error : "Failed to inject loadout to League Client.");
+    showToast(data && data.error ? data.error : (data && data.message ? data.message : "Failed to inject loadout to League Client."));
 
   }
 

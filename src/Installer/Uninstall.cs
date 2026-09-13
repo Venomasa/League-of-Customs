@@ -1,8 +1,18 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft.Win32;
+
+[assembly: AssemblyTitle("League of Customs Uninstaller")]
+[assembly: AssemblyDescription("League of Customs Uninstaller")]
+[assembly: AssemblyCompany("Venomasa")]
+[assembly: AssemblyProduct("League of Customs")]
+[assembly: AssemblyCopyright("Copyright © Venomasa 2026")]
+[assembly: AssemblyVersion("0.6.0.0")]
+[assembly: AssemblyFileVersion("0.6.0.0")]
 
 namespace LeagueOfCustoms.Installer
 {

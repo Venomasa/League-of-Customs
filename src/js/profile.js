@@ -1,4 +1,12 @@
-function searchProfile(){
+const _cachedProfiles = {};
+const PROFILE_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes TTL
+const _cachedScoreboards = {};
+
+function refreshCurrentProfile(){
+  searchProfile(true);
+}
+
+function searchProfile(force = false){
 
   const nameInput = document.getElementById("profNameInput");
 
@@ -7,6 +15,8 @@ function searchProfile(){
   const regionSelect = document.getElementById("profRegionSelect");
 
   const btn = document.getElementById("profSearchBtn");
+
+  const refreshBtn = document.getElementById("profRefreshBtn");
 
   const status = document.getElementById("profStatus");
 
@@ -42,9 +52,20 @@ function searchProfile(){
 
   }
 
+  const cacheKey = `${region}:${name.toLowerCase()}#${tag.toLowerCase()}`;
+  if(!force && _cachedProfiles[cacheKey]){
+    const cachedEntry = _cachedProfiles[cacheKey];
+    if(Date.now() - cachedEntry.timestamp < PROFILE_CACHE_TTL_MS){
+      handleProfileResult(cachedEntry.data);
+      return;
+    }
+  }
+
   btn.disabled = true;
 
   btn.innerHTML = `<svg class="spin-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"/></svg> SEARCHING...`;
+
+  if(refreshBtn) refreshBtn.disabled = true;
 
   status.className = "profile-status-bar show loading";
 
@@ -66,6 +87,8 @@ function searchProfile(){
 
     btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> SEARCH`;
 
+    if(refreshBtn) refreshBtn.disabled = false;
+
   }
 
 }
@@ -74,6 +97,8 @@ function handleProfileResult(data){
 
   const btn = document.getElementById("profSearchBtn");
 
+  const refreshBtn = document.getElementById("profRefreshBtn");
+
   const status = document.getElementById("profStatus");
 
   if(btn){
@@ -81,6 +106,12 @@ function handleProfileResult(data){
     btn.disabled = false;
 
     btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> SEARCH`;
+
+  }
+
+  if(refreshBtn){
+
+    refreshBtn.disabled = false;
 
   }
 
@@ -94,6 +125,14 @@ function handleProfileResult(data){
 
     return;
 
+  }
+
+  if(data.gameName && data.tagLine && data.region){
+    const cacheKey = `${data.region.toLowerCase()}:${data.gameName.toLowerCase()}#${data.tagLine.toLowerCase()}`;
+    _cachedProfiles[cacheKey] = {
+      timestamp: Date.now(),
+      data: data
+    };
   }
 
   status.className = "profile-status-bar";
@@ -508,6 +547,19 @@ function renderProfileMatches(matches){
   }
 
   renderMatchCards();
+
+  if(allLoadedMatches.length > 0 && currentProfileData && window.chrome && window.chrome.webview){
+    const firstMatch = allLoadedMatches[0];
+    const fGameId = firstMatch.gameId || "";
+    const fCreatedAt = firstMatch.createdAt || "";
+    if(fGameId && !_cachedScoreboards[fGameId]){
+      setTimeout(() => {
+        try {
+          window.chrome.webview.postMessage(`prefetch-game-detail:${fGameId}|${fCreatedAt}|${currentProfileData.gameName}|${currentProfileData.tagLine}|${currentProfileData.region}`);
+        } catch(e) {}
+      }, 250);
+    }
+  }
 
 }
 
@@ -1327,6 +1379,14 @@ function openScoreboard(idx){
 
   if(!m) return;
 
+  const gameId = m.gameId || "";
+
+  // Instant render if cached in memory
+  if(gameId && _cachedScoreboards[gameId]){
+    renderScoreboard(_cachedScoreboards[gameId]);
+    return;
+  }
+
   const listView = document.getElementById("profMatchListView");
 
   const detailView = document.getElementById("profMatchDetailView");
@@ -1377,8 +1437,6 @@ function openScoreboard(idx){
 
   if(window.chrome && window.chrome.webview && currentProfileData){
 
-    const gameId = m.gameId || "";
-
     const createdAt = m.createdAt || "";
 
     window.chrome.webview.postMessage(`get-game-detail:${gameId}|${createdAt}|${currentProfileData.gameName}|${currentProfileData.tagLine}|${currentProfileData.region}`);
@@ -1401,9 +1459,19 @@ function closeMatchScoreboard(){
 
 function renderScoreboard(data){
 
+  if(data && data.gameId && !data.error && data.teams && data.teams.length > 0){
+    _cachedScoreboards[data.gameId] = data;
+  }
+
+  const listView = document.getElementById("profMatchListView");
+  const detailView = document.getElementById("profMatchDetailView");
   const scoreboardView = document.getElementById("profMatchScoreboardView");
 
   if(!scoreboardView) return;
+
+  if(listView) listView.style.display = "none";
+  if(detailView) detailView.style.display = "none";
+  scoreboardView.style.display = "block";
 
   if(data.error){
 

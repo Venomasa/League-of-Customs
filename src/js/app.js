@@ -2,96 +2,56 @@
 
       window._splashDismissed = false;
 
+      // Top-level dismiss helper
       window._dismissSplashScreenImmediate = function(){
-
         if(window._splashDismissed) return;
-
         window._splashDismissed = true;
-
         var splash = document.getElementById("appSplashScreen");
-
         if(splash){
-
           splash.classList.add("splash-fade-out");
-
           setTimeout(function(){ splash.style.display = "none"; }, 350);
-
         }
-
       };
-
-      // Guaranteed top-level failsafe: Dismiss after 2.2s under any circumstance
-
-      setTimeout(function(){
-
-        if(typeof window._dismissSplashScreenImmediate === "function"){
-
-          window._dismissSplashScreenImmediate();
-
-        }
-
-      }, 2200);
-
     })();
 
 
 function switchAppTab(tab){
-
-  const tabs = ["patches", "profile", "randomizer"];
-
+  const tabs = ["patches", "profile", "randomizer", "wiki"];
   const mainContent = document.querySelector(".main-content");
-
   if(mainContent){
-
     mainContent.style.overflowY = (tab === "patches") ? "hidden" : "auto";
-
   }
-
   tabs.forEach(t => {
-
     const btn = document.getElementById("navTab" + t.charAt(0).toUpperCase() + t.slice(1));
-
     const page = document.getElementById("page" + t.charAt(0).toUpperCase() + t.slice(1));
-
     if(btn) btn.classList.toggle("active", t === tab);
-
     if(page) page.classList.toggle("active", t === tab);
-
   });
-
+  if(tab === "wiki" && typeof initWiki === "function"){
+    initWiki();
+  }
 }
 
-
 function openExternalUrl(e, url){
-
   if(e) e.preventDefault();
-
   if(!url || url === "#") return;
-
   if(window.chrome && window.chrome.webview){
-
     window.chrome.webview.postMessage("open-url:" + url);
-
   } else {
-
     window.open(url, "_blank");
-
   }
-
 }
 
 if(window.chrome&&window.chrome.webview){
-
   window.chrome.webview.addEventListener("message",function(e){
-
     try{
-
       const data=typeof e.data==="string"?JSON.parse(e.data):e.data;
-
       if(data && data.injectType === "solo-loadout"){
-
         handleInjectResult(data);
-
+      }else if(data && data.wikiType){
+        if(typeof handleWikiIpcMessage === "function"){
+          handleWikiIpcMessage(data);
+        }
       }else if(data && data.patchNotesType){
 
         handlePatchNotesMessage(data);
@@ -127,6 +87,18 @@ if(window.chrome&&window.chrome.webview){
       if(typeof openImageLightbox === "function"){
 
         openImageLightbox(data.url, "");
+
+      }
+
+    }else if(data && data.type === "image-downloaded"){
+
+      if(data.success){
+
+        if(typeof showToast === "function") showToast("Image saved to Downloads folder!", "success");
+
+      }else if(data.error){
+
+        if(typeof showToast === "function") showToast("Download error: " + data.error, "error");
 
       }
 
@@ -569,53 +541,60 @@ function handleAutoUpdateMessage(data){
   
 
   if(data.status === "found"){
-
     _isAutoUpdating = true;
-
     if(window._splashSafetyTimer){
-
       clearTimeout(window._splashSafetyTimer);
-
       window._splashSafetyTimer = null;
-
     }
-
-    if(statusEl) statusEl.textContent = `New update (${data.version}) found! Downloading...`;
-
+    const sizeMb = data.size ? ` (${(data.size / 1048576).toFixed(1)} MB)` : "";
+    if(statusEl) statusEl.textContent = `New update (${data.version}) found! Downloading${sizeMb}...`;
     if(barEl) barEl.style.width = "55%";
 
+    // Safety timeout for download: 45s maximum to avoid freezing on stalled connection
+    if(window._updateDownloadTimer) clearTimeout(window._updateDownloadTimer);
+    window._updateDownloadTimer = setTimeout(() => {
+      if(_isAutoUpdating){
+        console.warn("Auto-update download timed out. Proceeding to app.");
+        _isAutoUpdating = false;
+        if(statusEl) statusEl.textContent = "Starting League of Customs...";
+        dismissSplashScreen();
+      }
+    }, 45000);
+
   } else if(data.status === "downloading"){
-
     _isAutoUpdating = true;
-
     const pct = data.progress || 0;
-
     const mappedPct = 55 + Math.round((pct / 100) * 40);
-
     if(statusEl) statusEl.textContent = `Updating to ${data.version}... ${pct}%`;
-
     if(barEl) barEl.style.width = mappedPct + "%";
 
   } else if(data.status === "installing"){
-
     _isAutoUpdating = true;
-
+    if(window._updateDownloadTimer) clearTimeout(window._updateDownloadTimer);
     if(statusEl) statusEl.textContent = `Installing update (${data.version})... Restarting...`;
-
     if(barEl) barEl.style.width = "100%";
 
-  } else if(data.status === "up-to-date" || data.status === "error" || data.status === "no-installer-asset"){
-
+  } else if(data.status === "up-to-date" || data.status === "no-installer-asset"){
+    _isAutoUpdating = false;
     if(_autoUpdateResolve){
-
       _autoUpdateResolve();
-
       _autoUpdateResolve = null;
-
     }
 
+  } else if(data.status === "error"){
+    _isAutoUpdating = false;
+    if(window._updateDownloadTimer) clearTimeout(window._updateDownloadTimer);
+    if(_autoUpdateResolve){
+      _autoUpdateResolve();
+      _autoUpdateResolve = null;
+    }
+    // Graceful recovery: proceed to app instead of getting stuck on splash screen
+    if(statusEl) statusEl.textContent = "Ready. Welcome, Summoner.";
+    if(barEl) barEl.style.width = "100%";
+    setTimeout(() => {
+      dismissSplashScreen();
+    }, 350);
   }
-
 }
 
 // ==========================================================================
@@ -654,50 +633,70 @@ function isNewerVersion(latest, current){
 
 }
 
-function updateDisplayedLeagueVersion(ver){
-
-  let leaguePatch = window._currentLeaguePatch;
-  if(!leaguePatch){
-    try { leaguePatch = localStorage.getItem("loc_latest_league_patch"); } catch(e){}
-  }
-
-  // If a valid 2-segment League patch (e.g. "26.18") is supplied, store it
+function toOfficialLeaguePatch(ver){
   if(ver && typeof ver === "string"){
     const clean = ver.trim();
     const parts = clean.split(".");
-    if(parts.length === 2 || clean.startsWith("26.") || clean.startsWith("14.")){
-      leaguePatch = clean;
-      window._currentLeaguePatch = clean;
-      try { localStorage.setItem("loc_latest_league_patch", clean); } catch(e){}
+    if(parts.length >= 2){
+      let major = parts[0];
+      const minor = parts[1];
+      // Map Data Dragon internal version (16.x) to official League of Legends season patch (26.x)
+      if(major === "16") major = "26";
+      return `${major}.${minor}`;
     }
+    if(clean.startsWith("16.")) return "26." + clean.substring(3);
+    if(clean.startsWith("26.")) return clean;
   }
+  if(window._currentLeaguePatch && typeof window._currentLeaguePatch === "string"){
+    const cp = window._currentLeaguePatch.trim();
+    if(cp.startsWith("16.")) return "26." + cp.substring(3);
+    if(cp.startsWith("26.")) return cp;
+  }
+  try{
+    const stored = localStorage.getItem("loc_latest_league_patch");
+    if(stored && typeof stored === "string"){
+      const sp = stored.trim();
+      if(sp.startsWith("16.")) return "26." + sp.substring(3);
+      if(sp.startsWith("26.")) return sp;
+    }
+  }catch(e){}
+  return "26.18";
+}
+window.toOfficialLeaguePatch = toOfficialLeaguePatch;
 
-  const finalVer = leaguePatch || "26.18";
+function updateDisplayedLeagueVersion(ver){
+
+  const finalVer = toOfficialLeaguePatch(ver);
+
+  window._currentLeaguePatch = finalVer;
+  try { localStorage.setItem("loc_latest_league_patch", finalVer); } catch(e){}
 
   // Titlebar
   const tbNum = document.getElementById("titlebarVersion") || document.querySelector(".titlebar-version .v-num");
   if(tbNum) {
-    tbNum.innerHTML = `v0.5 <span class="v-patch">(LoL ${finalVer})</span>`;
+    tbNum.innerHTML = `v0.6 <span class="v-patch">(LoL ${finalVer})</span>`;
   } else {
     const tbEl = document.querySelector(".titlebar-version");
-    if(tbEl) tbEl.innerHTML = `<span class="v-num">v0.5 <span class="v-patch">(LoL ${finalVer})</span></span>`;
+    if(tbEl) tbEl.innerHTML = `<span class="v-num">v0.6 <span class="v-patch">(LoL ${finalVer})</span></span>`;
   }
 
   // Modal About Card
   const modalMetaEl = document.querySelector(".about-update-meta");
-  if(modalMetaEl) modalMetaEl.innerHTML = `Installed Version: <span class="meta-gold">v0.5</span> &bull; Game Patch: <span class="meta-blue">LoL ${finalVer}</span>`;
+  if(modalMetaEl) modalMetaEl.innerHTML = `Installed Version: <span class="meta-gold">v0.6</span> &bull; Game Patch: <span class="meta-blue">LoL ${finalVer}</span>`;
 
   // Modal Footer
   const modalFooterVer = document.getElementById("modalFooterVersion");
-  if(modalFooterVer) modalFooterVer.innerHTML = `v0.5 <span class="v-patch">(LoL ${finalVer})</span>`;
-
-  
+  if(modalFooterVer) modalFooterVer.innerHTML = `v0.6 <span class="v-patch">(LoL ${finalVer})</span>`;
 
   // Splash Tag
-
   const splashTag = document.getElementById("splashPatchTag");
+  if(splashTag) splashTag.textContent = `v0.6 (LoL ${finalVer}) • LIVE SYNC ENGINE`;
 
-  if(splashTag) splashTag.textContent = `v0.5 (LoL ${finalVer}) • LIVE SYNC ENGINE`;
+  // Items Page Shop Badges
+  const lolShopSidebarPatch = document.getElementById("lolShopSidebarPatch");
+  if(lolShopSidebarPatch) lolShopSidebarPatch.innerText = finalVer;
+  const lolShopPatchTag = document.getElementById("lolShopPatchTag");
+  if(lolShopPatchTag) lolShopPatchTag.innerText = "PATCH " + finalVer;
 
 }
 
@@ -1119,136 +1118,77 @@ async function runAppStartupSync(){
 
   // Hard safety timeout: Never trap user for more than 3.0s unless actively auto-updating
 
+  // Hard safety timeout: Never trap user for more than 4.2s unless actively auto-updating
   window._splashSafetyTimer = setTimeout(() => {
-
     if(!_isAutoUpdating){
-
       dismissSplashScreen();
-
     }
-
-  }, 3000);
-
-  
+  }, 4200);
 
   try {
-
     // Step 1: Initialize Core
-
-    updateSplash("Initializing Hextech Core...", 22);
-
-    await new Promise(r => setTimeout(r, 200));
-
-    
+    updateSplash("Initializing Hextech Core...", 25);
+    await new Promise(r => setTimeout(r, 150));
 
     // Step 2: Real live sync via C# native bridge
-
-    updateSplash("Connecting to Riot DataDragon...", 45);
-
-    
+    updateSplash("Connecting to Riot DataDragon...", 48);
 
     const syncWaitPromise = new Promise(resolve => {
-
       _liveSyncPromiseResolve = resolve;
-
     });
 
-    
-
     if(window.chrome && window.chrome.webview){
-
       window.chrome.webview.postMessage("sync-live-data:" + (LOL_DATA.version || "16.18.1"));
-
     } else {
-
       fetch("https://ddragon.leagueoflegends.com/api/versions.json")
-
         .then(r => r.json())
-
         .then(v => handleLiveDataSyncResult({ success: true, latestPatch: v[0] }))
-
         .catch(err => handleLiveDataSyncResult({ success: false, error: err.message }));
-
     }
 
-    
-
-    // Await real C# response (or 1.4s max race)
-
+    // Await real C# response (or 1.8s max race on slow connections)
     await Promise.race([
-
       syncWaitPromise,
-
-      new Promise(r => setTimeout(r, 1400))
-
+      new Promise(r => setTimeout(r, 1800))
     ]);
 
-    
-
     // Step 3: Live Sync Auto-Update Check
-
-    updateSplash("Checking for updates...", 60);
+    updateSplash("Checking for updates...", 68);
 
     const updateWaitPromise = new Promise(resolve => {
-
       _autoUpdateResolve = resolve;
-
     });
 
     if(window.chrome && window.chrome.webview){
-
       window.chrome.webview.postMessage("check-auto-update");
-
     }
 
-    // Wait up to 1.2s for response. If update is found, _isAutoUpdating becomes true
-
+    // Wait up to 2.2s for response. If update is found, _isAutoUpdating becomes true
     await Promise.race([
-
       updateWaitPromise,
-
-      new Promise(r => setTimeout(r, 1200))
-
+      new Promise(r => setTimeout(r, 2200))
     ]);
 
     if(_isAutoUpdating){
-
       // If downloading/installing update, keep splash active until installer restarts app
-
       return;
-
     }
-
-    
 
     // Step 4: Ready
-
     updateSplash("Ready. Welcome, Summoner.", 100);
-
-    await new Promise(r => setTimeout(r, 300));
+    await new Promise(r => setTimeout(r, 250));
 
   } catch(e) {
-
     console.error("Startup error:", e);
-
   } finally {
-
     if(!_isAutoUpdating){
-
       if(window._splashSafetyTimer){
-
         clearTimeout(window._splashSafetyTimer);
-
         window._splashSafetyTimer = null;
-
       }
-
       dismissSplashScreen();
-
     }
-
   }
-
 }
 
 

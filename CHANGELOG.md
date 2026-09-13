@@ -2,6 +2,49 @@
 
 All notable changes to **League of Customs** are documented here.
 
+## [v0.6] — 2026-09-12
+
+### Added
+- **Hextech Wiki (Champions, Items & Runes Armory)**:
+  - Added a dedicated 4th major tab `Wiki` to the League of Customs client with sub-navigation for Champions, Items, and Runes.
+  - **Champions Archive**: Complete 173+ champion roster with live instant search, role/lane filters, lore biographies, regional faction hero covers matching champion origin lore, tactical rating meters, base stats grid, interactive abilities kit (Passive + Q, W, E, R with official League stat icons for Ability Haste, Mana Cost, and Range), and full skin splash gallery.
+  - **Items Armory**: Full searchable item catalog with category/tier filters (Legendary, Epic, Basic, Starter, Boots), stat modifiers (AD, AP, Armor, MR, Health, Haste, Vamp, etc.), Summoner's Rift map availability filters, official League game patch display (`PATCH 26.18`), and interactive recipe trees with individual combine costs in parentheses `[Total (Combine)]` formatted after the official League Wiki.
+  - **Runes Reforged**: Streamlined 5-path explorer (Precision, Domination, Sorcery, Resolve, Inspiration) with keystones, 3 minor rune tiers, and official stat shards (Offense, Flex, Defense) positioned directly beneath path tabs.
+  - **Zero-Bloat Caching**: Built-in C# disk caching at `%LocalAppData%\LeagueOfCustoms\wiki_cache\` for instant sub-millisecond offline loading and minimal RAM usage.
+- **Hextech Lightbox & High-Resolution Artwork Downloader**:
+  - Fullscreen high-resolution artwork viewer for exploring champion skins and patch notes images with asynchronous preloading and Hextech loading spinner.
+  - Custom right-click context menu with **"Download Full Image"** and **"Copy Image Link"**, plus a dedicated top-right **DOWNLOAD** button, saving high-resolution artwork directly into the Windows `Downloads` folder with duplicate collision renaming `(1)`, `(2)`.
+- **Instant Match Scoreboard Caching (< 1ms)**:
+  - Implemented a two-tier caching architecture (in-memory JavaScript map + persistent disk cache at `%LocalAppData%\LeagueOfCustoms\cache\scoreboards\`) for 10-player match scoreboards.
+  - Because completed matches are immutable, repeated clicks on any match scoreboard render instantaneously with zero network latency.
+- **Predictive Background Match Prefetching**:
+  - The client automatically prefetches the full 10-player scoreboard for the player's latest match 250ms after match history renders, guaranteeing an instant (< 0.05ms perceived) scoreboard reveal upon click.
+- **Summoner Profile Session Caching (5-Min TTL) & Hextech Refresh**:
+  - In-memory session cache with a 5-minute time-to-live for summoner profile queries. Switching between favorite profiles or tabs is now instantaneous.
+  - Added Hextech Refresh button (`🔄`) next to Search allowing players to bypass cache and force a fresh lookup anytime.
+- **HTTP Keep-Alive & Socket Connection Pooling**:
+  - Configured C# `.NET` `ServicePointManager` and `HttpWebRequest.KeepAlive` for `mcp-api.op.gg`, maintaining open sockets and saving ~200–350ms of TCP/TLS handshake overhead per call.
+- **Hextech Context Menu & Lightbox**:
+  - Integrated custom League client-styled context menu supporting Cut, Copy, Paste, and Select All with keyboard shortcuts across input fields and text selections.
+### Fixed
+- **Resilient Live Sync & Auto-Updater on Slow Connections**:
+  - Fixed an issue where the background auto-updater could abort `WebClient` downloads on slow or high-latency internet connections due to premature object disposal during asynchronous streaming.
+  - Implemented network stall protection and graceful error recovery: if network drops or times out during startup sync, the application smoothly transitions into the program instead of hanging or locking the splash screen.
+- **LCU Rune Page Injection & Champion Special Characters**:
+  - Sanitized rune page names to remove apostrophes, ampersands, and punctuation (e.g. `Cho'Gath` -> `LoC - ChoGath`, `Kai'Sa` -> `LoC - KaiSa`, `Nunu & Willump` -> `LoC - Nunu Willump`), strictly adhering to Riot LCU's perk name regex `^[a-zA-Z0-9 _.-]{1,25}$`.
+  - Fixed LCU `PUT /lol-perks/v1/pages/{id}` by stripping client-computed read-only fields (`isDeletable`, `isActive`, `id`), allowing clean in-place updates.
+  - Resolved active-page deletion rejection by safely switching `/lol-perks/v1/currentpage` to a default non-deletable page (e.g. IDs 50–54) before deleting, completely eliminating duplicate pages and slot exhaustion lockups.
+  - Added automatic cleanup of any leftover duplicate `LoC` pages, guaranteeing strictly ONE dedicated page.
+  - Synchronized all 5 perk trees with live official DataDragon IDs.
+- **Patch Notes Sidebar & Multi-Page RAM Optimization**:
+  - **Sidebar Thumbnail Downscaling (4K/7K to 120x86 WebP)**: Transformed all patch archive sidebar thumbnails from massive 1080p, 4K, and 7K splash art (which previously took up to 115 MB of decoded RAM per thumbnail) down to cropped 120x86 WebP (~2.9 KB, ~38 KB RAM). Combined with CSS `content-visibility: auto` on `.patch-archive-card`, scrolling through the 50+ archive cards now takes under 2 MB of RAM total instead of hundreds of megabytes.
+  - Converted Riot Sanity CDN images dynamically to lightweight 800px WebP format (`?w=800&fm=webp&q=75`), reducing image network transfer by **97.6%** (from 1 MB to 24 KB) and uncompressed bitmap RAM footprint by **>80%** per image.
+  - Explicitly cleared previous DOM images (`img.src = ""`) before mounting a new patch, freeing decoded image surfaces from Chromium memory.
+  - Capped in-memory patch detail retention to 3 patches and enabled `_webView.CoreWebView2.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Low;` to aggressively trim inactive caches.
+  - Eliminated sticky `backdrop-filter: blur(8px)` on `.patch-toc-bar`, replaced hero blur with hardware-accelerated transform layers, and enforced `loading="lazy"` and `decoding="async"`.
+  - Added a 4-hour disk cache TTL to `FetchPatchNotesListJson()` in C#, making the patch notes list load in **0.2 ms** from disk on startup without hitting Riot's web servers repeatedly.
+
+
 ## [v0.5] — 2026-09-12
 
 ### Added

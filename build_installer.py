@@ -48,6 +48,7 @@ files_to_pack = [
     ('WebView2Loader.dll', 'WebView2Loader.dll'),
     (r'src\Installer\Uninstall.exe', 'Uninstall.exe'),
     (r'assets\app.ico', r'assets\app.ico'),
+    (r'assets\app.ico', 'app.ico'),
     (r'assets\app.png', r'assets\app.png'),
     (r'README.md', 'README.md'),
     (r'index.html', 'index.html'),
@@ -61,10 +62,12 @@ for js_file in os.listdir(r'src\js'):
     if js_file.endswith('.js'):
         files_to_pack.append((os.path.join(r'src\js', js_file), os.path.join(r'src\js', js_file)))
 
-# Add role icons
-for icon in os.listdir(r'assets\icons'):
-    if icon.endswith('.png'):
-        files_to_pack.append((os.path.join(r'assets\icons', icon), os.path.join(r'assets\icons', icon)))
+# Add role and rune icons recursively
+for root, dirs, files in os.walk(r'assets\icons'):
+    for f in files:
+        if f.endswith('.png'):
+            full_path = os.path.join(root, f)
+            files_to_pack.append((full_path, full_path))
 
 with zipfile.ZipFile(payload_zip, 'w', zipfile.ZIP_DEFLATED) as z:
     for src, arc in files_to_pack:
@@ -74,8 +77,8 @@ with zipfile.ZipFile(payload_zip, 'w', zipfile.ZIP_DEFLATED) as z:
 print(f"  -> payload.zip size: {os.path.getsize(payload_zip):,} bytes")
 
 # 3. Compile Setup.exe
-print("3. Compiling LeagueOfCustoms-Setup-v0.5.exe...")
-setup_exe = os.path.join(dist_dir, 'LeagueOfCustoms-Setup-v0.5.exe')
+print("3. Compiling LeagueOfCustoms-Setup-v0.6.exe...")
+setup_exe = os.path.join(dist_dir, 'LeagueOfCustoms-Setup-v0.6.exe')
 res = subprocess.run([
     csc, '/nologo', '/optimize+', '/target:winexe',
     r'/win32icon:assets\app.ico',
@@ -92,7 +95,7 @@ print(f"  -> {setup_exe} built successfully! Size: {os.path.getsize(setup_exe):,
 
 # 4. Create Portable zip
 print("4. Packaging Portable ZIP...")
-portable_zip = os.path.join(dist_dir, 'LeagueOfCustoms-v0.5-Portable.zip')
+portable_zip = os.path.join(dist_dir, 'LeagueOfCustoms-v0.6-Portable.zip')
 portable_files = [
     ('LeagueOfCustoms.exe', 'LeagueOfCustoms/LeagueOfCustoms.exe'),
     ('Microsoft.Web.WebView2.Core.dll', 'LeagueOfCustoms/Microsoft.Web.WebView2.Core.dll'),
@@ -112,9 +115,12 @@ portable_files = [
 for js_file in os.listdir(r'src\js'):
     if js_file.endswith('.js'):
         portable_files.append((os.path.join(r'src\js', js_file), f'LeagueOfCustoms/src/js/{js_file}'))
-for icon in os.listdir(r'assets\icons'):
-    if icon.endswith('.png'):
-        portable_files.append((os.path.join(r'assets\icons', icon), f'LeagueOfCustoms/assets/icons/{icon}'))
+for root, dirs, files in os.walk(r'assets\icons'):
+    for f in files:
+        if f.endswith('.png'):
+            full_path = os.path.join(root, f)
+            rel_path = os.path.relpath(full_path, 'assets')
+            portable_files.append((full_path, f'LeagueOfCustoms/assets/{rel_path}'))
 
 with zipfile.ZipFile(portable_zip, 'w', zipfile.ZIP_DEFLATED) as z:
     for src, arc in portable_files:
