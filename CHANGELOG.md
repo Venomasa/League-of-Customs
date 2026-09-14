@@ -2,6 +2,22 @@
 
 All notable changes to **League of Customs** are documented here.
 
+## [v0.6.3] — 2026-09-14
+
+### Added
+- **Season 2026 Starter Items (Doran's Bow & Doran's Helm)**:
+  - Added *Doran's Bow* (Item ID 1086) and *Doran's Helm* (Item ID 1120) into the Hextech Wiki Items Armory and Randomizer starter pools, with official gold values, base stats, and passive effects.
+  - Restored *Bloodletter's Curse* (Item ID 8010) and *Cull* (Item ID 1083) to the Summoner's Rift item armory.
+- **Dynamic Starter Sync Engine**:
+  - Enhanced the Live Sync item engine (`syncLiveItemsIntoPool`) to automatically discover and classify new starter items on Summoner's Rift across live Riot Data Dragon patches.
+  - Synchronized starter item pools with persistent local storage (`loc_dynamic_lol_data`) for instant offline availability.
+
+### Changed
+- **Tokenized & Alias-Aware Wiki Item Search**:
+  - Upgraded the Items Armory search algorithm with punctuation normalization (allowing queries like `dorans` and `doran's` to match interchangeably).
+  - Implemented multi-word tokenized search, allowing queries like `doran bow` or `doran helmet` to pinpoint corresponding items without strict substring order constraints.
+  - Added colloquial aliases so search terms like `helmet` immediately resolve to *Doran's Helm*, and `bork` resolves to *Blade of the Ruined King*.
+
 ## [v0.6.2] — 2026-09-14
 
 ### Added

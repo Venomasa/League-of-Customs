@@ -1097,7 +1097,7 @@ function processItemsData(dataObj) {
 
     // 7. Exclude non-Summoner's Rift items (ARAM Guardian items, Arena/Nexus Blitz items, broken/test items)
     if (lowerName.startsWith("guardian's") ||
-        ['bloodletter', 'spectral cutlass', "doran's bow", "doran's helm", 'shattered armguard', "kalista's black spear", 'scarecrow effigy'].some(x => lowerName.includes(x))) {
+        ['spectral cutlass', 'shattered armguard', "kalista's black spear", 'scarecrow effigy'].some(x => lowerName.includes(x))) {
       return;
     }
     if (['placeholder', 'test', 'quick charge', 'disabled', 'retired', 'dummy', 'anvil', 'juice', 'augment'].some(x => lowerName.includes(x))) return;
@@ -1130,7 +1130,7 @@ function processItemsData(dataObj) {
     }
 
     // Starters: Doran's, Cull, Dark Seal, Tear, Jungle starter pets, World Atlas
-    const STARTER_IDS = new Set(['1054', '1055', '1056', '1082', '1083', '3070', '3865', '1101', '1102', '1103']);
+    const STARTER_IDS = new Set(['1054', '1055', '1056', '1082', '1083', '1086', '1120', '3070', '3865', '1101', '1102', '1103']);
     let isStarter = false;
     if (!isBoot && !isConsumable) {
       if (STARTER_IDS.has(id) || (goldTotal <= 500 && fromItems.length === 0 && (lowerName.includes('doran') || lowerName.includes('cull') || lowerName.includes('dark seal') || lowerName.includes('hatchling') || lowerName.includes('pup') || lowerName.includes('seedling')))) {
@@ -1195,7 +1195,7 @@ function processItemsData(dataObj) {
 // ==========================================================================
 
 const SEASON_2026_CHANGED_IDS = new Set([
-  '3089', '3031', '3078', '3071', '6692', '6693', '6694', '6695', '6696', '6697', '6698', '6699', '6700',
+  '1086', '1120', '3089', '3031', '3078', '3071', '6692', '6693', '6694', '6695', '6696', '6697', '6698', '6699', '6700',
   '3143', '3153', '3065', '3075', '3083', '3091', '3094', '3100', '3110', '3115', '3116', '3119', '3124',
   '3135', '3142', '3157', '3165', '3508', '3814', '6671', '6672', '6673', '6675', '6676', '6665', '6667',
   '6653', '6655', '6656', '6657', '2504', '2502', '2503', '2422', '3865', '3866', '3867', '3869', '3870', '3871', '3876', '3877'
@@ -1280,13 +1280,45 @@ function renderLolShopMainGrid() {
       if (!isChanged) return false;
     }
 
-    // 2. Search query
+    // 2. Search query (normalized, punctuation-agnostic, tokenized, and alias-friendly)
     if (q) {
-      const matchName = (it.name || '').toLowerCase().includes(q);
-      const matchPlain = (it.plaintext || '').toLowerCase().includes(q);
-      const matchDesc = (it.description || '').toLowerCase().includes(q);
-      const matchTags = (it.tags || []).some(t => t.toLowerCase().includes(q));
-      if (!matchName && !matchPlain && !matchDesc && !matchTags) return false;
+      const normalize = s => (s || '').toLowerCase().replace(/['’`.]/g, '').replace(/[-_]/g, ' ').trim();
+      const cleanQ = normalize(q);
+      const cleanName = normalize(it.name);
+      const cleanPlain = normalize(it.plaintext);
+      const cleanDesc = normalize(it.description);
+      const cleanTags = (it.tags || []).map(t => normalize(t));
+
+      // Common aliases & colloquials
+      const aliases = [];
+      if (cleanName.includes('doran') && cleanName.includes('helm')) aliases.push('helmet', 'hat', 'cap');
+      if (cleanName.includes('deathcap')) aliases.push('hat', 'rabadon');
+      if (cleanName.includes('ruined king')) aliases.push('botrk', 'bork');
+      if (cleanName.includes('lord dominik')) aliases.push('ldrk', 'ldr');
+      if (cleanName.includes('infinity edge')) aliases.push('ie');
+      if (cleanName.includes('rapid firecannon')) aliases.push('rfc');
+      if (cleanName.includes('guardian angel')) aliases.push('ga');
+      if (cleanName.includes('zhonya')) aliases.push('hourglass');
+
+      const fullMatch = cleanName.includes(cleanQ) ||
+                        cleanPlain.includes(cleanQ) ||
+                        cleanDesc.includes(cleanQ) ||
+                        cleanTags.some(t => t.includes(cleanQ)) ||
+                        aliases.some(a => a.includes(cleanQ));
+
+      if (!fullMatch) {
+        const tokens = cleanQ.split(/\s+/).filter(Boolean);
+        const allTokensMatch = tokens.length > 0 && tokens.every(tok => {
+          if (cleanName.includes(tok)) return true;
+          if (aliases.some(a => a.includes(tok))) return true;
+          if (cleanTags.some(t => t.includes(tok))) return true;
+          if (cleanPlain.includes(tok)) return true;
+          if (cleanDesc.includes(tok)) return true;
+          if (tok === 'helmet' && cleanName.includes('helm')) return true;
+          return false;
+        });
+        if (!allTokensMatch) return false;
+      }
     }
 
     // 3. Role / Class filter

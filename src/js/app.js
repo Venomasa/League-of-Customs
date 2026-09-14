@@ -674,23 +674,23 @@ function updateDisplayedLeagueVersion(ver){
   // Titlebar
   const tbNum = document.getElementById("titlebarVersion") || document.querySelector(".titlebar-version .v-num");
   if(tbNum) {
-    tbNum.innerHTML = `v0.6.2 <span class="v-patch">(LoL ${finalVer})</span>`;
+    tbNum.innerHTML = `v0.6.3 <span class="v-patch">(LoL ${finalVer})</span>`;
   } else {
     const tbEl = document.querySelector(".titlebar-version");
-    if(tbEl) tbEl.innerHTML = `<span class="v-num">v0.6.2 <span class="v-patch">(LoL ${finalVer})</span></span>`;
+    if(tbEl) tbEl.innerHTML = `<span class="v-num">v0.6.3 <span class="v-patch">(LoL ${finalVer})</span></span>`;
   }
 
   // Modal About Card
   const modalMetaEl = document.querySelector(".about-update-meta");
-  if(modalMetaEl) modalMetaEl.innerHTML = `Installed Version: <span class="meta-gold">v0.6.2</span> &bull; Game Patch: <span class="meta-blue">LoL ${finalVer}</span>`;
+  if(modalMetaEl) modalMetaEl.innerHTML = `Installed Version: <span class="meta-gold">v0.6.3</span> &bull; Game Patch: <span class="meta-blue">LoL ${finalVer}</span>`;
 
   // Modal Footer
   const modalFooterVer = document.getElementById("modalFooterVersion");
-  if(modalFooterVer) modalFooterVer.innerHTML = `v0.6.2 <span class="v-patch">(LoL ${finalVer})</span>`;
+  if(modalFooterVer) modalFooterVer.innerHTML = `v0.6.3 <span class="v-patch">(LoL ${finalVer})</span>`;
 
   // Splash Tag
   const splashTag = document.getElementById("splashPatchTag");
-  if(splashTag) splashTag.textContent = `v0.6.2 (LoL ${finalVer}) • LIVE SYNC ENGINE`;
+  if(splashTag) splashTag.textContent = `v0.6.3 (LoL ${finalVer}) • LIVE SYNC ENGINE`;
 
   // Items Page Shop Badges
   const lolShopSidebarPatch = document.getElementById("lolShopSidebarPatch");
@@ -730,6 +730,10 @@ function loadCachedDynamicLolData(){
 
         if(Array.isArray(parsed.runes) && parsed.runes.length >= 2){
           LOL_DATA.runes = parsed.runes;
+        }
+
+        if(Array.isArray(parsed.starters) && parsed.starters.length > 0){
+          LOL_DATA.starters = parsed.starters;
         }
 
         updateDisplayedLeagueVersion(parsed.version);
@@ -828,16 +832,37 @@ function syncLiveItemsIntoPool(itemsObj){
 
   LOL_DATA.items.sort((a, b) => a.name.localeCompare(b.name));
 
-  
+  // 3. Sync starter items from Riot live patch
+  if (Array.isArray(LOL_DATA.starters)) {
+    const existingStarterIds = new Set(LOL_DATA.starters.map(s => Number(s.id)));
+    const STARTER_NAMES = ['doran', 'cull', 'dark seal', 'tear', 'atlas', 'hatchling', 'pup', 'seedling'];
+    Object.keys(itemsObj).forEach(idStr => {
+      const id = Number(idStr);
+      if (existingStarterIds.has(id)) return;
+      const item = itemsObj[idStr];
+      if (!item || !item.name) return;
+      const isSR = item.maps && item.maps["11"] === true;
+      const inStore = item.inStore !== false;
+      const purchasable = !item.gold || item.gold.purchasable !== false;
+      const totalGold = (item.gold && item.gold.total) ? item.gold.total : 0;
+      const lowerName = item.name.toLowerCase();
+      if (isSR && inStore && purchasable && totalGold <= 500 && (!item.from || item.from.length === 0)) {
+        if (STARTER_NAMES.some(kw => lowerName.includes(kw))) {
+          LOL_DATA.starters.push({ id: id, name: item.name, mode: 'rift' });
+          existingStarterIds.add(id);
+        }
+      }
+    });
+  }
 
   // Persist cleansed and updated items to localStorage
-
   try{
     localStorage.setItem("loc_dynamic_lol_data", JSON.stringify({
       version: LOL_DATA.version,
       items: LOL_DATA.items,
       champions: LOL_DATA.champions,
-      runes: LOL_DATA.runes
+      runes: LOL_DATA.runes,
+      starters: LOL_DATA.starters
     }));
   }catch(e){}
   
@@ -1032,7 +1057,9 @@ async function syncLiveLolData(){
 
           champions: LOL_DATA.champions,
 
-          runes: LOL_DATA.runes
+          runes: LOL_DATA.runes,
+
+          starters: LOL_DATA.starters
 
         }));
 
