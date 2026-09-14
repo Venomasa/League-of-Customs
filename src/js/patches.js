@@ -541,12 +541,32 @@ function isPatchImageUrl(url) {
 }
 
 let _lightboxPreloadId = 0;
-function openImageLightbox(src, caption) {
+let _lightboxGallery = null;
+let _lightboxIndex = -1;
+
+function openImageLightbox(src, caption, galleryItems = null, galleryIndex = -1) {
   if (!src) return;
   const modal = document.getElementById("imageLightboxModal");
   const img = document.getElementById("imageLightboxImg");
   const cap = document.getElementById("imageLightboxCaption");
+  const prevBtn = document.getElementById("imageLightboxPrevBtn");
+  const nextBtn = document.getElementById("imageLightboxNextBtn");
   if (!modal || !img) return;
+
+  if (Array.isArray(galleryItems) && galleryItems.length > 1) {
+    _lightboxGallery = galleryItems;
+    _lightboxIndex = (galleryIndex >= 0) ? galleryIndex : galleryItems.findIndex(it => it.src === src);
+    if (_lightboxIndex < 0) _lightboxIndex = 0;
+  } else if (galleryItems === false) {
+    _lightboxGallery = null;
+    _lightboxIndex = -1;
+  }
+
+  if (prevBtn && nextBtn) {
+    const hasNav = _lightboxGallery && _lightboxGallery.length > 1;
+    prevBtn.style.display = hasNav ? "flex" : "none";
+    nextBtn.style.display = hasNav ? "flex" : "none";
+  }
 
   // Restore pristine uncompressed full-resolution asset
   let fullResSrc = src;
@@ -559,7 +579,10 @@ function openImageLightbox(src, caption) {
   }
 
   if (cap) {
-    const cleanCap = (caption || "").replace(/<[^>]+>/g, "").trim();
+    let cleanCap = (caption || "").replace(/<[^>]+>/g, "").trim();
+    if (_lightboxGallery && _lightboxIndex >= 0) {
+      cleanCap += ` (${_lightboxIndex + 1} / ${_lightboxGallery.length})`;
+    }
     cap.textContent = cleanCap;
     cap.style.display = cleanCap ? "block" : "none";
   }
@@ -588,6 +611,42 @@ function openImageLightbox(src, caption) {
     modal.classList.remove("is-loading");
   };
   preloader.src = fullResSrc;
+}
+
+function navigateLightboxImage(dir, event) {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  if (!_lightboxGallery || _lightboxGallery.length <= 1) return;
+  let nextIdx = _lightboxIndex + dir;
+  if (nextIdx < 0) nextIdx = _lightboxGallery.length - 1;
+  else if (nextIdx >= _lightboxGallery.length) nextIdx = 0;
+
+  const item = _lightboxGallery[nextIdx];
+  if (!item) return;
+
+  // Sync champion details thumbnail if modal is open
+  const thumb = document.getElementById("wikiSkinThumb_" + nextIdx);
+  if (thumb) {
+    document.querySelectorAll(".wiki-skin-thumb").forEach(t => t.classList.remove("active"));
+    thumb.classList.add("active");
+    if (typeof thumb.scrollIntoView === "function") {
+      thumb.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    }
+    const hero = document.getElementById("wikiChampSplashHero");
+    if (hero) {
+      hero.setAttribute("data-active-splash", item.src);
+      hero.setAttribute("data-active-name", item.caption);
+    }
+    const badge = document.getElementById("wikiHeroSkinBadge");
+    if (badge) {
+      badge.innerText = "Skin: " + item.caption;
+      badge.style.display = "inline-block";
+    }
+  }
+
+  openImageLightbox(item.src, item.caption, _lightboxGallery, nextIdx);
 }
 
 function closeLightboxContextMenu() {
@@ -753,13 +812,15 @@ document.addEventListener("click", function(e) {
 });
 
 function closeImageLightbox(e) {
-  if (e && e.target && (e.target.closest(".image-lightbox-content") || e.target.closest(".image-lightbox-header-actions") || e.target.closest(".image-lightbox-context-menu"))) {
+  if (e && e.target && (e.target.closest(".image-lightbox-content") || e.target.closest(".image-lightbox-header-actions") || e.target.closest(".image-lightbox-context-menu") || e.target.closest(".image-lightbox-nav-btn"))) {
     return;
   }
   const modal = document.getElementById("imageLightboxModal");
   if (modal) {
     closeLightboxContextMenu();
     modal.classList.remove("active");
+    _lightboxGallery = null;
+    _lightboxIndex = -1;
     setTimeout(() => {
       if (!modal.classList.contains("active")) {
         modal.style.display = "none";
@@ -767,6 +828,20 @@ function closeImageLightbox(e) {
     }, 180);
   }
 }
+
+window.addEventListener("keydown", function(e) {
+  const modal = document.getElementById("imageLightboxModal");
+  if (!modal || !modal.classList.contains("active")) return;
+  if (e.key === "Escape") {
+    closeImageLightbox();
+  } else if (e.key === "ArrowLeft") {
+    e.preventDefault();
+    navigateLightboxImage(-1);
+  } else if (e.key === "ArrowRight") {
+    e.preventDefault();
+    navigateLightboxImage(1);
+  }
+});
 
 function buildTableOfContents(bodyEl) {
   const tocBar = document.getElementById("patchTocBar");

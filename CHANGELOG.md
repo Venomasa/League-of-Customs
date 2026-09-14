@@ -2,6 +2,22 @@
 
 All notable changes to **League of Customs** are documented here.
 
+## [v0.6.2] — 2026-09-14
+
+### Added
+- **Modern Season 2026 Runes & Automatic Live Sync**:
+  - Updated the Randomizer rune pools to official Season 2026 specifications across all 5 paths, adding newly introduced runes such as *Sixth Sense*, *Grisly Mementos*, *Deep Ward*, *Axiom Arcanist*, *Stormraider's Surge*, and *Deathfire Touch*.
+  - Connected the Randomizer rune pool directly to the Live Sync engine (`runesReforged.json` from Data Dragon) and persistent local cache (`loc_dynamic_lol_data`), ensuring runes automatically update and adapt on every new League patch alongside Champions and Items.
+- **Champion Skins Gallery Carousel Navigation**:
+  - Added Left (`‹`) and Right (`›`) navigation arrow buttons to the Champion Details skins carousel for smooth horizontal exploration of champion skins.
+- **Fullscreen Lightbox Image Navigation**:
+  - Added floating Left (`❮`) and Right (`❯`) arrows to the fullscreen Hextech Lightbox viewer to easily navigate through champion skins and gallery images.
+  - Integrated keyboard arrow controls (`ArrowLeft` / `ArrowRight`) and image position counter (`x / total`) with automatic active skin thumbnail synchronization.
+
+### Changed
+- **Champions Archive Sort Options**:
+  - Removed outdated "Sort by Difficulty" from the Champion Catalog filter controls and replaced with bidirectional alphabetical sorting (`Name (A-Z)` and `Name (Z-A)`).
+
 ## [v0.6.1] — 2026-09-14
 
 ### Fixed

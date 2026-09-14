@@ -341,10 +341,10 @@ function filterAndRenderChampions() {
     return true;
   });
 
-  if (sort === 'name') {
+  if (sort === 'name_desc') {
+    filtered.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
+  } else {
     filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-  } else if (sort === 'difficulty') {
-    filtered.sort((a, b) => ((b.info && b.info.difficulty) || 0) - ((a.info && a.info.difficulty) || 0));
   }
 
   const badge = document.getElementById('wikiChampCountBadge');
@@ -657,6 +657,9 @@ function renderChampionDetailModal(c) {
 
   // Exclude chromas: Riot marks chromas with parentSkin
   const skins = (c.skins || []).filter(sk => sk.parentSkin == null && !sk.parentSkinId);
+  WIKI_STATE.activeChampionSkins = skins;
+  WIKI_STATE.activeChampionId = c.id;
+  WIKI_STATE.activeChampionName = c.name;
   const skinsHtml = skins.map((sk, idx) => {
     const skinSplash = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${c.id}_${sk.num}.jpg`;
     // Use lightweight loading thumbnail (~35 KB) for gallery grid
@@ -667,6 +670,8 @@ function renderChampionDetailModal(c) {
     const safeName = encodeURIComponent(displayName);
     return `
       <div class="wiki-skin-thumb ${activeClass}" 
+           id="wikiSkinThumb_${idx}"
+           data-skin-index="${idx}"
            data-splash="${safeSplash}" 
            data-name="${safeName}" 
            onclick="onWikiSkinCardClick(this)" 
@@ -808,13 +813,31 @@ function renderChampionDetailModal(c) {
       ${skins.length > 0 ? `
         <div class="wiki-section-box">
           <div class="wiki-section-box-title">SKINS GALLERY (${skins.length})</div>
-          <div class="wiki-skins-gallery">
-            ${skinsHtml}
+          <div class="wiki-skins-gallery-wrap">
+            <button class="wiki-skins-nav-btn prev" onclick="navigateWikiSkinCarousel(-1)" title="Previous Skins">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </button>
+            <div class="wiki-skins-gallery" id="wikiSkinsGallery">
+              ${skinsHtml}
+            </div>
+            <button class="wiki-skins-nav-btn next" onclick="navigateWikiSkinCarousel(1)" title="Next Skins">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
           </div>
         </div>
       ` : ''}
     </div>
   `;
+}
+
+function navigateWikiSkinCarousel(dir) {
+  const gallery = document.getElementById('wikiSkinsGallery');
+  if (!gallery) return;
+  gallery.scrollBy({ left: 260 * dir, behavior: 'smooth' });
 }
 
 function selectWikiSpellTab(e, paneId) {
@@ -831,17 +854,23 @@ function onWikiSkinCardClick(elem) {
   if (!elem) return;
   const splashUrl = decodeURI(elem.getAttribute('data-splash') || '');
   const skinName = decodeURIComponent(elem.getAttribute('data-name') || '');
-  previewWikiSkin(splashUrl, skinName, elem, true);
+  const idx = parseInt(elem.getAttribute('data-skin-index') || '0', 10);
+  previewWikiSkin(splashUrl, skinName, elem, true, idx);
 }
 
-function previewWikiSkin(splashUrl, skinName, elem, openLightbox = false) {
+function previewWikiSkin(splashUrl, skinName, elem, openLightbox = false, idx = -1) {
   const hero = document.getElementById('wikiChampSplashHero');
   if (hero) {
     hero.setAttribute('data-active-splash', splashUrl);
     hero.setAttribute('data-active-name', skinName);
   }
   document.querySelectorAll('.wiki-skin-thumb').forEach(t => t.classList.remove('active'));
-  if (elem) elem.classList.add('active');
+  if (elem) {
+    elem.classList.add('active');
+    if (typeof elem.scrollIntoView === 'function') {
+      elem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }
 
   const badge = document.getElementById('wikiHeroSkinBadge');
   if (badge) {
@@ -850,7 +879,16 @@ function previewWikiSkin(splashUrl, skinName, elem, openLightbox = false) {
   }
 
   if (openLightbox && typeof openImageLightbox === 'function') {
-    openImageLightbox(splashUrl, skinName);
+    const galleryItems = (WIKI_STATE.activeChampionSkins || []).map((sk, sIdx) => {
+      const champId = WIKI_STATE.activeChampionId || '';
+      return {
+        src: `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champId}_${sk.num}.jpg`,
+        caption: (sk.name === 'default' ? (WIKI_STATE.activeChampionName || champId) : sk.name),
+        skinIndex: sIdx
+      };
+    });
+    const curIndex = idx >= 0 ? idx : ((elem && parseInt(elem.getAttribute('data-skin-index'), 10)) || 0);
+    openImageLightbox(splashUrl, skinName, galleryItems, curIndex);
   }
 }
 
@@ -859,7 +897,16 @@ function openWikiActiveSplash() {
   const splash = (hero && hero.getAttribute('data-active-splash')) || '';
   const name = (hero && hero.getAttribute('data-active-name')) || 'Champion Splash';
   if (splash && typeof openImageLightbox === 'function') {
-    openImageLightbox(splash, name);
+    const galleryItems = (WIKI_STATE.activeChampionSkins || []).map((sk, sIdx) => {
+      const champId = WIKI_STATE.activeChampionId || '';
+      return {
+        src: `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champId}_${sk.num}.jpg`,
+        caption: (sk.name === 'default' ? (WIKI_STATE.activeChampionName || champId) : sk.name),
+        skinIndex: sIdx
+      };
+    });
+    const foundIdx = galleryItems.findIndex(g => g.src === splash || g.caption === name);
+    openImageLightbox(splash, name, galleryItems, foundIdx >= 0 ? foundIdx : 0);
   }
 }
 
@@ -1692,6 +1739,9 @@ function processRunesData(runesArr) {
   const map = {};
   runesArr.forEach(r => { map[r.id] = r; });
   WIKI_STATE.runesMap = map;
+  if (typeof syncLiveRunesIntoPool === 'function') {
+    syncLiveRunesIntoPool(runesArr);
+  }
   renderRunesPath(WIKI_STATE.activeRunePathId);
 }
 

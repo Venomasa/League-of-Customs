@@ -3277,6 +3277,45 @@
       max-height: 86vh;
     }
 
+    .image-lightbox-nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 46px;
+      height: 46px;
+      background: rgba(1, 10, 19, 0.8);
+      border: 1px solid var(--gold-3);
+      border-radius: 50%;
+      color: var(--gold-2);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 200020;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.75);
+    }
+
+    .image-lightbox-nav-btn:hover {
+      background: linear-gradient(135deg, rgba(200, 155, 60, 0.45), rgba(120, 90, 40, 0.7));
+      border-color: var(--gold-1);
+      color: #fff;
+      transform: translateY(-50%) scale(1.1);
+      box-shadow: 0 0 16px rgba(200, 170, 110, 0.65);
+    }
+
+    .image-lightbox-nav-btn:active {
+      transform: translateY(-50%) scale(0.94);
+    }
+
+    .image-lightbox-nav-btn.prev {
+      left: 14px;
+    }
+
+    .image-lightbox-nav-btn.next {
+      right: 14px;
+    }
+
     .image-lightbox-content img {
       max-width: 100%;
       max-height: calc(86vh - 40px);
@@ -5670,7 +5709,43 @@
     }
 
     /* Skins Gallery */
+    .wiki-skins-gallery-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      gap: 6px;
+    }
+
+    .wiki-skins-nav-btn {
+      flex: 0 0 32px;
+      height: 64px;
+      background: rgba(1, 10, 19, 0.85);
+      border: 1px solid var(--gold-4);
+      color: var(--gold-2);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+      user-select: none;
+      z-index: 2;
+    }
+
+    .wiki-skins-nav-btn:hover {
+      background: rgba(200, 155, 60, 0.28);
+      border-color: var(--gold-1);
+      color: #fff;
+      box-shadow: 0 0 10px rgba(200, 170, 110, 0.4);
+    }
+
+    .wiki-skins-nav-btn:active {
+      transform: scale(0.95);
+    }
+
     .wiki-skins-gallery {
+      flex: 1 1 auto;
       display: flex;
       gap: 12px;
       overflow-x: auto;

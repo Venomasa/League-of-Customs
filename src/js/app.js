@@ -674,23 +674,23 @@ function updateDisplayedLeagueVersion(ver){
   // Titlebar
   const tbNum = document.getElementById("titlebarVersion") || document.querySelector(".titlebar-version .v-num");
   if(tbNum) {
-    tbNum.innerHTML = `v0.6.1 <span class="v-patch">(LoL ${finalVer})</span>`;
+    tbNum.innerHTML = `v0.6.2 <span class="v-patch">(LoL ${finalVer})</span>`;
   } else {
     const tbEl = document.querySelector(".titlebar-version");
-    if(tbEl) tbEl.innerHTML = `<span class="v-num">v0.6.1 <span class="v-patch">(LoL ${finalVer})</span></span>`;
+    if(tbEl) tbEl.innerHTML = `<span class="v-num">v0.6.2 <span class="v-patch">(LoL ${finalVer})</span></span>`;
   }
 
   // Modal About Card
   const modalMetaEl = document.querySelector(".about-update-meta");
-  if(modalMetaEl) modalMetaEl.innerHTML = `Installed Version: <span class="meta-gold">v0.6.1</span> &bull; Game Patch: <span class="meta-blue">LoL ${finalVer}</span>`;
+  if(modalMetaEl) modalMetaEl.innerHTML = `Installed Version: <span class="meta-gold">v0.6.2</span> &bull; Game Patch: <span class="meta-blue">LoL ${finalVer}</span>`;
 
   // Modal Footer
   const modalFooterVer = document.getElementById("modalFooterVersion");
-  if(modalFooterVer) modalFooterVer.innerHTML = `v0.6.1 <span class="v-patch">(LoL ${finalVer})</span>`;
+  if(modalFooterVer) modalFooterVer.innerHTML = `v0.6.2 <span class="v-patch">(LoL ${finalVer})</span>`;
 
   // Splash Tag
   const splashTag = document.getElementById("splashPatchTag");
-  if(splashTag) splashTag.textContent = `v0.6.1 (LoL ${finalVer}) • LIVE SYNC ENGINE`;
+  if(splashTag) splashTag.textContent = `v0.6.2 (LoL ${finalVer}) • LIVE SYNC ENGINE`;
 
   // Items Page Shop Badges
   const lolShopSidebarPatch = document.getElementById("lolShopSidebarPatch");
@@ -726,6 +726,10 @@ function loadCachedDynamicLolData(){
 
           LOL_DATA.champions = parsed.champions;
 
+        }
+
+        if(Array.isArray(parsed.runes) && parsed.runes.length >= 2){
+          LOL_DATA.runes = parsed.runes;
         }
 
         updateDisplayedLeagueVersion(parsed.version);
@@ -829,31 +833,49 @@ function syncLiveItemsIntoPool(itemsObj){
   // Persist cleansed and updated items to localStorage
 
   try{
-
     localStorage.setItem("loc_dynamic_lol_data", JSON.stringify({
-
       version: LOL_DATA.version,
-
       items: LOL_DATA.items,
-
-      champions: LOL_DATA.champions
-
+      champions: LOL_DATA.champions,
+      runes: LOL_DATA.runes
     }));
-
   }catch(e){}
-
   
-
   if(addedCount > 0){
-
     console.log(`Live Sync: Added ${addedCount} new items to randomizer pool.`);
-
   }
+}
 
+function syncLiveRunesIntoPool(runesArr){
+  if(!Array.isArray(runesArr) || runesArr.length < 2) return;
+  const normalized = runesArr.map(tree => {
+    const slots = tree.slots || [];
+    const isDDragonFormat = slots.length > 0 && slots[0] && Array.isArray(slots[0].runes);
+    const keystones = isDDragonFormat ? slots[0].runes : (tree.keystones || []);
+    const minorSlots = isDDragonFormat
+      ? slots.slice(1).map(s => Array.isArray(s) ? s : (s.runes || []))
+      : (tree.slots || []);
+    return {
+      id: tree.id,
+      name: tree.name,
+      icon: tree.icon,
+      keystones: keystones,
+      slots: minorSlots
+    };
+  });
+  LOL_DATA.runes = normalized;
+  try{
+    localStorage.setItem("loc_dynamic_lol_data", JSON.stringify({
+      version: LOL_DATA.version,
+      items: LOL_DATA.items,
+      champions: LOL_DATA.champions,
+      runes: LOL_DATA.runes
+    }));
+  }catch(e){}
+  console.log(`Live Sync: Synchronized ${normalized.length} rune trees into randomizer pool.`);
 }
 
 // Backwards compatibility alias
-
 const mergeNewItemsIntoPool = syncLiveItemsIntoPool;
 
 function mergeNewChampionsIntoPool(champsObj){
@@ -980,6 +1002,24 @@ async function syncLiveLolData(){
 
       
 
+      // Fetch latest runes
+
+      try{
+
+        const runesRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${latestPatch}/data/en_US/runesReforged.json`);
+
+        if(runesRes.ok){
+
+          const runesJson = await runesRes.json();
+
+          if(Array.isArray(runesJson)) syncLiveRunesIntoPool(runesJson);
+
+        }
+
+      }catch(err){}
+
+      
+
       // Persist to local cache
 
       try{
@@ -990,7 +1030,9 @@ async function syncLiveLolData(){
 
           items: LOL_DATA.items,
 
-          champions: LOL_DATA.champions
+          champions: LOL_DATA.champions,
+
+          runes: LOL_DATA.runes
 
         }));
 

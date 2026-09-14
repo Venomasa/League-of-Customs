@@ -91,7 +91,7 @@
 
       <div id="splashStatusText" class="splash-status-text">Initializing Hextech Core...</div>
 
-      <div class="splash-patch-tag" id="splashPatchTag">v0.6.1 &bull; LIVE SYNC ENGINE</div>
+      <div class="splash-patch-tag" id="splashPatchTag">v0.6.2 &bull; LIVE SYNC ENGINE</div>
 
     </div>
 
@@ -109,7 +109,7 @@
 
         <span class="titlebar-brand">LEAGUE OF CUSTOMS</span>
 
-        <span class="titlebar-version"><span class="v-num" id="titlebarVersion">v0.6.1 <span class="v-patch">(LoL 26.18)</span></span></span>
+        <span class="titlebar-version"><span class="v-num" id="titlebarVersion">v0.6.2 <span class="v-patch">(LoL 26.18)</span></span></span>
 
       </div>
 
@@ -367,7 +367,7 @@
 
       <div class="modal-footer">
 
-        <span class="modal-version-footer"><span class="v-num" id="modalFooterVersion">v0.6.1 <span class="v-patch">(LoL 26.18)</span></span></span>
+        <span class="modal-version-footer"><span class="v-num" id="modalFooterVersion">v0.6.2 <span class="v-patch">(LoL 26.18)</span></span></span>
 
         <button class="btn btn-primary" style="padding: 8px 26px;" onclick="closeAboutModal()">CLOSE</button>
 
@@ -1662,7 +1662,7 @@
             <span class="wiki-filter-label">SORT:</span>
             <select class="wiki-select" onchange="setWikiChampSort(this.value)">
               <option value="name">Name (A-Z)</option>
-              <option value="difficulty">Difficulty (High to Low)</option>
+              <option value="name_desc">Name (Z-A)</option>
             </select>
           </div>
           <div class="wiki-counter-badge" id="wikiChampCountBadge">0 Champions</div>
@@ -2108,6 +2108,16 @@
         </button>
       </div>
       <div class="image-lightbox-content">
+        <button class="image-lightbox-nav-btn prev" id="imageLightboxPrevBtn" onclick="navigateLightboxImage(-1, event)" title="Previous Image (Left Arrow)" style="display:none;">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <button class="image-lightbox-nav-btn next" id="imageLightboxNextBtn" onclick="navigateLightboxImage(1, event)" title="Next Image (Right Arrow)" style="display:none;">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
         <div class="image-lightbox-loader" id="imageLightboxLoader">
           <div class="wiki-hex-spinner"></div>
           <span class="image-lightbox-loader-text">Loading High-Resolution Artwork...</span>
