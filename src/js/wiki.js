@@ -53,7 +53,14 @@ const STAT_ICONS = {
   move: `<img class="stat-ico" src="data:image/png;base64,UklGRsgBAABXRUJQVlA4TLsBAAAvR8AREFUwDoA0zv6DwiA9NKD9J1UgkEKAWyCQ+LveDE4FADSjT3n7OSMtLZln21a+9bOi20tnq86B27aRZDtosNp7m2L2C8SxmbXbTxPA6lHq7CXbxHrSyKvAnTiHVZlCgfO8ivW93wXxLsXVT9A/zIIEXWjs9G0i53HTyARNZaahWP8UFtBlCDq6U5pAr7M+hXW1AH2V0XI4+Ph5SIO/4MlLhEcwSL+LCM/9qEJp22e9DJVtn5UOhVnOqAG6qAyvd2mgtjSg53kyq9RoShWpU0xBmZ/fWmA4yjCDhVOsnVSsZZv+s5SVfZqQ9wFVS+MDqpbG2772hcJtX/xC0SxXv1A5DVRNIxXTUBklQuEsA/5yQDF3lyEkQnVVUUEEbdLvYZreklYv1dSk33uA31lqwD6TeOnX4CbM7bgUHSrnEBwlYO8eC+vv0RDZEVbFFNB1hHCmK2sWtOx+T2DWsQBouollO0IEU8DeEZjdXV4KhE0LlXMEpPfHpsCS5z8owxS4TAT5rsOCx+kfqxOUANMUlG7kYdl9AvbuwPp6COrW+U1T4JmILgvoKFPgljQFXoFxmyk42pnsV4spOAA=" alt="MOVE" />`,
   range: `<img class="stat-ico" src="data:image/png;base64,UklGRqgBAABXRUJQVlA4TJsBAAAvR8AREAZIjSRJkvgjdSDbneURe/+y+t5oxIwkCWU8zqc4+nnY60AA0rghoZir7bZI9ob9MgVzYZ8Jbi4UL72w5b5xWhoMgbNln3BDsuNShqjD1AhZBxM1QB6cq0c9gEcnOIhGKwgr5jyiMBgrjy9gkoSCml1kyum9OU2UsB3qkk7ZWgfifRt5Ch00zqM0UNRIAxIM0OlEw/cqQaC7EzqBJ7tbxa7nx7uYvGY5nWVc0Nln6DE1YZDmzq+odUTRwb+s75E9oU4UG8CfUCnDczz6pJR/TxtZ+Mhjr0QUWCZI0xV2n2FvD0KXzcYB87/LWviRi8nUg+/2iiGcyYwfVo6DZWcaf0Zm4gnd75QFw5tBbWMUHZjRMMn6QS7znjT8DNk1cSBlHmv5zExsBVXAfV/yxh1dNphBICVOZpBIhaMZJBLxdf9TgmpBQmlXOEiliedbTe+ZS6Lzf5uCrObbVhoS7u23rVQloxSNhA1hFAHqW4Zv2oFTAvtfsrt4I+nCSGOgJbr5mbir8QlNvbAmeuJXGbj0nQcKqA38G7AA" alt="RANGE" />`,
   gold: `<img class="stat-ico wiki-gold-coin-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAFQklEQVR4nO2X708bdRzHX732uoN2egwW6UBGSwvDERnoQhRxZjp1LjxxS1xmsmfLHpjtmQ/8F/Y3qIkmZsY4fCSbYc5sw+jimIJsSPlRVhgDButR1vXstcUHd73elSsjuoe+k2963/t++vm8Pp/73vf7PRdPkOy39yXJ3lcUe1/NPsmjXZ4t2ISNFrH0y2lSFJjX8lx4GgAho7UCZywANh18TeLKoGr2tTzn4b8DhIDTgovTB9qFZwEOtLt5Y58bqdH+DFQkrlxX9aaD1Asu6vLr3NsKgKv0Rm2N1Al8DLza2yM2dIVVOlpFADpbvSh+E2AdIKHq2Y+PZlzR2xo3otpMXz93gS+Aa2qWqc0ASivQBbwPHO/tEentEamTc+bgrbEMj7fZ4R9lMgC0tHlpafNSN6Q0Ao19/QA0Ap8Cs1utwFe1NdKJQvDeHi+ffbPC739pRYsys7x5r0jvBz6CtQoAH34Eff3MuOET4OdU1hnCBJAkoUuWved6XxFf7+0RTYMffnpoXnfsEdEEt83B6EhxAjbvFakLaxw9Ahe+h75++OUKf8QecR445wTgMR5CWM3mTwRkdyBcJVEj1XN3Psng0D0Csm7YFBQJh0R8O/L4fAIAqVSe5JpgOrs6qCHdBr8I3e2s+0VcY2Psk2IsARPAgJrlkR1A12HgcEfYF2nYtR2A+HzSNHrnzUrCIS8AOW8On69YhbOn9N8bQ/pcGY7l+fJbOHkMV/sLcPQtuHCZprEYh4ApYMQKIFiuI50RH7t3PcPd+STx+2tm5ltR10tuzp7ycvKY43AT8LbTgOB0c3Co/CucSuXKjjko/yQDj/FWTwATz1RkIglVYXmxWGLvmoq0rKFmHuvENSJUWvyW7A0+QSQoafgEEXBn9+xWF1uDMKbPg5KdpUwFSrWShPG5Yn/5/parsG65rncysC5Ejmu9CbGmQ8haMXhNwE1qdVOYQoL1ll8PltWkALBpcIDq7QbIgv2xrj3SbP3JqK2oAhsz99oArPv3UiLHy3tkOpsTRCcVACp9lTTUe00b1QNzizmWkrCUhLWHxfmytJpjLukGNyxOS9Rtk4SFqQXX5LRpsrM0Mcc50ByRaQ7LAETjGuPxjJOZTUurOUZn9Wp0tEp0tkoAruEYjMwAEDeazZmH4oGD4SmVppoELZEq0yAaV2yB3D77UuwkIzi3xlSGZ8zbcfRNybab2HbD4SmVth0KLZEqsw1cGiUa14jG9ewCAYm654qFi9/PsJTU50Xb8yI764rBP/9OsWbvuBl5gEn0dWB9aj7D6LLkCowlOLRfr0J7ZxBJXtGrEVshoagkLEWR/BKyHw52ywBUVernxK9/VLk1AzKg5vlbyfMr8NgJoKCJVDofGbhZ9H5ofxUtoWpaQtWMT+sQuaxqc3DvQY6D3TLBhgoAlOU010fsNkaSheYIMAlcwvI6DvymGBABABMknV0o9WEqFk8zOqlyfURlUIdIAdcM3xuCWwEuGb8TwPGBm0p3wSC9ukZLqNr8QyabsjlwewQjuEpsVmV8kUJwgHklZwZ3BCg9EYWAI8AZuYJIsBpECdoboT2oG1T57Yv/nTnjTDgL0Tl9bVhImslcBPqAP4GHOGjDodTQu+hnhLOSUaMXG3WQKr99e55e0IjO6cEBjNwLwS8CV4F0mThlAUwIycN7WD5GSr+USr6M7qhw2QhctuxWbfZhUpgXSfQDBcAO9DerAj2rNHoSD4zxqxQn9Ja0WQUKgLWW/k4BdgG73aDkYNUNc5oOsEzJMvs0AEq1jQ1HENL/JvD/KugfBSjYCJXrLd0AAAAASUVORK5CYII=" alt="Gold" />`,
-  difficulty: `<svg class="stat-ico" viewBox="0 0 16 16" width="14" height="14" fill="none"><polygon points="8 1.5 14.5 8 8 14.5 1.5 8" fill="#eab308" fill-opacity="0.25" stroke="#facc15" stroke-width="1.2"/><circle cx="8" cy="8" r="2.5" fill="#fef08a"/></svg>`
+  difficulty: `<img class="stat-ico" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAA9CAYAAAAeYmHpAAABbklEQVR4nO2a0RECIQxEuW0hBViD/RdhDRZwNei/MwoBsptzst+E3aeeHIHWSqVSqVQa1vl8vJpIUAKrwME2/ARVgINp9g2QDQ6WUQ+MCQ6GySgQCxzRBl4QBjgiJ/8FYLf7MVOXGvocAFaBQ/0NK8CR4SfNBkeGZ5gNjgzAbHBkAWaCI+OyFA2OleLV4CpwzBbuCqwAx0zR7qBscHgLogIyweEZHB2MBY7RgaxADB9kCcL0gzqAwhcq4xFF+YNt6FVEDuye0Puu3VNEDrANPYryh8pY6Qt1AIUfsgRh+iBTINYHC8/gyGDMRwjegp4Rsxs6+5+BmaKeIaPvvbI6YLawZxx5wrG6HB5tg3YHjH7xweoEWfbTkma/CTsn0mMdE/TIUhzgGbEbmuqo1gh975SH8hZ4wrGqowVrppMSCUy5aLNzl3WpK1W2YZd1yctztrDLuvQ1SZvYZf3FhVhz7LL+TqfwvnepVCqV2gX1BtaophSeq5F2AAAAAElFTkSuQmCC" alt="Difficulty" />`,
+  // Official League Tactical Ratings Icons (rcp-fe-lol-champion-details)
+  tactical_damage: `<img class="stat-ico" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAA9CAYAAAAeYmHpAAADhklEQVR42u3aPU8VQRTG8T8DwZfKFqJZErEzaIuNgrYaWzGKiSH4EYyV2PkJfAmNRKhMRKhBPoCNN5pIouYaiY2NNKgFwYLZZLPZ3TlnZnbvEjkVCeze+e3ueXZmLnBY/0f1pT/8+tEp+v0kcAO4B+weAE8/8AxYAtbzvzwxPAbAQMUJJoFV4DhwDJhuObwfWACm7I26WgQHMAIwwE3ghT1x28HYca9ahwh9OQemYfjRQDAuuCkArxSAs/AFBbwfmC+74gU1C3SAk4HgSngWfc4BTmtKCE8HdLfqUcuBnwBngLcCuAuch48VoT8Ay8Ir7IKreiwDTt8mow64FJzWMvCxCL0L3LZxHwLX9lgejAOuBS9Z125ZT4fCtT1WBi6DB4PL0tsXPqjssccOcB6exAC7ZmTaq/odOKUY0ANgDTgtPOaP4nVWCE5nZKbiQO0dP6Uc0DfgEvAl8vu79A67ZmS+cO2AtpTwYLAEHRNeNqBYcBFYio4Bdw0oFC4Ga9AhcOmAfOGvNGAtuvY7YOH3lZ9xHhjSHGAirGZigQFmgJdK9Khwrq5G1w0eBJ4Cz4EjHk+UCm5aAB6yA54NbCUx3PQYPA68Ay5EyhAR3PQQPGMHOCz4223gayx4FfoscL0GsLZ/94A7wEXgs3A8v4G/Puj3wDVgx/EBiwqwT/8+spsAW8CEAN6x214/fXt6zQFfRL417NO/q8Bc7j1eBe8AV6rA0vReY38PeScArOnftDaBW/bxRgAXgTXv6fUcXAr2ff9u2zzZrpi5ZeFisHZGlsLnhWDf9++ePf8nwZR1AnitAUu+y/KtcbsQGPY4dg54WMdCQLJz4ls+/VsWXLVUTHTo/LksuKLXQKTzDNnH2Xc66Qqu1t3p0PmzNLiylWS2hRtHh/Rvdsb1RgnesLssG8BIU+jQ/vUNriQHHbEXfaRudKz1rza4kpI7q4abhvvXN7gSx6OsgpuG+9cnuBJh74rhpsH+9QmuRBlWIrhpqH99givxTGcn3DS4f6UJLl+wCG5q7l+f4AoFO+Gm5v7VBlcscCXc1Ni/2uCKDS6FZ9HTEfs3rRVFcPUJ/hUjBD7bxBd4m+zvkkpnXF07n+4epPV0jKVi124BdQ8a2mep2Ci8DrR2qdg43PQwuHoGNz0Mrp7BTY+Dqydw04LgahxuWhJcjcJNi4KrMbhpWXC1ZgJzWId1QOsfn/dNXQ9WwvEAAAAASUVORK5CYII=" alt="Damage" />`,
+  tactical_toughness: `<img class="stat-ico" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAA9CAYAAAAeYmHpAAADhElEQVR42u2bW4hNURjHfzMYjUtWIrWaVyFZD/Iil4nyQLmVXIsXyr28uqTceSAiknInCSUi90vu0lhuQ5KYdoaZZrtNYhgPZ6lJzNl7nb337MX+P56z99f3O2uf76z1/74Dmf5z+Z4ujjl+65bKvbk3D/qebhtTUv2Ah76ne8QQuyNw1BZ6PHDe93S3iJMaCJwDegDnfE+XRRi7J3ALGG0LDTAAuGsSjSKpocBpoJN5qQy44Hu6awSxpwJ3gF75rg3yvS0DLvmeXl7I99D39AjgBND+t7e6A6d9T3eyjNvF9/RhYDfQIcg9QYtVK2AxUOF7utwisYnAMaD0L5f0BY77nm4Xplj5np4BPAHGhcknbIXuDVz0PX3A93T3gMnNBPYBJXkuHQwc8T1dEiDmEOAGsB3oEnYRipoJ3Jjn3gZTJbcAV4VUjX+IsQhYETKnI8AEIdX332K1NQVqvqk1zUpIVRQHdFO9Bk4B14BKoAaYCyywLAG7gGVAN6APUA4MBzoHDZAEdOrUHHQx/6Ey6Aw6g86gM+gM+h+Afu8wV70tdIPD0F9soWsdhq61hX7rMHSNLXSVw9CvbKFfOAz9whb6mcPQz2yhKxyGvm8L/Shf6U/xz9UjK2ghVQM549w1XRVSfS1kG3rZQeizhe69TzkIfaZQ6NtAtUPA1YAuCFpI9YOcD+2Kjv7Jf7c5Wu51CHp/JOdpIdVN4LEDwI+B61GaCJscgN4W5NEOA70PeJdi4DpgJ1HaRUKqz8CGFENvFlJ9isMj25zSM3Zd2AUpDtEQ+0iuk5g2rRVS1cXphm4D7qUIuBJYT5wWsGmUzwC+pwR6jpDqW+y+t5DqHrAxBcAHhVQXSNDsX9LCG5Y3wDyS7HAIqeqBSeQx1WPSD2CakKo28baOkEoDs1oAeqWQ6gwt1csSUu0B1iQIfBxYSgoaeAuDnm4K1ANgctD9NTZzZISbCCwhNwI5LCbgKqC/kKoqNa1aY8SNIYBVY+mGDIkKONL+tKnoYyMGrwGGCamek9amvAEfaY6iUTzSg4RUD0j7JIJ51KcCqwoI89QAV8ZRIIog1v9pTAB2EHAO2+gkMEVI9d7JmRMh1SGgP3naLEaNwGpgVJzAsa90kxUvBdYBs//yQX8ApgupDieRTyLQTeAHAFvJjTP/0hWzl36ZVB6JQhvwNuQG1eeY1d9umgqZMkWsn/JwFdt8en33AAAAAElFTkSuQmCC" alt="Toughness" />`,
+  tactical_control: `<img class="stat-ico" src="data:image/png;base64,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" alt="Control" />`,
+  tactical_mobility: `<img class="stat-ico" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAACC0lEQVR42u3aPUsDQRCA4TdLrLWysLISK1tR0p7YiI2trVjYCpoTTGGSP2DpL7CysxUESwsrW0FsbGKhhSCxOjhjcnsf+zG3yUAggXB3T+a4ncwOzCLsaCRvBm9PQ0/X8Aq0gJeM71wAn0C/7EkWltYAaHr+wd+BKAc2Tn3uVzmh8oj9ALaB5wLYHnBaR/AXsAM8FsAaQfsAfwN7wH0JbGW0a/APsA/cVsCm0W3J4CFwCFwbwCbRLYp2CT4GrgxiS6Gb49ZkD1EWm0Ynt7nYZckUtlCmVSDY3GgVEDYXWo08RU29Yk9YLdpGhs9SDxEf2Ey0ChQ7Ea0Cxo5Fq8Cx/2oMNQXYP9dXtQEQa6obUdiqGa4d1mYtLRJrax0Wi7UBFo01DRaPLVJLxyFg82a4VutsVXBQWB04OGxWpaU7WLdMi9Q3dlKGg8WOy7CuXKw1djTDwWNHMywZG+fpOZtah4PB5gEHhdWBg8PqwD73mgDubBw0C9ym4jxFxTh3DfaN3gI2XYN9ozs+wD7RkeksF+l4+EJ3fIETdK/OWVZS1kdXWVaSigJNlnV70gPgBli31bX0kemsmAd2gQcyhtaUxPLPwF3bA05s9aUlopO/u5GtRrxEdAO4BOZs7TxIRK8ABzb3liSij2zvHkpDrwIbtgfTpKEjF5N4ktAtV6OHUtDLLmctJaAXmcWUxC/8eqtUJS2bRQAAAABJRU5ErkJggg==" alt="Mobility" />`,
+  tactical_utility: `<img class="stat-ico" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAA9CAYAAAAeYmHpAAACYklEQVR42u3aP2gUQRTH8e+dWliIr36toFYDdrZ2ptBOxMbGSiWFIIKgVtFKECsbJUSSCCIIaqEhGEEURKOwjRDFSJS1CMgG/5Bc7jwLVxCx2Nnb2X2H86tn3t3n3jB7u7MQ83+kVXRgliZ9w45VUbe56OC2R+F1w+ivPoN90Jlh9JdQ6M+G0Vko9JJh9PtQ6HeG0Quh0K8No9+EQs8bRr8MhX4OrBrdxJIgaFG3BjwziH4i6nqhOg3w0CB61neCL/quMXAfuBUULepeAW8NoZ+Kuo+hOw0wYQh9o8ykMuhrQMfITcZULWhR9wm4aQA9LuqyujoNcDnfRJrKOnCp7ORSaFH3ArjTcJcXa0XnOQf8aAC8BowNUqA0WtQlwHgD6Iui7kMj6Dyna36isgRcGLTIQGhRtwycqhF9XNR9bxSd5ypwv6bN614VhQZGi7o+cARYDgheBE5UVayKTiPqUuAg0AsA7gAHRN2KKXQOnwNOBkCPirr5Rk44PE5CJoDDFZW7IuqOVf0d2wE6cxR4VEGd28AoTZ5leXZ7CzAD7C5ZYgbYJ+o6Q4PO4VuBOWCX59THwN4qrsd1Lu/fG9sKsAe/52oPgJGQ4KDoP+AjwGSB4ZPAflH3DSvn0wMu9VaBO7J2/kcneNp1fEgRTF3g2tDWEtERHdERHdERHdERHdERHdERPbzoLE12ZmkyVWDc9SxNtmPpJfcyWOAMcMjjx+0B08CYqFsYGnSWJjuAs57Yv9Pl10s0QfAtY9h/4aeB81Xiq0R3gQ2BVmRX1G2yuJGFAgNsjJesiG522WwjJsZUfgJeJpbt9oGkLgAAAABJRU5ErkJggg==" alt="Utility" />`,
+  tactical_difficulty: `<img class="stat-ico" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAA9CAYAAAAeYmHpAAABbklEQVR4nO2a0RECIQxEuW0hBViD/RdhDRZwNei/MwoBsptzst+E3aeeHIHWSqVSqVQa1vl8vJpIUAKrwME2/ARVgINp9g2QDQ6WUQ+MCQ6GySgQCxzRBl4QBjgiJ/8FYLf7MVOXGvocAFaBQ/0NK8CR4SfNBkeGZ5gNjgzAbHBkAWaCI+OyFA2OleLV4CpwzBbuCqwAx0zR7qBscHgLogIyweEZHB2MBY7RgaxADB9kCcL0gzqAwhcq4xFF+YNt6FVEDuye0Puu3VNEDrANPYryh8pY6Qt1AIUfsgRh+iBTINYHC8/gyGDMRwjegp4Rsxs6+5+BmaKeIaPvvbI6YLawZxx5wrG6HB5tg3YHjH7xweoEWfbTkma/CTsn0mMdE/TIUhzgGbEbmuqo1gh975SH8hZ4wrGqowVrppMSCUy5aLNzl3WpK1W2YZd1yctztrDLuvQ1SZvYZf3FhVhz7LL+TqfwvnepVCqV2gX1BtaophSeq5F2AAAAAElFTkSuQmCC" alt="Difficulty" />`
 };
 
 // ==========================================================================
@@ -314,6 +321,27 @@ function processChampionsData(dataObj) {
   filterAndRenderChampions();
 }
 
+const WIKI_ROLE_ICONS = {
+  'fighter': { file: 'role-fighter.png', cdn: 'class-icon-fighter.png', label: 'Fighter' },
+  'mage': { file: 'role-mage.png', cdn: 'class-icon-mage.png', label: 'Mage' },
+  'assassin': { file: 'role-assassin.png', cdn: 'class-icon-assassin.png', label: 'Assassin' },
+  'marksman': { file: 'role-marksman.png', cdn: 'class-icon-marksman.png', label: 'Marksman' },
+  'tank': { file: 'role-tank.png', cdn: 'class-icon-tank.png', label: 'Tank' },
+  'support': { file: 'role-support.png', cdn: 'class-icon-support.png', label: 'Support' }
+};
+
+const WIKI_LANE_ICONS = {
+  'top': { file: 'icon-top.png', cdn: 'icon-position-top.png', label: 'Top' },
+  'jungle': { file: 'icon-jungle.png', cdn: 'icon-position-jungle.png', label: 'Jungle' },
+  'mid': { file: 'icon-middle.png', cdn: 'icon-position-middle.png', label: 'Mid' },
+  'middle': { file: 'icon-middle.png', cdn: 'icon-position-middle.png', label: 'Mid' },
+  'adc': { file: 'icon-bottom.png', cdn: 'icon-position-bottom.png', label: 'ADC' },
+  'bot': { file: 'icon-bottom.png', cdn: 'icon-position-bottom.png', label: 'ADC' },
+  'bottom': { file: 'icon-bottom.png', cdn: 'icon-position-bottom.png', label: 'ADC' },
+  'support': { file: 'icon-utility.png', cdn: 'icon-position-utility.png', label: 'Support' },
+  'utility': { file: 'icon-utility.png', cdn: 'icon-position-utility.png', label: 'Support' }
+};
+
 function filterAndRenderChampions() {
   const container = document.getElementById('wikiChampionsGrid');
   if (!container) return;
@@ -363,9 +391,24 @@ function filterAndRenderChampions() {
 
   const html = filtered.map(c => {
     const iconUrl = 'https://ddragon.leagueoflegends.com/cdn/' + WIKI_STATE.patch + '/img/champion/' + c.id + '.png';
-    const rolesHtml = (c.tags || []).map(t => `<span class="wiki-role-badge role-${t.toLowerCase()}">${t}</span>`).join('');
+    const rolesHtml = (c.tags || []).map(t => {
+      const key = (t || '').toLowerCase();
+      const meta = WIKI_ROLE_ICONS[key];
+      if (meta) {
+        return `<span class="wiki-role-icon-badge role-${key}" title="Role: ${meta.label}"><img src="assets/icons/${meta.file}" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-champ-select/global/default/${meta.cdn}';}" alt="${meta.label}"></span>`;
+      }
+      return `<span class="wiki-role-badge role-${key}">${t}</span>`;
+    }).join('');
+
     const lanesHtml = (c.lanes && c.lanes.length > 0)
-      ? c.lanes.map(l => `<span class="wiki-lane-tag">${l}</span>`).join('')
+      ? c.lanes.map(l => {
+          const key = (l || '').toLowerCase();
+          const meta = WIKI_LANE_ICONS[key];
+          if (meta) {
+            return `<span class="wiki-lane-icon-badge" title="Lane: ${meta.label}"><img src="assets/icons/${meta.file}" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-parties/global/default/${meta.cdn}';}" alt="${meta.label}"></span>`;
+          }
+          return `<span class="wiki-lane-tag">${l}</span>`;
+        }).join('')
       : '';
 
     return `
@@ -378,8 +421,8 @@ function filterAndRenderChampions() {
           <div class="wiki-champ-name">${c.name}</div>
           <div class="wiki-champ-title">${c.title}</div>
           <div class="wiki-champ-badges">
-            ${rolesHtml}
-            ${lanesHtml}
+            <div class="wiki-badge-group wiki-roles-group">${rolesHtml}</div>
+            ${lanesHtml ? `<div class="wiki-badge-group wiki-lanes-group">${lanesHtml}</div>` : ''}
           </div>
         </div>
       </div>
@@ -499,9 +542,42 @@ function renderChampionDetailOffline(basic) {
 
   const splashUrl = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${basic.id}_0.jpg`;
   const iconUrl = `https://ddragon.leagueoflegends.com/cdn/${WIKI_STATE.patch}/img/champion/${basic.id}.png`;
+  const regionCoverUrl = (typeof getChampionRegionCover === 'function') 
+    ? getChampionRegionCover(basic.id, basic.name) 
+    : 'assets/covers/runeterra.jpg';
+  const regionName = (typeof getChampionRegionName === 'function') 
+    ? getChampionRegionName(basic.id, basic.name) 
+    : 'Runeterra';
+  const regionCrestUrl = (typeof getChampionRegionCrest === 'function')
+    ? getChampionRegionCrest(basic.id, basic.name)
+    : 'assets/icons/crests/runeterra.png';
+
+  const heroRolesHtml = (basic.tags || []).map(t => {
+    const key = (t || '').toLowerCase();
+    const meta = (typeof WIKI_ROLE_ICONS !== 'undefined' && WIKI_ROLE_ICONS[key]);
+    if (meta) {
+      return `<span class="wiki-role-icon-badge" title="Role: ${meta.label}"><img src="assets/icons/${meta.file}" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-champ-select/global/default/${meta.cdn}';}" alt="${meta.label}"></span>`;
+    }
+    return `<span class="wiki-role-badge">${t}</span>`;
+  }).join('');
+
+  const cLanes = basic.lanes || (WIKI_STATE.championsMap[basic.id] && WIKI_STATE.championsMap[basic.id].lanes) || [];
+  const heroLanesHtml = (cLanes && cLanes.length > 0)
+    ? cLanes.map(l => {
+        const key = (l || '').toLowerCase();
+        const meta = (typeof WIKI_LANE_ICONS !== 'undefined' && WIKI_LANE_ICONS[key]);
+        if (meta) {
+          return `<span class="wiki-lane-icon-badge" title="Lane: ${meta.label}"><img src="assets/icons/${meta.file}" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-parties/global/default/${meta.cdn}';}" alt="${meta.label}"></span>`;
+        }
+        return `<span class="wiki-lane-tag">${l}</span>`;
+      }).join('')
+    : '';
 
   body.innerHTML = `
-    <div class="wiki-champ-hero" id="wikiChampSplashHero" style="background-image: linear-gradient(to bottom, rgba(1,10,19,0.2) 0%, rgba(1,10,19,0.85) 70%, #010a13 100%), url('${splashUrl}');">
+    <div class="wiki-champ-hero" id="wikiChampSplashHero" style="background-image: linear-gradient(to bottom, rgba(1,10,19,0.3) 0%, rgba(1,10,19,0.88) 70%, #010a13 100%), url('${regionCoverUrl}'), url('${splashUrl}');">
+      <div class="wiki-hero-crest-watermark-wrap" title="${regionName}">
+        <img class="wiki-hero-crest-watermark" src="${regionCrestUrl}" alt="${regionName}" onerror="this.style.display='none';">
+      </div>
       <div class="wiki-champ-hero-content">
         <img class="wiki-hero-avatar" src="${iconUrl}" alt="${basic.name}" onerror="this.src='assets/app.png'">
         <div class="wiki-hero-text">
@@ -510,7 +586,14 @@ function renderChampionDetailOffline(basic) {
             <span class="wiki-hero-title">${basic.title || 'League Champion'}</span>
           </div>
           <div class="wiki-hero-tags">
-            ${(basic.tags || []).map(t => `<span class="wiki-role-badge role-${t.toLowerCase()}">${t}</span>`).join('')}
+            ${regionName ? `
+              <span class="wiki-region-tag" title="Region: ${regionName}">
+                <img class="wiki-hero-crest-mini" src="${regionCrestUrl}" alt="${regionName}" onerror="this.style.display='none';">
+                <span>${regionName}</span>
+              </span>
+            ` : ''}
+            <div class="wiki-hero-badges-group" title="Roles">${heroRolesHtml}</div>
+            ${heroLanesHtml ? `<div class="wiki-hero-badges-group" title="Lanes">${heroLanesHtml}</div>` : ''}
             <span class="wiki-partype-tag">Offline Archive</span>
           </div>
         </div>
@@ -577,6 +660,30 @@ function renderChampionDetailModal(c) {
     : splashUrl;
   const regionName = (typeof getChampionRegionName === 'function') 
     ? getChampionRegionName(c.id, c.name) 
+    : '';
+  const regionCrestUrl = (typeof getChampionRegionCrest === 'function')
+    ? getChampionRegionCrest(c.id, c.name)
+    : 'assets/icons/crests/runeterra.png';
+
+  const heroRolesHtml = (c.tags || []).map(t => {
+    const key = (t || '').toLowerCase();
+    const meta = (typeof WIKI_ROLE_ICONS !== 'undefined' && WIKI_ROLE_ICONS[key]);
+    if (meta) {
+      return `<span class="wiki-role-icon-badge" title="Role: ${meta.label}"><img src="assets/icons/${meta.file}" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-champ-select/global/default/${meta.cdn}';}" alt="${meta.label}"></span>`;
+    }
+    return `<span class="wiki-role-badge">${t}</span>`;
+  }).join('');
+
+  const cLanes = c.lanes || (WIKI_STATE.championsMap[c.id] && WIKI_STATE.championsMap[c.id].lanes) || [];
+  const heroLanesHtml = (cLanes && cLanes.length > 0)
+    ? cLanes.map(l => {
+        const key = (l || '').toLowerCase();
+        const meta = (typeof WIKI_LANE_ICONS !== 'undefined' && WIKI_LANE_ICONS[key]);
+        if (meta) {
+          return `<span class="wiki-lane-icon-badge" title="Lane: ${meta.label}"><img src="assets/icons/${meta.file}" onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-parties/global/default/${meta.cdn}';}" alt="${meta.label}"></span>`;
+        }
+        return `<span class="wiki-lane-tag">${l}</span>`;
+      }).join('')
     : '';
 
   const ratings = (typeof getChampionTacticalRatings === 'function') 
@@ -690,9 +797,12 @@ function renderChampionDetailModal(c) {
     <div class="wiki-champ-hero" id="wikiChampSplashHero" 
          data-active-splash="${splashUrl}" 
          data-active-name="${escapeHtml(c.name)}" 
-         style="background-image: linear-gradient(to bottom, rgba(1,10,19,0.3) 0%, rgba(1,10,19,0.88) 70%, #010a13 100%), url('${regionCoverUrl}');">
+         style="background-image: linear-gradient(to bottom, rgba(1,10,19,0.3) 0%, rgba(1,10,19,0.88) 70%, #010a13 100%), url('${regionCoverUrl}'), url('${splashUrl}');">
+      <div class="wiki-hero-crest-watermark-wrap" title="${regionName}">
+        <img class="wiki-hero-crest-watermark" src="${regionCrestUrl}" alt="${regionName}" onerror="this.style.display='none';">
+      </div>
       <div class="wiki-champ-hero-content">
-        <img class="wiki-hero-avatar" src="${iconUrl}" alt="${c.name}">
+        <img class="wiki-hero-avatar" src="${iconUrl}" alt="${c.name}" onerror="this.src='assets/app.png'">
         <div class="wiki-hero-text">
           <div class="wiki-hero-title-wrap">
             <h1 class="wiki-hero-name">${c.name}</h1>
@@ -700,8 +810,14 @@ function renderChampionDetailModal(c) {
             <span class="wiki-hero-skin-badge" id="wikiHeroSkinBadge" style="display:none;"></span>
           </div>
           <div class="wiki-hero-tags">
-            ${regionName ? `<span class="wiki-region-tag">${regionName}</span>` : ''}
-            ${(c.tags || []).map(t => `<span class="wiki-role-badge role-${t.toLowerCase()}">${t}</span>`).join('')}
+            ${regionName ? `
+              <span class="wiki-region-tag" title="Region: ${regionName}">
+                <img class="wiki-hero-crest-mini" src="${regionCrestUrl}" alt="${regionName}" onerror="this.style.display='none';">
+                <span>${regionName}</span>
+              </span>
+            ` : ''}
+            <div class="wiki-hero-badges-group" title="Roles">${heroRolesHtml}</div>
+            ${heroLanesHtml ? `<div class="wiki-hero-badges-group" title="Lanes">${heroLanesHtml}</div>` : ''}
             <span class="wiki-partype-tag">${c.partype || 'Mana'}</span>
           </div>
         </div>
@@ -722,32 +838,32 @@ function renderChampionDetailModal(c) {
           <div class="wiki-section-box-title">TACTICAL RATINGS</div>
           <div class="wiki-ratings-list">
             <div class="wiki-rating-item">
-              <span class="wiki-rating-label">${STAT_ICONS.ad} Damage</span>
+              <span class="wiki-rating-label">${STAT_ICONS.tactical_damage} Damage</span>
               ${getRatingPips(ratings.damage)}
               <span class="wiki-rating-val">${ratings.damage}/3</span>
             </div>
             <div class="wiki-rating-item">
-              <span class="wiki-rating-label">${STAT_ICONS.armor} Toughness</span>
+              <span class="wiki-rating-label">${STAT_ICONS.tactical_toughness} Toughness</span>
               ${getRatingPips(ratings.toughness)}
               <span class="wiki-rating-val">${ratings.toughness}/3</span>
             </div>
             <div class="wiki-rating-item">
-              <span class="wiki-rating-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:middle;margin-right:2px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg> Control</span>
+              <span class="wiki-rating-label">${STAT_ICONS.tactical_control} Control</span>
               ${getRatingPips(ratings.control)}
               <span class="wiki-rating-val">${ratings.control}/3</span>
             </div>
             <div class="wiki-rating-item">
-              <span class="wiki-rating-label">${STAT_ICONS.move} Mobility</span>
+              <span class="wiki-rating-label">${STAT_ICONS.tactical_mobility} Mobility</span>
               ${getRatingPips(ratings.mobility)}
               <span class="wiki-rating-val">${ratings.mobility}/3</span>
             </div>
             <div class="wiki-rating-item">
-              <span class="wiki-rating-label">${STAT_ICONS.mana} Utility</span>
+              <span class="wiki-rating-label">${STAT_ICONS.tactical_utility} Utility</span>
               ${getRatingPips(ratings.utility)}
               <span class="wiki-rating-val">${ratings.utility}/3</span>
             </div>
             <div class="wiki-rating-item">
-              <span class="wiki-rating-label">${STAT_ICONS.difficulty} Difficulty</span>
+              <span class="wiki-rating-label">${STAT_ICONS.tactical_difficulty} Difficulty</span>
               ${getRatingPips(ratings.difficulty)}
               <span class="wiki-rating-val">${ratings.difficulty}/3</span>
             </div>

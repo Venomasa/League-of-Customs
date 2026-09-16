@@ -5,7 +5,7 @@
   # LEAGUE OF CUSTOMS
   ### Authentic League of Legends Hextech Companion & Team Randomizer
 
-  [![Version](https://img.shields.io/badge/version-v0.6.3-c8aa6e.svg?style=for-the-badge&labelColor=010a13)](https://github.com/Venomasa/League-of-Customs)
+  [![Version](https://img.shields.io/badge/version-v0.6.4-c8aa6e.svg?style=for-the-badge&labelColor=010a13)](https://github.com/Venomasa/League-of-Customs)
   [![Platform](https://img.shields.io/badge/platform-Windows-005a82.svg?style=for-the-badge&labelColor=010a13)](https://github.com/Venomasa/League-of-Customs)
   [![Framework](https://img.shields.io/badge/.NET-4.0+-785a28.svg?style=for-the-badge&labelColor=010a13)](https://github.com/Venomasa/League-of-Customs)
   [![UI](https://img.shields.io/badge/Engine-WebView2-0a323c.svg?style=for-the-badge&labelColor=010a13)](https://github.com/Venomasa/League-of-Customs)
@@ -24,11 +24,11 @@ You can get **League of Customs** in two ways:
 
 ### Option A: Windows Installer (Recommended)
 Automatically sets up desktop and Start menu shortcuts and registers in Windows Add/Remove Programs:
-- **[Download LeagueOfCustoms-Setup-v0.6.3.exe](https://github.com/Venomasa/League-of-Customs/releases/download/v0.6.3/LeagueOfCustoms-Setup-v0.6.3.exe)**
+- **[Download LeagueOfCustoms-Setup-v0.6.4.exe](https://github.com/Venomasa/League-of-Customs/releases/download/v0.6.4/LeagueOfCustoms-Setup-v0.6.4.exe)**
 
 ### Option B: Portable ZIP (No Installation Required)
 Extract anywhere and run directly from the folder:
-- **[Download LeagueOfCustoms-v0.6.3-Portable.zip](https://github.com/Venomasa/League-of-Customs/releases/download/v0.6.3/LeagueOfCustoms-v0.6.3-Portable.zip)**
+- **[Download LeagueOfCustoms-v0.6.4-Portable.zip](https://github.com/Venomasa/League-of-Customs/releases/download/v0.6.4/LeagueOfCustoms-v0.6.4-Portable.zip)**
 
 > All releases and version changelogs are available on the **[GitHub Releases Page](https://github.com/Venomasa/League-of-Customs/releases)**.
 
@@ -38,7 +38,7 @@ Extract anywhere and run directly from the folder:
 
 - **Official League Patch Notes Hub**: Dedicated home page displaying the latest live League of Legends patch notes with official banner art, section quick-jump TOC, and searchable archive history of previous patches.
 - **Hextech Wiki (Champions, Items & Runes Armory)**: Comprehensive encyclopedic database with instant search, rich filtering, and offline caching:
-  - **Champions Archive**: Full 173+ champion roster with role/lane filters, alphabetical sorting (A-Z and Z-A), lore biographies, regional faction cover artwork, tactical rating meters, base attributes, interactive abilities kit (Passive + Q, W, E, R with official League stat icons for Ability Haste, Mana Cost, and Range), and an interactive skin gallery with dedicated carousel navigation arrows.
+  - **Champions Archive**: Full 173+ champion roster with official LoL role & lane icon badges, alphabetical sorting (A-Z and Z-A), lore biographies, regional faction cover artwork with centered Runeterra crest watermarks, tactical rating meters with official radar icons, base attributes, interactive abilities kit (Passive + Q, W, E, R with official League stat icons for Ability Haste, Mana Cost, and Range), and an interactive skin gallery with dedicated carousel navigation arrows.
   - **Items Armory**: Live official League game patch display (`PATCH 26.18`), searchable item database with tier/stat filters (AD, AP, Armor, MR, Haste, Vamp), gold cost breakdowns with individual combine cost in parentheses `[Total (Combine)]` matching the official League Wiki, formatted passive/active tooltips, and interactive recipe trees (builds from / builds into).
   - **Runes Reforged**: Streamlined tree explorer across all 5 paths (Precision, Domination, Sorcery, Resolve, Inspiration) with keystones, minor runes, and official stat shards.
 - **Hextech Lightbox & Artwork Downloader**: Fullscreen high-resolution image viewer for champion skins and patch notes art. Features previous/next navigation arrows and keyboard controls (`ArrowLeft` / `ArrowRight`), a right-click context menu (**"Download Full Image"** and **"Copy Image Link"**), and a dedicated top-right **DOWNLOAD** button, saving high-resolution splash art directly to your Windows `Downloads` folder.

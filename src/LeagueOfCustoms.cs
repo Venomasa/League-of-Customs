@@ -24,8 +24,8 @@ using Microsoft.Web.WebView2.WinForms;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
-[assembly: AssemblyVersion("0.6.3.0")]
-[assembly: AssemblyFileVersion("0.6.3.0")]
+[assembly: AssemblyVersion("0.6.4.0")]
+[assembly: AssemblyFileVersion("0.6.4.0")]
 
 namespace LoLRandomizer
 {
@@ -107,7 +107,7 @@ namespace LoLRandomizer
             }
             catch { }
 
-            this.Text = "League of Customs v0.6.3";
+            this.Text = "League of Customs v0.6.4";
             this.FormBorderStyle = FormBorderStyle.None;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Size = new Size(1260, 860);
@@ -611,7 +611,7 @@ namespace LoLRandomizer
                             var ser = new JavaScriptSerializer();
                             var dict = ser.Deserialize<Dictionary<string, object>>(respText);
                             string tagName = dict.ContainsKey("tag_name") ? dict["tag_name"].ToString() : "";
-                            string currentAppVersion = "v0.6.3";
+                            string currentAppVersion = "v0.6.4";
 
                             bool hasNewer = IsNewerVersion(tagName, currentAppVersion);
                             if (!hasNewer)

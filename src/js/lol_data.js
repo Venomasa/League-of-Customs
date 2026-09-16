@@ -687,60 +687,77 @@ function getChampionTacticalRatings(champId, champName) {
 const REGION_COVER_DATA = {
   "demacia": {
     "name": "Demacia",
-    "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/universe/5b80fe8ddd3d935c3f258f3e145b8aed4b7460bf-1920x887.jpg"
+    "image": "assets/covers/demacia.jpg"
   },
   "noxus": {
     "name": "Noxus",
-    "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/universe/6310fe5db818f80b84ee784a746cc28ee1273e6b-1920x1080.jpg"
+    "image": "assets/covers/noxus.jpg"
   },
   "ionia": {
     "name": "Ionia",
-    "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/universe/1691574092da433ea3a4c896c96f8c87d5f7e45a-1920x888.jpg"
+    "image": "assets/covers/ionia.jpg"
   },
   "freljord": {
     "name": "The Freljord",
-    "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/universe/ee60551d26850cfbff088f571bc5e1688b1a143b-2034x1080.jpg"
+    "image": "assets/covers/freljord.jpg"
   },
   "piltover": {
     "name": "Piltover",
-    "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/universe/6c77423961def6e3a82d9a36545782f1a06386e0-4681x2114.jpg"
+    "image": "assets/covers/piltover.jpg"
   },
   "zaun": {
     "name": "Zaun",
-    "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/universe/56d6fa8581379d60cc17951edbe3d686e52bf51b-1730x1080.jpg"
+    "image": "assets/covers/zaun.jpg"
   },
   "bilgewater": {
     "name": "Bilgewater",
-    "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/universe/9700d7bf76ec15c8c526f7fea2a960e3846e44a6-2825x1080.jpg"
+    "image": "assets/covers/bilgewater.jpg"
   },
   "shurima": {
     "name": "Shurima",
-    "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/universe/3f24f923ba9871dd870c0d3565075ff8140f44b8-1920x1080.jpg"
+    "image": "assets/covers/shurima.jpg"
   },
   "mount-targon": {
     "name": "Targon",
-    "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/universe/8ad3cfba4b5d7cb812562108a6e90d07e0865b3f-1920x1041.jpg"
+    "image": "assets/covers/mount-targon.jpg"
   },
   "shadow-isles": {
     "name": "Shadow Isles",
-    "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/universe/94e4bf2e1b30ba553b4fc0f93e94983837082210-2503x1080.jpg"
+    "image": "assets/covers/shadow-isles.jpg"
   },
   "bandle-city": {
     "name": "Bandle City",
-    "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/universe/109f1c35b08e87598eaa1e0755a992e17d9425c2-1920x1080.jpg"
+    "image": "assets/covers/bandle-city.jpg"
   },
   "void": {
     "name": "The Void",
-    "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/universe/7107e5dbca7887931748e7ae0924e6eda17ef6f4-1920x1064.jpg"
+    "image": "assets/covers/void.jpg"
   },
   "ixtal": {
     "name": "Ixtal",
-    "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/universe/1a75d072fa01ec3d0cda3f87fc1bf18dce736424-5000x2811.jpg"
+    "image": "assets/covers/ixtal.jpg"
   },
   "runeterra": {
     "name": "Runeterra",
-    "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/universe/06981881c16b6771d9d71c6dcfdc0e8fef8eb6ff-1920x1080.jpg"
+    "image": "assets/covers/runeterra.jpg"
   }
+};
+
+const REGION_CREST_DATA = {
+  "demacia": "assets/icons/crests/demacia.png",
+  "noxus": "assets/icons/crests/noxus.png",
+  "ionia": "assets/icons/crests/ionia.png",
+  "freljord": "assets/icons/crests/freljord.png",
+  "piltover": "assets/icons/crests/piltover.png",
+  "zaun": "assets/icons/crests/zaun.png",
+  "bilgewater": "assets/icons/crests/bilgewater.png",
+  "shurima": "assets/icons/crests/shurima.png",
+  "mount-targon": "assets/icons/crests/mount-targon.png",
+  "shadow-isles": "assets/icons/crests/shadow-isles.png",
+  "bandle-city": "assets/icons/crests/bandle-city.png",
+  "void": "assets/icons/crests/void.png",
+  "ixtal": "assets/icons/crests/ixtal.png",
+  "runeterra": "assets/icons/crests/runeterra.png"
 };
 
 const CHAMPION_FACTIONS = {
@@ -910,6 +927,8 @@ const CHAMPION_FACTIONS = {
   "Yuumi": "bandle-city",
   "Zac": "zaun",
   "Zed": "ionia",
+  "Locke": "runeterra",
+  "Zaahen": "shurima",
   "Zeri": "zaun",
   "Ziggs": "zaun",
   "Zilean": "runeterra",
@@ -934,7 +953,7 @@ function getChampionRegionCover(champId, champName) {
   if (typeof REGION_COVER_DATA !== 'undefined' && REGION_COVER_DATA[faction]) {
     return REGION_COVER_DATA[faction].image;
   }
-  return 'https://cmsassets.rgpub.io/sanity/images/dsfx7636/universe/06981881c16b6771d9d71c6dcfdc0e8fef8eb6ff-1920x1080.jpg';
+  return 'assets/covers/runeterra.jpg';
 }
 
 function getChampionRegionName(champId, champName) {
@@ -943,4 +962,12 @@ function getChampionRegionName(champId, champName) {
     return REGION_COVER_DATA[faction].name;
   }
   return 'Runeterra';
+}
+
+function getChampionRegionCrest(champId, champName) {
+  const faction = getChampionFaction(champId, champName);
+  if (typeof REGION_CREST_DATA !== 'undefined' && REGION_CREST_DATA[faction]) {
+    return REGION_CREST_DATA[faction];
+  }
+  return 'assets/icons/crests/runeterra.png';
 }

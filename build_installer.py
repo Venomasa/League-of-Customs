@@ -79,8 +79,8 @@ with zipfile.ZipFile(payload_zip, 'w', zipfile.ZIP_DEFLATED) as z:
 print(f"  -> payload.zip size: {os.path.getsize(payload_zip):,} bytes")
 
 # 3. Compile Setup.exe
-print("3. Compiling LeagueOfCustoms-Setup-v0.6.3.exe...")
-setup_exe = os.path.join(dist_dir, 'LeagueOfCustoms-Setup-v0.6.3.exe')
+print("3. Compiling LeagueOfCustoms-Setup-v0.6.4.exe...")
+setup_exe = os.path.join(dist_dir, 'LeagueOfCustoms-Setup-v0.6.4.exe')
 res = subprocess.run([
     csc, '/nologo', '/optimize+', '/target:winexe',
     r'/win32icon:assets\app.ico',
@@ -97,7 +97,7 @@ print(f"  -> {setup_exe} built successfully! Size: {os.path.getsize(setup_exe):,
 
 # 4. Create Portable zip
 print("4. Packaging Portable ZIP...")
-portable_zip = os.path.join(dist_dir, 'LeagueOfCustoms-v0.6.3-Portable.zip')
+portable_zip = os.path.join(dist_dir, 'LeagueOfCustoms-v0.6.4-Portable.zip')
 portable_files = [
     ('LeagueOfCustoms.exe', 'LeagueOfCustoms/LeagueOfCustoms.exe'),
     ('Microsoft.Web.WebView2.Core.dll', 'LeagueOfCustoms/Microsoft.Web.WebView2.Core.dll'),

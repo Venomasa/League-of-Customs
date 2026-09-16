@@ -14,8 +14,8 @@ using Microsoft.Win32;
 [assembly: AssemblyCompany("Venomasa")]
 [assembly: AssemblyProduct("League of Customs")]
 [assembly: AssemblyCopyright("Copyright © Venomasa 2026")]
-[assembly: AssemblyVersion("0.6.3.0")]
-[assembly: AssemblyFileVersion("0.6.3.0")]
+[assembly: AssemblyVersion("0.6.4.0")]
+[assembly: AssemblyFileVersion("0.6.4.0")]
 
 namespace LeagueOfCustoms.Installer
 {
@@ -182,7 +182,7 @@ namespace LeagueOfCustoms.Installer
 
         public SetupForm()
         {
-            this.Text = "League of Customs v0.6.3 Setup";
+            this.Text = "League of Customs v0.6.4 Setup";
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.StartPosition = FormStartPosition.CenterScreen;
@@ -248,7 +248,7 @@ namespace LeagueOfCustoms.Installer
 
             Label lblSub = new Label
             {
-                Text = "v0.6.3 \u2014 Custom Game Companion & Team Randomizer",
+                Text = "v0.6.4 \u2014 Custom Game Companion & Team Randomizer",
                 Font = new Font("Segoe UI", 8.75f, FontStyle.Regular),
                 ForeColor = Color.FromArgb(160, 155, 140),
                 Location = new Point(90, 44),
@@ -294,9 +294,9 @@ namespace LeagueOfCustoms.Installer
 
             if (isUpgrade)
             {
-                this.Text = "League of Customs v0.6.3 Update";
+                this.Text = "League of Customs v0.6.4 Update";
                 lblTitle.Text = "UPDATE LEAGUE OF CUSTOMS";
-                lblSub.Text = string.Format("Upgrade existing installation{0} to v0.6.3", string.IsNullOrEmpty(existingVer) ? "" : " (v" + existingVer + ")");
+                lblSub.Text = string.Format("Upgrade existing installation{0} to v0.6.4", string.IsNullOrEmpty(existingVer) ? "" : " (v" + existingVer + ")");
             }
 
             // Install Location Group
@@ -381,7 +381,7 @@ namespace LeagueOfCustoms.Installer
             // Progress Bar & Status
             _lblStatus = new Label
             {
-                Text = isUpgrade ? "Existing installation detected. Click 'Update' to upgrade to v0.6.3." : "Ready to install. Click 'Install' to begin.",
+                Text = isUpgrade ? "Existing installation detected. Click 'Update' to upgrade to v0.6.4." : "Ready to install. Click 'Install' to begin.",
                 Location = new Point(30, 276),
                 AutoSize = true,
                 ForeColor = Color.FromArgb(160, 155, 140)

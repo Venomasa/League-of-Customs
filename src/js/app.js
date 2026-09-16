@@ -674,23 +674,23 @@ function updateDisplayedLeagueVersion(ver){
   // Titlebar
   const tbNum = document.getElementById("titlebarVersion") || document.querySelector(".titlebar-version .v-num");
   if(tbNum) {
-    tbNum.innerHTML = `v0.6.3 <span class="v-patch">(LoL ${finalVer})</span>`;
+    tbNum.innerHTML = `v0.6.4 <span class="v-patch">(LoL ${finalVer})</span>`;
   } else {
     const tbEl = document.querySelector(".titlebar-version");
-    if(tbEl) tbEl.innerHTML = `<span class="v-num">v0.6.3 <span class="v-patch">(LoL ${finalVer})</span></span>`;
+    if(tbEl) tbEl.innerHTML = `<span class="v-num">v0.6.4 <span class="v-patch">(LoL ${finalVer})</span></span>`;
   }
 
   // Modal About Card
   const modalMetaEl = document.querySelector(".about-update-meta");
-  if(modalMetaEl) modalMetaEl.innerHTML = `Installed Version: <span class="meta-gold">v0.6.3</span> &bull; Game Patch: <span class="meta-blue">LoL ${finalVer}</span>`;
+  if(modalMetaEl) modalMetaEl.innerHTML = `Installed Version: <span class="meta-gold">v0.6.4</span> &bull; Game Patch: <span class="meta-blue">LoL ${finalVer}</span>`;
 
   // Modal Footer
   const modalFooterVer = document.getElementById("modalFooterVersion");
-  if(modalFooterVer) modalFooterVer.innerHTML = `v0.6.3 <span class="v-patch">(LoL ${finalVer})</span>`;
+  if(modalFooterVer) modalFooterVer.innerHTML = `v0.6.4 <span class="v-patch">(LoL ${finalVer})</span>`;
 
   // Splash Tag
   const splashTag = document.getElementById("splashPatchTag");
-  if(splashTag) splashTag.textContent = `v0.6.3 (LoL ${finalVer}) • LIVE SYNC ENGINE`;
+  if(splashTag) splashTag.textContent = `v0.6.4 (LoL ${finalVer}) • LIVE SYNC ENGINE`;
 
   // Items Page Shop Badges
   const lolShopSidebarPatch = document.getElementById("lolShopSidebarPatch");

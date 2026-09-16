@@ -2,6 +2,24 @@
 
 All notable changes to **League of Customs** are documented here.
 
+## [v0.6.4] — 2026-09-16
+
+### Visuals & Wiki
+- **Official Role & Lane Icon Badges**:
+  - Replaced text badge boxes on champion cards and champion detail modals with sleek, official League of Legends icons for Roles (Fighter, Mage, Assassin, Marksman, Tank, Support) and Lanes (Top, Jungle, Mid, Bot, Support).
+  - Cleanly grouped tags into dedicated **Roles** and **Lanes** rows with subtle Hextech borders, hover glows, and descriptive tooltips.
+- **Official Tactical Rating Radar Icons**:
+  - Integrated authentic high-fidelity League client Playstyle Radar icons for Damage (Crossed Swords), Toughness (Crest Shield), Control (CC Swirl), Mobility (Winged Dash Boot), Utility (Support Grail), and Difficulty (Hextech Diamond Crest).
+- **Centered Region Crest Watermark**:
+  - Centered high-resolution Runeterra regional crests/emblems in the middle of each champion's detail hero cover banner as an authentic watermark, featuring subtle transparency (`0.32`) and an interactive golden glow/zoom on hover (`0.52`).
+  - Added miniature region crest emblems beside regional faction tags in champion detail headers.
+- **14 High-Quality Local Region Covers & Fallback System**:
+  - Packaged high-resolution cover artwork locally for all 14 Runeterra regions (Demacia, Noxus, Ionia, Freljord, Piltover, Zaun, Bilgewater, Shurima, Mount Targon, Shadow Isles, Bandle City, The Void, Ixtal, and Runeterra), eliminating external 404 network failures (e.g. Riot CMS Runeterra map link) and gracefully falling back to champion base splash art.
+- **Expanded Faction Mapping**:
+  - Added region mappings for unassigned champions such as Locke (Runeterra) and Zaahen (Shurima).
+- **Asset Packaging & Distribution**:
+  - Packaged all new region crests, region covers, and tactical icons recursively into the standalone executable, Windows Installer (`LeagueOfCustoms-Setup-v0.6.4.exe`), and Portable ZIP (`LeagueOfCustoms-v0.6.4-Portable.zip`).
+
 ## [v0.6.3] — 2026-09-14
 
 ### Added

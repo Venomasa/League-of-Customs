@@ -11,8 +11,8 @@ using Microsoft.Win32;
 [assembly: AssemblyCompany("Venomasa")]
 [assembly: AssemblyProduct("League of Customs")]
 [assembly: AssemblyCopyright("Copyright © Venomasa 2026")]
-[assembly: AssemblyVersion("0.6.3.0")]
-[assembly: AssemblyFileVersion("0.6.3.0")]
+[assembly: AssemblyVersion("0.6.4.0")]
+[assembly: AssemblyFileVersion("0.6.4.0")]
 
 namespace LeagueOfCustoms.Installer
 {
