@@ -816,37 +816,34 @@ function rerollSoloSpells(){
 
 
 function animateAndRollSolo(){
-
   const btn = document.getElementById("btnSoloRollAll");
 
-  if(btn) btn.style.opacity = ".65";
-
-  let step = 0;
-
-  const iv = setInterval(() => {
-
-    // Intermediate animation: visual roll only, DO NOT overwrite user's anti-repeat history!
-
-    rollSoloChallenge(false);
-
-    step++;
-
-    if(step >= 6){
-
-      clearInterval(iv);
-
-      // Final roll: apply full anti-repeat logic and commit to history
-
-      rollSoloChallenge(true);
-
-      if(btn) btn.style.opacity = "1";
-
-      showToast("Ultimate Challenge Ready!");
-
+  if(window._locFastRoll){
+    rollSoloChallenge(true);
+    showToast("Ultimate Challenge Ready!");
+    if(window.APP_SETTINGS && window.APP_SETTINGS.autoCopyDiscord){
+      try { copySoloDiscord(); } catch(e){}
     }
+    return;
+  }
 
+  if(btn) btn.style.opacity = ".65";
+  let step = 0;
+  const iv = setInterval(() => {
+    // Intermediate animation: visual roll only, DO NOT overwrite user's anti-repeat history!
+    rollSoloChallenge(false);
+    step++;
+    if(step >= 6){
+      clearInterval(iv);
+      // Final roll: apply full anti-repeat logic and commit to history
+      rollSoloChallenge(true);
+      if(btn) btn.style.opacity = "1";
+      showToast("Ultimate Challenge Ready!");
+      if(window.APP_SETTINGS && window.APP_SETTINGS.autoCopyDiscord){
+        try { copySoloDiscord(); } catch(e){}
+      }
+    }
   }, 50);
-
 }
 
 function renderSoloChallenge(){

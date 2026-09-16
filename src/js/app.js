@@ -674,23 +674,23 @@ function updateDisplayedLeagueVersion(ver){
   // Titlebar
   const tbNum = document.getElementById("titlebarVersion") || document.querySelector(".titlebar-version .v-num");
   if(tbNum) {
-    tbNum.innerHTML = `v0.6.4 <span class="v-patch">(LoL ${finalVer})</span>`;
+    tbNum.innerHTML = `v0.7.0 <span class="v-patch">(LoL ${finalVer})</span>`;
   } else {
     const tbEl = document.querySelector(".titlebar-version");
-    if(tbEl) tbEl.innerHTML = `<span class="v-num">v0.6.4 <span class="v-patch">(LoL ${finalVer})</span></span>`;
+    if(tbEl) tbEl.innerHTML = `<span class="v-num">v0.7.0 <span class="v-patch">(LoL ${finalVer})</span></span>`;
   }
 
   // Modal About Card
   const modalMetaEl = document.querySelector(".about-update-meta");
-  if(modalMetaEl) modalMetaEl.innerHTML = `Installed Version: <span class="meta-gold">v0.6.4</span> &bull; Game Patch: <span class="meta-blue">LoL ${finalVer}</span>`;
+  if(modalMetaEl) modalMetaEl.innerHTML = `Installed Version: <span class="meta-gold">v0.7.0</span> &bull; Game Patch: <span class="meta-blue">LoL ${finalVer}</span>`;
 
   // Modal Footer
   const modalFooterVer = document.getElementById("modalFooterVersion");
-  if(modalFooterVer) modalFooterVer.innerHTML = `v0.6.4 <span class="v-patch">(LoL ${finalVer})</span>`;
+  if(modalFooterVer) modalFooterVer.innerHTML = `v0.7.0 <span class="v-patch">(LoL ${finalVer})</span>`;
 
   // Splash Tag
   const splashTag = document.getElementById("splashPatchTag");
-  if(splashTag) splashTag.textContent = `v0.6.4 (LoL ${finalVer}) • LIVE SYNC ENGINE`;
+  if(splashTag) splashTag.textContent = `v0.7.0 (LoL ${finalVer}) • AUTONOMOUS LIVE ENGINE`;
 
   // Items Page Shop Badges
   const lolShopSidebarPatch = document.getElementById("lolShopSidebarPatch");
@@ -734,6 +734,14 @@ function loadCachedDynamicLolData(){
 
         if(Array.isArray(parsed.starters) && parsed.starters.length > 0){
           LOL_DATA.starters = parsed.starters;
+        }
+
+        if(Array.isArray(parsed.boots) && parsed.boots.length >= 4){
+          LOL_DATA.boots = parsed.boots;
+        }
+
+        if(Array.isArray(parsed.spells) && parsed.spells.length >= 8){
+          LOL_DATA.spells = parsed.spells;
         }
 
         updateDisplayedLeagueVersion(parsed.version);
@@ -900,59 +908,134 @@ function syncLiveRunesIntoPool(runesArr){
   console.log(`Live Sync: Synchronized ${normalized.length} rune trees into randomizer pool.`);
 }
 
-// Backwards compatibility alias
-const mergeNewItemsIntoPool = syncLiveItemsIntoPool;
-
-function mergeNewChampionsIntoPool(champsObj){
-
-  if(!champsObj || typeof champsObj !== "object") return;
-
+function syncLiveChampionsIntoPool(champsObj) {
+  if (!champsObj || typeof champsObj !== "object") return;
+  if (!Array.isArray(LOL_DATA.champions)) LOL_DATA.champions = [];
   const existingIds = new Set(LOL_DATA.champions.map(c => (c.id || "").toLowerCase()));
-
   let addedCount = 0;
 
-  
-
   Object.keys(champsObj).forEach(cKey => {
-
     const c = champsObj[cKey];
-
-    if(!c || !c.id) return;
-
+    if (!c || !c.id) return;
     const idLower = c.id.toLowerCase();
+    if (existingIds.has(idLower)) return;
 
-    if(existingIds.has(idLower)) return;
+    // Smart lane deduction based on Riot tags
+    const tags = Array.isArray(c.tags) ? c.tags : ["Fighter"];
+    const lanes = [];
+    if (tags.includes("Marksman")) lanes.push("ADC");
+    if (tags.includes("Support")) lanes.push("Support");
+    if (tags.includes("Assassin")) {
+      lanes.push("Mid");
+      if (tags.includes("Fighter")) lanes.push("Jungle");
+    }
+    if (tags.includes("Mage") && !lanes.includes("Mid")) lanes.push("Mid");
+    if (tags.includes("Tank")) {
+      if (!lanes.includes("Top")) lanes.push("Top");
+      if (!lanes.includes("Support") && tags.includes("Support")) lanes.push("Support");
+      if (tags.includes("Fighter") && !lanes.includes("Jungle")) lanes.push("Jungle");
+    }
+    if (tags.includes("Fighter")) {
+      if (!lanes.includes("Top")) lanes.push("Top");
+      if (!lanes.includes("Jungle")) lanes.push("Jungle");
+    }
+    if (lanes.length === 0) lanes.push("Mid", "Top");
 
-    
-
-    LOL_DATA.champions.push({
-
+    const newChamp = {
       id: c.id,
-
       name: c.name || c.id,
-
       title: c.title || "",
+      roles: tags,
+      lanes: lanes,
+      key: Number(c.key) || 0
+    };
 
-      roles: (c.tags && c.tags.length) ? c.tags : ["Fighter"],
-
-      lanes: ["Mid", "Top"] // default fallback lanes
-
-    });
-
+    LOL_DATA.champions.push(newChamp);
     existingIds.add(idLower);
-
     addedCount++;
 
+    // Register alias in CHAMPION_INTERNAL_KEYS if defined
+    if (typeof CHAMPION_INTERNAL_KEYS !== "undefined") {
+      const cleanName = (c.name || c.id).toLowerCase();
+      CHAMPION_INTERNAL_KEYS[cleanName] = c.id;
+      CHAMPION_INTERNAL_KEYS[idLower] = c.id;
+    }
   });
 
-  
-
-  if(addedCount > 0){
-
-    console.log(`Live Sync: Added ${addedCount} new champions to randomizer pool.`);
-
+  if (addedCount > 0) {
+    LOL_DATA.champions.sort((a, b) => a.name.localeCompare(b.name));
+    console.log(`Live Sync: Added ${addedCount} new champions to randomizer pool with auto-assigned lanes.`);
   }
+}
 
+// Backwards compatibility alias
+const mergeNewChampionsIntoPool = syncLiveChampionsIntoPool;
+
+function syncLiveBootsIntoPool(itemsObj) {
+  if (!itemsObj || typeof itemsObj !== "object") return;
+  const bootsList = [];
+  const existingBootIds = new Set();
+
+  Object.keys(itemsObj).forEach(idStr => {
+    const it = itemsObj[idStr];
+    if (!it || !it.name) return;
+    const isBoot = it.tags && it.tags.includes("Boots");
+    const isCompleted = (!it.into || it.into.length === 0) && it.gold && it.gold.total >= 900;
+    const isSR = !it.maps || it.maps["11"] === true;
+    const inStore = it.inStore !== false;
+    if (isBoot && isCompleted && isSR && inStore) {
+      bootsList.push({ id: Number(idStr), name: it.name });
+      existingBootIds.add(Number(idStr));
+    }
+  });
+
+  if (bootsList.length >= 4) {
+    bootsList.sort((a, b) => a.name.localeCompare(b.name));
+    LOL_DATA.boots = bootsList;
+    console.log(`Live Sync: Synchronized ${bootsList.length} boots into randomizer.`);
+  }
+}
+
+function syncLiveSpellsIntoPool(spellsObj) {
+  if (!spellsObj || typeof spellsObj !== "object") return;
+  const spellsList = [];
+
+  Object.keys(spellsObj).forEach(sKey => {
+    const s = spellsObj[sKey];
+    if (!s || !s.modes || !Array.isArray(s.modes)) return;
+    const isClassic = s.modes.includes("CLASSIC");
+    const isAram = s.modes.includes("ARAM");
+    if (!isClassic && !isAram) return;
+
+    const mode = (isClassic && isAram) ? "both" : (isClassic ? "rift" : "aram");
+    const isJungle = s.id === "SummonerSmite" || (s.name && s.name.toLowerCase().includes("smite"));
+    spellsList.push({
+      id: s.id,
+      name: s.name,
+      key: Number(s.key) || 0,
+      mode: mode,
+      jungleOnly: isJungle || undefined
+    });
+  });
+
+  if (spellsList.length >= 8) {
+    LOL_DATA.spells = spellsList;
+    console.log(`Live Sync: Synchronized ${spellsList.length} summoner spells into randomizer.`);
+  }
+}
+
+function persistLiveLolData() {
+  try {
+    localStorage.setItem("loc_dynamic_lol_data", JSON.stringify({
+      version: LOL_DATA.version,
+      items: LOL_DATA.items,
+      champions: LOL_DATA.champions,
+      runes: LOL_DATA.runes,
+      starters: LOL_DATA.starters,
+      boots: LOL_DATA.boots,
+      spells: LOL_DATA.spells
+    }));
+  } catch (e) {}
 }
 
 async function syncLiveLolData(){
@@ -1116,55 +1199,61 @@ function dismissSplashScreen(){
 }
 
 function handleLiveDataSyncResult(data){
-
   if(!data) return;
-
   const statusEl = document.getElementById("splashStatusText");
-
   const barEl = document.getElementById("splashProgressBar");
-
   
-
   if(data.success && data.latestPatch){
-
     const patch = data.latestPatch;
-
     updateDisplayedLeagueVersion(patch);
-
     
-
     if(barEl) barEl.style.width = "82%";
-
     if(statusEl) statusEl.textContent = `Live League Patch: ${patch} Verified`;
-
     
-
     if(data.itemsData){
-
       syncLiveItemsIntoPool(data.itemsData);
-
+      syncLiveBootsIntoPool(data.itemsData);
+    }
+    if(data.championsData){
+      syncLiveChampionsIntoPool(data.championsData);
+    }
+    if(data.runesData){
+      syncLiveRunesIntoPool(data.runesData);
+    }
+    if(data.spellsData){
+      syncLiveSpellsIntoPool(data.spellsData);
     }
 
+    persistLiveLolData();
+
+    if(data.forced){
+      showToast("Live Engine: All caches cleared & re-synchronized with Riot CDN!");
+      if(typeof updateSettingsLiveStatus === "function") updateSettingsLiveStatus(true);
+      const btn = document.getElementById("btnForceResync");
+      if(btn){
+        btn.disabled = false;
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg> FORCE RE-SYNC & CLEAR CACHE`;
+      }
+    }
   } else {
-
     // Offline or network timeout
-
     if(barEl) barEl.style.width = "82%";
-
     if(statusEl) statusEl.textContent = `Offline Mode: Loaded LoL ${LOL_DATA.version}`;
-
+    if(data.forced){
+      showToast("Force re-sync failed: " + (data.error || "network error"), "error");
+      if(typeof updateSettingsLiveStatus === "function") updateSettingsLiveStatus(false);
+      const btn = document.getElementById("btnForceResync");
+      if(btn){
+        btn.disabled = false;
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg> FORCE RE-SYNC & CLEAR CACHE`;
+      }
+    }
   }
-
   
-
   if(_liveSyncPromiseResolve){
-
     _liveSyncPromiseResolve(data);
-
     _liveSyncPromiseResolve = null;
-
   }
-
 }
 
 async function runAppStartupSync(){
@@ -1261,11 +1350,201 @@ async function runAppStartupSync(){
 }
 
 
+// ==========================================================================
+// GENERAL SETTINGS & LIVE SYNC ENGINE MANAGER (v0.7.0)
+// ==========================================================================
+
+const DEFAULT_SETTINGS = {
+  defaultMode: "rift",         // "rift" | "aram"
+  autoCopyDiscord: false,     // boolean
+  rollAnimation: "normal",    // "normal" | "instant"
+  soundEnabled: true,         // boolean
+  autoConnectLcu: true        // boolean
+};
+
+let APP_SETTINGS = Object.assign({}, DEFAULT_SETTINGS);
+
+function loadAppSettings() {
+  try {
+    const saved = localStorage.getItem("loc_user_settings");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      APP_SETTINGS = Object.assign({}, DEFAULT_SETTINGS, parsed);
+    }
+  } catch (e) {}
+  applyAppSettings();
+}
+
+function saveAppSettings() {
+  try {
+    localStorage.setItem("loc_user_settings", JSON.stringify(APP_SETTINGS));
+  } catch (e) {}
+}
+
+function applyAppSettings() {
+  // 1. Default mode for solo randomizer
+  if (APP_SETTINGS.defaultMode === "aram" && typeof setSoloMode === "function" && typeof soloMode !== "undefined" && !soloMode) {
+    try { setSoloMode(true); } catch(e){}
+  }
+
+  // 2. Sound
+  window._locSoundEnabled = APP_SETTINGS.soundEnabled;
+
+  // 3. Roll animation
+  window._locFastRoll = (APP_SETTINGS.rollAnimation === "instant");
+
+  // 4. Update UI controls if modal elements exist
+  const defModeRift = document.getElementById("settingDefaultModeRift");
+  const defModeAram = document.getElementById("settingDefaultModeAram");
+  if (defModeRift && defModeAram) {
+    defModeRift.checked = (APP_SETTINGS.defaultMode === "rift");
+    defModeAram.checked = (APP_SETTINGS.defaultMode === "aram");
+  }
+
+  const autoDiscordToggle = document.getElementById("settingAutoDiscord");
+  if (autoDiscordToggle) autoDiscordToggle.checked = !!APP_SETTINGS.autoCopyDiscord;
+
+  const animSpeedSelect = document.getElementById("settingAnimSpeed");
+  if (animSpeedSelect) animSpeedSelect.value = APP_SETTINGS.rollAnimation;
+
+  const sfxToggle = document.getElementById("settingSfx");
+  if (sfxToggle) sfxToggle.checked = !!APP_SETTINGS.soundEnabled;
+
+  const lcuAutoToggle = document.getElementById("settingLcuAuto");
+  if (lcuAutoToggle) lcuAutoToggle.checked = !!APP_SETTINGS.autoConnectLcu;
+}
+
+function onSettingChange(key, value) {
+  APP_SETTINGS[key] = value;
+  saveAppSettings();
+  applyAppSettings();
+  showToast("Setting saved", "success");
+}
+
+function openSettingsModal() {
+  const modal = document.getElementById("settingsModal");
+  if (!modal) return;
+  applyAppSettings();
+  updateSettingsLiveStatus();
+  modal.classList.add("open");
+}
+
+function closeSettingsModal() {
+  const modal = document.getElementById("settingsModal");
+  if (modal) modal.classList.remove("open");
+}
+
+function updateSettingsLiveStatus(isOnline) {
+  const patchEl = document.getElementById("settingsLivePatch");
+  if (patchEl) {
+    const v = window._currentLeaguePatch || (typeof LOL_DATA !== 'undefined' ? LOL_DATA.version : '16.18.1');
+    patchEl.textContent = `LoL ${v}`;
+  }
+  const statusBadge = document.getElementById("settingsSyncBadge");
+  if (statusBadge) {
+    statusBadge.className = "settings-status-badge " + (isOnline !== false ? "status-online" : "status-offline");
+    statusBadge.innerHTML = isOnline !== false ? `<span class="dot-pulse"></span> Riot Data Dragon: Active` : `<span class="dot-pulse red"></span> Offline Fallback`;
+  }
+  const champsCountEl = document.getElementById("settingsChampsCount");
+  if (champsCountEl && typeof LOL_DATA !== 'undefined' && LOL_DATA.champions) {
+    champsCountEl.textContent = LOL_DATA.champions.length + " Champions";
+  }
+  const itemsCountEl = document.getElementById("settingsItemsCount");
+  if (itemsCountEl && typeof LOL_DATA !== 'undefined' && LOL_DATA.items) {
+    itemsCountEl.textContent = LOL_DATA.items.length + " Items";
+  }
+  const runesCountEl = document.getElementById("settingsRunesCount");
+  if (runesCountEl && typeof LOL_DATA !== 'undefined' && LOL_DATA.runes) {
+    runesCountEl.textContent = LOL_DATA.runes.length + " Trees";
+  }
+  const spellsCountEl = document.getElementById("settingsSpellsCount");
+  if (spellsCountEl && typeof LOL_DATA !== 'undefined' && LOL_DATA.spells) {
+    spellsCountEl.textContent = LOL_DATA.spells.length + " Spells";
+  }
+}
+
+function triggerForceResync() {
+  const btn = document.getElementById("btnForceResync");
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-inline"></span> Re-syncing with Riot...`;
+  }
+  showToast("Purging local caches & downloading fresh live data from Riot...");
+
+  try {
+    localStorage.removeItem("loc_dynamic_lol_data");
+  } catch(e) {}
+
+  if (window.chrome && window.chrome.webview) {
+    window.chrome.webview.postMessage("force-resync-cache:" + (LOL_DATA.version || "16.18.1"));
+  } else {
+    // Browser fallback
+    fetch("https://ddragon.leagueoflegends.com/api/versions.json")
+      .then(r => r.json())
+      .then(v => {
+        handleLiveDataSyncResult({ success: true, latestPatch: v[0], forced: true });
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg> FORCE RE-SYNC & CLEAR CACHE`;
+        }
+      })
+      .catch(err => {
+        handleLiveDataSyncResult({ success: false, error: err.message, forced: true });
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg> FORCE RE-SYNC & CLEAR CACHE`;
+        }
+      });
+    return;
+  }
+
+  setTimeout(() => {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg> FORCE RE-SYNC & CLEAR CACHE`;
+    }
+  }, 5000);
+}
+
+function testLcuFromSettings() {
+  const btn = document.getElementById("btnTestLcuSettings");
+  const status = document.getElementById("settingsLcuStatus");
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = "Checking...";
+  }
+  if (status) {
+    status.className = "lcu-status";
+    status.innerHTML = "Querying League Client lockfile...";
+  }
+
+  if (window.chrome && window.chrome.webview) {
+    window.chrome.webview.postMessage("get-lobby");
+    setTimeout(() => {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerText = "Check Connection";
+      }
+    }, 2500);
+  } else {
+    if (status) {
+      status.className = "lcu-status err";
+      status.innerHTML = "Web mode: Native LCU requires desktop app";
+    }
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = "Check Connection";
+    }
+  }
+}
+
 function initApp(){
 
   if(window._appInitialized) return;
 
   window._appInitialized = true;
+
+  try { loadAppSettings(); } catch(e){}
 
   try { loadCachedDynamicLolData(); } catch(e){}
 

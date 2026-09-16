@@ -2,6 +2,39 @@
 
 All notable changes to **League of Customs** are documented here.
 
+## [v0.7.0] — 2026-09-16
+
+### Autonomous Live Sync Engine (100% Zero-Maintenance)
+- **Comprehensive Dynamic Game Data Sync**:
+  - Expanded the startup live sync engine to dynamically synchronize the complete League of Legends asset ecosystem directly from Riot Games Data Dragon CDN: **Champions**, **Items**, **Boots**, **Runes Reforged**, and **Summoner Spells**.
+  - Enabled **100% autonomous operation**: If Riot releases a new champion, reworks items, alters summoner spells, or ships a new patch, League of Customs automatically ingests the live data on startup without requiring any code updates or software re-releases.
+  - Implemented tag-based Lane Inference heuristics (`Marksman` $\rightarrow$ ADC, `Support` $\rightarrow$ Support, `Assassin` $\rightarrow$ Mid/Jungle, `Mage` $\rightarrow$ Mid, `Tank` $\rightarrow$ Top/Support, `Fighter` $\rightarrow$ Top/Jungle) to properly classify upcoming champions in the Randomizer without manual intervention.
+  - Added dynamic ingestion and categorization of new boots and summoner spells.
+  - Full offline caching in `%LOCALAPPDATA%\LeagueOfCustoms\wiki_cache` and browser `localStorage` (`loc_dynamic_lol_data`) for instant startup and offline resilience.
+
+### General Settings & Control Modal
+- **Hextech Settings Gear (`⚙️`)**:
+  - Added an authentic Hextech Gear button in the custom client titlebar controls next to the About button.
+- **Live Data Engine Status & Cache Control**:
+  - Displays the active game patch, Riot CDN connection status, and real-time counts for champions, items, rune trees, and summoner spells.
+  - **Force Re-Sync & Clear Cache**: Added one-click action to purge local cache files and re-synchronize freshly against the latest Riot Data Dragon patch.
+- **Gameplay & Randomizer Preferences**:
+  - **Default Game Mode**: Option to choose default startup mode between Summoner's Rift and ARAM.
+  - **Auto-Copy to Discord**: Option to automatically copy generated challenges to clipboard formatted for Discord upon rolling.
+  - **Roll Animation Speed**: Option to switch between smooth Hextech spin animation and instant zero-delay roll generation.
+  - **Sound Effects (SFX)**: Global toggle for audio feedback and UI sound effects.
+- **League Client (LCU) Integration Controls**:
+  - Toggle automatic LeagueClientUx process detection on app launch.
+  - Manual "Check Connection" button with live status feedback.
+
+### Legal Compliance & Riot Games Policy
+- **Mandatory Riot Legal Boilerplate Disclaimer**:
+  - Integrated the exact Riot Games Legal Jibber Jabber boilerplate disclaimer prominently across the application:
+    - **About / Legal Modal**: Renamed header to `LEAGUE OF CUSTOMS — ABOUT & LEGAL`, updated titlebar info button tooltip, and added a dedicated Hextech legal card with policy shield badge and dynamic version/patch tracking.
+    - **Application Footer**: Added a persistent 24px bottom bar across the application with full disclaimer text and an `ABOUT / LEGAL` quick button.
+    - **General Settings Modal**: Added Section 4 providing direct one-click navigation to the About & Legal disclaimer.
+    - **Windows Installer (`Setup.cs`)**: Added a prominent disclaimer callout box with clear high-contrast red font styling (`#FF4141` / `#FF5F5F`) directly on the installer dialog.
+
 ## [v0.6.4] — 2026-09-16
 
 ### Visuals & Wiki

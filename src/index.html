@@ -91,7 +91,7 @@
 
       <div id="splashStatusText" class="splash-status-text">Initializing Hextech Core...</div>
 
-      <div class="splash-patch-tag" id="splashPatchTag">v0.6.4 &bull; LIVE SYNC ENGINE</div>
+      <div class="splash-patch-tag" id="splashPatchTag">v0.7.0 &bull; AUTONOMOUS LIVE ENGINE</div>
 
     </div>
 
@@ -109,7 +109,7 @@
 
         <span class="titlebar-brand">LEAGUE OF CUSTOMS</span>
 
-        <span class="titlebar-version"><span class="v-num" id="titlebarVersion">v0.6.4 <span class="v-patch">(LoL 26.18)</span></span></span>
+        <span class="titlebar-version"><span class="v-num" id="titlebarVersion">v0.7.0 <span class="v-patch">(LoL 26.18)</span></span></span>
 
       </div>
 
@@ -119,7 +119,14 @@
 
     <div class="titlebar-controls">
 
-      <button class="win-btn win-btn-info" onclick="openAboutModal()" title="About & Credits">
+      <button class="win-btn win-btn-settings" onclick="openSettingsModal()" title="Settings &amp; Live Engine">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
+          <path fill-rule="evenodd" d="M10.52 4.75L10.05 2.4h3.9l-.47 2.35 2.6 1.08 1.33-2 2.76 2.76-2 1.33 1.08 2.6 2.35-.47v3.9l-2.35-.47-1.08 2.6 2 1.33-2.76 2.76-1.33-2-2.6 1.08.47 2.35h-3.9l.47-2.35-2.6-1.08-1.33 2-2.76-2.76 2-1.33-1.08-2.6-2.35.47v-3.9l2.35.47 1.08-2.6-2-1.33 2.76-2.76 1.33 2 2.6-1.08zM12 7.2a4.8 4.8 0 1 0 0 9.6 4.8 4.8 0 0 0 0-9.6z"/>
+          <path d="M12 9.4Q12.3 11.7 14.6 12Q12.3 12.3 12 14.6Q11.7 12.3 9.4 12Q11.7 11.7 12 9.4z"/>
+        </svg>
+      </button>
+
+      <button class="win-btn win-btn-info" onclick="openAboutModal()" title="About &amp; Legal (Riot Disclaimer)">
 
         <span class="info-mark">!</span>
 
@@ -211,7 +218,7 @@
 
           <img class="modal-crest" src="data:image/png;base64,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" alt="League of Customs">
 
-          <span>LEAGUE OF CUSTOMS</span>
+          <span>LEAGUE OF CUSTOMS &mdash; ABOUT &amp; LEGAL</span>
 
         </div>
 
@@ -361,13 +368,35 @@
 
         </div>
 
-        
+        <!-- Section 3: Legal & Riot Games Disclaimer -->
+        <div class="modal-grid-heading" style="margin-top:16px;">LEGAL &amp; RIOT GAMES DISCLAIMER</div>
+
+        <div class="about-legal-card">
+          <div class="about-legal-header">
+            <div class="about-legal-badge">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="var(--gold-2)">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v6h-2V7zm0 8h2v2h-2v-2z"/>
+              </svg>
+              <span>RIOT GAMES LEGAL JIBBER JABBER POLICY</span>
+            </div>
+          </div>
+          <p class="about-legal-text">
+            League of Customs isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
+          </p>
+          <div class="about-legal-sub">
+            League of Customs is an unofficial, 100% free community tool created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games.
+          </div>
+        </div>
+
+        <div class="about-update-meta" style="margin-top:12px; font-size:0.72rem; color:var(--grey-1); text-align:center;">
+          Installed Version: <span class="meta-gold" style="color:var(--gold-2);font-weight:700;">v0.7.0</span> &bull; Game Patch: <span class="meta-blue" style="color:var(--blue);font-weight:700;">LoL 26.18</span>
+        </div>
 
       </div>
 
       <div class="modal-footer">
 
-        <span class="modal-version-footer"><span class="v-num" id="modalFooterVersion">v0.6.4 <span class="v-patch">(LoL 26.18)</span></span></span>
+        <span class="modal-version-footer"><span class="v-num" id="modalFooterVersion">v0.7.0 <span class="v-patch">(LoL 26.18)</span></span></span>
 
         <button class="btn btn-primary" style="padding: 8px 26px;" onclick="closeAboutModal()">CLOSE</button>
 
@@ -375,6 +404,203 @@
 
     </div>
 
+  </div>
+
+  <!-- General Settings & Live Sync Modal (v0.7.0) -->
+  <div class="modal-overlay" id="settingsModal" onclick="if(event.target===this)closeSettingsModal()">
+    <div class="modal-card settings-modal-card" style="max-width: 660px;">
+      <div class="modal-header">
+        <div class="modal-header-title">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="var(--gold-2)" style="margin-right:8px;">
+            <path fill-rule="evenodd" d="M10.52 4.75L10.05 2.4h3.9l-.47 2.35 2.6 1.08 1.33-2 2.76 2.76-2 1.33 1.08 2.6 2.35-.47v3.9l-2.35-.47-1.08 2.6 2 1.33-2.76 2.76-1.33-2-2.6 1.08.47 2.35h-3.9l.47-2.35-2.6-1.08-1.33 2-2.76-2.76 2-1.33-1.08-2.6-2.35.47v-3.9l2.35.47 1.08-2.6-2-1.33 2.76-2.76 1.33 2 2.6-1.08zM12 7.2a4.8 4.8 0 1 0 0 9.6 4.8 4.8 0 0 0 0-9.6z"/>
+            <path d="M12 9.4Q12.3 11.7 14.6 12Q12.3 12.3 12 14.6Q11.7 12.3 9.4 12Q11.7 11.7 12 9.4z"/>
+          </svg>
+          <span>GENERAL SETTINGS &amp; LIVE SYNC ENGINE</span>
+        </div>
+        <button class="modal-close-btn" onclick="closeSettingsModal()" title="Close">
+          <svg viewBox="0 0 10 10" width="12" height="12">
+            <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body settings-modal-body" style="padding: 16px 20px; max-height: 70vh; overflow-y: auto;">
+        
+        <!-- SECTION 1: AUTONOMOUS LIVE ENGINE & CACHE -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+            <span>AUTONOMOUS DATA ENGINE &amp; CACHE</span>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-engine-header">
+              <div class="settings-engine-status">
+                <span class="settings-live-label">ACTIVE GAME PATCH</span>
+                <span class="settings-live-patch" id="settingsLivePatch">LoL 16.18.1</span>
+              </div>
+              <div id="settingsSyncBadge" class="settings-status-badge status-online">
+                <span class="dot-pulse"></span> Riot Data Dragon: Active
+              </div>
+            </div>
+
+            <div class="settings-engine-stats">
+              <div class="engine-stat-pill">
+                <span class="stat-pill-label">Champions Pool</span>
+                <span class="stat-pill-val" id="settingsChampsCount">168 Champions</span>
+              </div>
+              <div class="engine-stat-pill">
+                <span class="stat-pill-label">Items Catalog</span>
+                <span class="stat-pill-val" id="settingsItemsCount">200+ Items</span>
+              </div>
+              <div class="engine-stat-pill">
+                <span class="stat-pill-label">Rune Trees</span>
+                <span class="stat-pill-val" id="settingsRunesCount">5 Trees</span>
+              </div>
+              <div class="engine-stat-pill">
+                <span class="stat-pill-label">Summoner Spells</span>
+                <span class="stat-pill-val" id="settingsSpellsCount">10 Spells</span>
+              </div>
+            </div>
+
+            <div class="settings-engine-desc">
+              The engine automatically synchronizes with Riot Games CDN on every app startup. If Riot releases a new champion, rune, item, or patch, data updates dynamically without needing a new software release.
+            </div>
+
+            <div class="settings-engine-actions">
+              <button class="btn btn-secondary" id="btnForceResync" onclick="triggerForceResync()" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+                <span>FORCE RE-SYNC &amp; CLEAR CACHE</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: RANDOMIZER & CHALLENGE PREFERENCES -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+            <span>RANDOMIZER &amp; GAMEPLAY PREFERENCES</span>
+          </div>
+
+          <div class="settings-card">
+            <!-- Row: Default Game Mode -->
+            <div class="settings-row">
+              <div class="settings-row-text">
+                <div class="settings-row-label">Default Game Mode on Startup</div>
+                <div class="settings-row-sub">Choose whether Solo Randomizer launches in Summoner's Rift or ARAM mode.</div>
+              </div>
+              <div class="settings-radio-group">
+                <label class="settings-radio-label">
+                  <input type="radio" name="settingDefaultMode" id="settingDefaultModeRift" onchange="onSettingChange('defaultMode', 'rift')" checked />
+                  <span>Rift</span>
+                </label>
+                <label class="settings-radio-label">
+                  <input type="radio" name="settingDefaultMode" id="settingDefaultModeAram" onchange="onSettingChange('defaultMode', 'aram')" />
+                  <span>ARAM</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Row: Auto-Copy to Discord -->
+            <div class="settings-row">
+              <div class="settings-row-text">
+                <div class="settings-row-label">Auto-Copy Challenge to Clipboard / Discord</div>
+                <div class="settings-row-sub">Automatically copy the challenge text to clipboard formatted for Discord upon rolling.</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="settingAutoDiscord" onchange="onSettingChange('autoCopyDiscord', this.checked)" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <!-- Row: Roll Animation Speed -->
+            <div class="settings-row">
+              <div class="settings-row-text">
+                <div class="settings-row-label">Roll Animation Speed</div>
+                <div class="settings-row-sub">Toggle between smooth Hextech spin animation or instant roll generation.</div>
+              </div>
+              <select class="settings-select" id="settingAnimSpeed" onchange="onSettingChange('rollAnimation', this.value)">
+                <option value="normal">Normal (Hextech Spin)</option>
+                <option value="instant">Instant (Zero Delay)</option>
+              </select>
+            </div>
+
+            <!-- Row: Sound Effects -->
+            <div class="settings-row" style="border-bottom:none;">
+              <div class="settings-row-text">
+                <div class="settings-row-label">Sound Effects &amp; Audio (SFX)</div>
+                <div class="settings-row-sub">Play audio cues on roll, tab switches, and interactions.</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="settingSfx" onchange="onSettingChange('soundEnabled', this.checked)" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: LEAGUE CLIENT (LCU) INTEGRATION -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+            <span>LEAGUE CLIENT (LCU) INTEGRATION</span>
+          </div>
+
+          <div class="settings-card">
+            <!-- Row: Auto Connect -->
+            <div class="settings-row">
+              <div class="settings-row-text">
+                <div class="settings-row-label">Auto-Detect League Client on Launch</div>
+                <div class="settings-row-sub">Automatically scan for running LeagueClientUx processes to read custom lobbies.</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="settingLcuAuto" onchange="onSettingChange('autoConnectLcu', this.checked)" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <!-- Row: LCU Check -->
+            <div class="settings-row" style="border-bottom:none;">
+              <div class="settings-row-text">
+                <div class="settings-row-label">Connection Status</div>
+                <div class="lcu-status" id="settingsLcuStatus" style="margin-top:4px;">Ready to query League Client</div>
+              </div>
+              <button class="btn btn-secondary" id="btnTestLcuSettings" onclick="testLcuFromSettings()" style="padding:5px 14px; font-size:.78rem;">
+                Check Connection
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: ABOUT & LEGAL DISCLAIMER -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3z"/></svg>
+            <span>ABOUT &amp; LEGAL DISCLAIMER</span>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-row" style="border-bottom:none;">
+              <div class="settings-row-text">
+                <div class="settings-row-label">Riot Games Legal Jibber Jabber Policy</div>
+                <div class="settings-row-sub">Read compliance statements, community integrity notes, and official Riot trademark disclaimer.</div>
+              </div>
+              <button class="btn btn-secondary" onclick="closeSettingsModal(); openAboutModal();" style="padding:5px 14px; font-size:.78rem; white-space:nowrap;">
+                View About &amp; Legal
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
+        <span class="modal-version-footer"><span class="v-num">v0.7.0 <span class="v-patch">(LoL 26.18)</span></span></span>
+        <button class="btn btn-primary" style="padding: 7px 24px;" onclick="closeSettingsModal()">DONE</button>
+      </div>
+    </div>
   </div>
 
   <!-- Navigation Tabs (LoL Client Style: Patch Notes | Profile | Randomizer) -->
@@ -2029,6 +2255,24 @@
   </div> <!-- .container -->
 
 </div> <!-- .main-content -->
+
+<!-- Application Footer with Mandatory Riot Games Legal Disclaimer -->
+<footer class="app-footer" id="appFooter">
+  <div class="app-footer-disclaimer" onclick="openAboutModal()" style="cursor:pointer;" title="League of Customs isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc. Click to open About &amp; Legal modal.">
+    <span class="app-footer-dot"></span>
+    <span class="app-footer-text">
+      League of Customs isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
+    </span>
+  </div>
+  <div class="app-footer-actions">
+    <button class="app-footer-btn" onclick="openAboutModal()" title="Open About &amp; Legal modal">
+      <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor">
+        <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/>
+      </svg>
+      ABOUT / LEGAL
+    </button>
+  </div>
+</footer>
 
 <div id="toast" class="toast">Done</div>
 

@@ -54,6 +54,14 @@
 
     .win-btn-close:active{background:#9b2432}
 
+    .win-btn-settings{color:var(--gold-2);transition:all .2s ease}
+
+    .win-btn-settings:hover{background:rgba(200,155,60,.2);color:var(--gold-1);text-shadow:0 0 10px rgba(200,155,60,.8)}
+
+    .win-btn-settings svg{transition:transform .35s ease}
+
+    .win-btn-settings:hover svg{transform:rotate(45deg)}
+
     .win-btn-info{font-family:'Cinzel',serif;font-size:.95rem;font-weight:900;color:var(--gold-2)}
 
     .win-btn-info:hover{background:rgba(200,155,60,.2);color:var(--gold-1);text-shadow:0 0 10px rgba(200,155,60,.8)}
@@ -159,6 +167,154 @@
     .modal-version-footer .v-num{color:var(--gold-2);font-weight:900;font-family:'Consolas',monospace;font-size:.78rem;margin-left:4px}
 
     .modal-version-footer .v-patch{color:var(--gold-1);opacity:.7;font-size:.72rem;margin-left:3px;font-weight:600}
+
+    /* ABOUT / LEGAL MODAL - RIOT DISCLAIMER */
+    .about-legal-card {
+      background: linear-gradient(135deg, rgba(3, 28, 40, 0.75), rgba(1, 10, 19, 0.95));
+      border: 1px solid var(--gold-3);
+      padding: 12px 16px;
+      margin-top: 8px;
+      position: relative;
+    }
+
+    .about-legal-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--gold-2), var(--gold-4));
+    }
+
+    .about-legal-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .about-legal-badge {
+      font-family: 'Cinzel', serif;
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: var(--gold-2);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+    }
+
+    .about-legal-text {
+      font-size: 0.76rem;
+      line-height: 1.45;
+      color: var(--gold-1);
+      font-style: italic;
+      margin: 0;
+      text-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
+    }
+
+    .about-legal-sub {
+      font-size: 0.68rem;
+      color: var(--grey-1);
+      margin-top: 8px;
+      line-height: 1.35;
+      border-top: 1px solid rgba(120, 90, 40, 0.25);
+      padding-top: 6px;
+    }
+
+    .about-update-meta {
+      font-family: 'Cinzel', serif;
+      letter-spacing: 1px;
+    }
+
+    /* APPLICATION FOOTER (RIOT MANDATORY LEGAL BOILERPLATE) */
+    .app-footer {
+      height: 24px;
+      min-height: 24px;
+      background: var(--black-1);
+      border-top: 1px solid rgba(120, 90, 40, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      font-size: 0.64rem;
+      color: var(--grey-1);
+      user-select: none;
+      z-index: 100;
+      flex-shrink: 0;
+      gap: 12px;
+    }
+
+    .app-footer-disclaimer {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--grey-1);
+      flex: 1;
+      min-width: 0;
+      transition: color 0.15s ease;
+    }
+
+    .app-footer-disclaimer:hover {
+      color: var(--gold-1);
+    }
+
+    .app-footer-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--gold-3);
+      flex-shrink: 0;
+    }
+
+    .app-footer-disclaimer:hover .app-footer-dot {
+      background: var(--gold-2);
+      box-shadow: 0 0 6px rgba(200, 155, 60, 0.6);
+    }
+
+    .app-footer-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 0.64rem;
+    }
+
+    .app-footer-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .app-footer-btn {
+      background: transparent;
+      border: 1px solid var(--gold-4);
+      color: var(--gold-2);
+      font-family: 'Cinzel', serif;
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      cursor: pointer;
+      padding: 1px 8px;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 18px;
+      line-height: 1;
+    }
+
+    .app-footer-btn:hover {
+      background: rgba(200, 155, 60, 0.18);
+      border-color: var(--gold-2);
+      color: var(--gold-1);
+      box-shadow: 0 0 8px rgba(200, 155, 60, 0.3);
+    }
 
     /* APP NAVIGATION TABS (LoL Client Style) */
 
@@ -2222,7 +2378,7 @@
 
     #pagePatches.active {
       display: block;
-      height: calc(100vh - 120px);
+      height: calc(100vh - 144px);
     }
 
     .main-content:has(#pagePatches.active) {
@@ -6685,5 +6841,346 @@
     .wiki-empty-icon { font-size: 2.2rem; margin-bottom: 8px; }
     .wiki-empty-title { font-family: 'Cinzel', serif; font-size: 1.1rem; color: var(--gold-1); font-weight: 800; }
     .wiki-empty-sub { font-family: 'Nunito Sans', sans-serif; font-size: 0.8rem; color: #8c857b; margin-top: 4px; }
+
+    /* ==========================================================================
+       GENERAL SETTINGS MODAL (v0.7.0)
+       ========================================================================== */
+    .settings-modal-card {
+      max-width: 620px;
+      width: 94%;
+      background: var(--black-2);
+      border: 1px solid var(--gold-2);
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.9), 0 0 20px rgba(200, 155, 60, 0.35);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .settings-modal-body {
+      padding: 16px 20px;
+      max-height: calc(85vh - 110px);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .settings-modal-body::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .settings-modal-body::-webkit-scrollbar-track {
+      background: var(--black-1);
+    }
+
+    .settings-modal-body::-webkit-scrollbar-thumb {
+      background: var(--gold-4);
+      border-radius: 3px;
+    }
+
+    .settings-modal-body::-webkit-scrollbar-thumb:hover {
+      background: var(--gold-2);
+    }
+
+    .settings-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .settings-section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: var(--gold-2);
+      text-transform: uppercase;
+    }
+
+    .settings-section-title svg {
+      color: var(--gold-2);
+      flex-shrink: 0;
+    }
+
+    .settings-card {
+      background: var(--black-3);
+      border: 1px solid var(--gold-4);
+      padding: 14px 16px;
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .settings-engine-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .settings-engine-status {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .settings-live-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--grey-1);
+      text-transform: uppercase;
+    }
+
+    .settings-live-patch {
+      font-family: 'Consolas', monospace;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--gold-1);
+    }
+
+    .settings-status-badge {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 2px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .settings-status-badge.status-online {
+      background: rgba(10, 200, 185, 0.12);
+      border: 1px solid var(--blue-dim);
+      color: var(--blue);
+    }
+
+    .settings-status-badge.status-syncing {
+      background: rgba(200, 155, 60, 0.15);
+      border: 1px solid var(--gold-3);
+      color: var(--gold-1);
+    }
+
+    .settings-status-badge.status-error {
+      background: rgba(195, 52, 69, 0.15);
+      border: 1px solid #c33445;
+      color: #ff7080;
+    }
+
+    .dot-pulse {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 6px currentColor;
+      animation: dotPulse 1.5s infinite ease-in-out;
+    }
+
+    @keyframes dotPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.75); }
+    }
+
+    .settings-engine-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .engine-stat-pill {
+      background: var(--black-1);
+      border: 1px solid var(--gold-4);
+      padding: 6px 8px;
+      text-align: center;
+      border-radius: 2px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .engine-stat-pill .stat-pill-label {
+      font-size: 0.62rem;
+      color: var(--grey-1);
+      text-transform: uppercase;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.5px;
+    }
+
+    .engine-stat-pill .stat-pill-val {
+      font-size: 0.8rem;
+      color: var(--gold-2);
+      font-weight: 800;
+      font-family: 'Consolas', monospace;
+    }
+
+    .settings-engine-desc {
+      font-size: 0.75rem;
+      color: var(--grey-1);
+      line-height: 1.45;
+      margin-bottom: 12px;
+      border-top: 1px dashed rgba(200, 155, 60, 0.2);
+      padding-top: 10px;
+    }
+
+    .settings-engine-actions {
+      margin-top: 4px;
+    }
+
+    #btnForceResync {
+      font-family: 'Cinzel', serif;
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    #btnForceResync:hover {
+      box-shadow: 0 0 12px rgba(200, 155, 60, 0.4);
+    }
+
+    .settings-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 11px 0;
+      border-bottom: 1px solid rgba(200, 155, 60, 0.12);
+      gap: 16px;
+    }
+
+    .settings-row-text {
+      flex: 1;
+    }
+
+    .settings-row-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--gold-1);
+      letter-spacing: 0.5px;
+    }
+
+    .settings-row-sub {
+      font-size: 0.73rem;
+      color: var(--grey-1);
+      line-height: 1.35;
+      margin-top: 2px;
+    }
+
+    .settings-radio-group {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .settings-radio-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--gold-2);
+      cursor: pointer;
+      background: var(--black-1);
+      border: 1px solid var(--gold-4);
+      padding: 4px 10px;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .settings-radio-label:hover {
+      border-color: var(--gold-2);
+      color: var(--gold-1);
+    }
+
+    .settings-radio-label input[type="radio"] {
+      accent-color: var(--gold-2);
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 42px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--black-1);
+      border: 1px solid var(--gold-4);
+      transition: 0.25s;
+      border-radius: 11px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 3px;
+      bottom: 3px;
+      background-color: var(--grey-1);
+      transition: 0.25s;
+      border-radius: 50%;
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background-color: rgba(10, 200, 185, 0.22);
+      border-color: var(--blue);
+      box-shadow: 0 0 8px rgba(10, 200, 185, 0.4);
+    }
+
+    .toggle-switch input:checked + .toggle-slider:before {
+      transform: translateX(20px);
+      background-color: var(--blue);
+      box-shadow: 0 0 6px var(--blue);
+    }
+
+    .settings-select {
+      background: var(--black-1);
+      border: 1px solid var(--gold-4);
+      color: var(--gold-2);
+      font-family: 'Cinzel', serif;
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 5px 10px;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      flex-shrink: 0;
+    }
+
+    .settings-select:focus {
+      border-color: var(--gold-2);
+      box-shadow: 0 0 8px rgba(200, 155, 60, 0.3);
+    }
+
+    .settings-select option {
+      background: var(--black-2);
+      color: var(--gold-1);
+    }
+
 
 

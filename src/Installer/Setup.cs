@@ -14,8 +14,8 @@ using Microsoft.Win32;
 [assembly: AssemblyCompany("Venomasa")]
 [assembly: AssemblyProduct("League of Customs")]
 [assembly: AssemblyCopyright("Copyright © Venomasa 2026")]
-[assembly: AssemblyVersion("0.6.4.0")]
-[assembly: AssemblyFileVersion("0.6.4.0")]
+[assembly: AssemblyVersion("0.7.0.0")]
+[assembly: AssemblyFileVersion("0.7.0.0")]
 
 namespace LeagueOfCustoms.Installer
 {
@@ -182,11 +182,11 @@ namespace LeagueOfCustoms.Installer
 
         public SetupForm()
         {
-            this.Text = "League of Customs v0.6.4 Setup";
+            this.Text = "League of Customs v0.7.0 Setup";
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.ClientSize = new Size(580, 430);
+            this.ClientSize = new Size(580, 465);
             this.BackColor = Color.FromArgb(1, 10, 19);
             this.ForeColor = Color.FromArgb(240, 230, 211);
             this.Font = new Font("Segoe UI", 9.25f, FontStyle.Regular);
@@ -248,7 +248,7 @@ namespace LeagueOfCustoms.Installer
 
             Label lblSub = new Label
             {
-                Text = "v0.6.4 \u2014 Custom Game Companion & Team Randomizer",
+                Text = "v0.7.0 \u2014 Custom Game Companion & Team Randomizer",
                 Font = new Font("Segoe UI", 8.75f, FontStyle.Regular),
                 ForeColor = Color.FromArgb(160, 155, 140),
                 Location = new Point(90, 44),
@@ -294,16 +294,16 @@ namespace LeagueOfCustoms.Installer
 
             if (isUpgrade)
             {
-                this.Text = "League of Customs v0.6.4 Update";
+                this.Text = "League of Customs v0.7.0 Update";
                 lblTitle.Text = "UPDATE LEAGUE OF CUSTOMS";
-                lblSub.Text = string.Format("Upgrade existing installation{0} to v0.6.4", string.IsNullOrEmpty(existingVer) ? "" : " (v" + existingVer + ")");
+                lblSub.Text = string.Format("Upgrade existing installation{0} to v0.7.0", string.IsNullOrEmpty(existingVer) ? "" : " (v" + existingVer + ")");
             }
 
             // Install Location Group
             Label lblDest = new Label
             {
                 Text = isUpgrade ? "Installation to Update:" : "Destination Folder:",
-                Location = new Point(28, 106),
+                Location = new Point(28, 98),
                 AutoSize = true,
                 ForeColor = Color.FromArgb(200, 155, 60),
                 Font = new Font("Segoe UI", 9.25f, FontStyle.Bold)
@@ -313,7 +313,7 @@ namespace LeagueOfCustoms.Installer
             _txtPath = new TextBox
             {
                 Text = defaultPath,
-                Location = new Point(30, 130),
+                Location = new Point(30, 122),
                 Width = 410,
                 Height = 26,
                 BackColor = Color.FromArgb(15, 25, 35),
@@ -325,7 +325,7 @@ namespace LeagueOfCustoms.Installer
             _btnBrowse = new Button
             {
                 Text = "Browse...",
-                Location = new Point(452, 128),
+                Location = new Point(452, 120),
                 Width = 96,
                 Height = 28,
                 FlatStyle = FlatStyle.Flat,
@@ -351,7 +351,7 @@ namespace LeagueOfCustoms.Installer
             _chkDesktop = new CheckBox
             {
                 Text = "Create a Desktop shortcut",
-                Location = new Point(30, 178),
+                Location = new Point(30, 158),
                 AutoSize = true,
                 Checked = true,
                 ForeColor = Color.FromArgb(240, 230, 211)
@@ -361,7 +361,7 @@ namespace LeagueOfCustoms.Installer
             _chkStartMenu = new CheckBox
             {
                 Text = "Create a Start Menu shortcut",
-                Location = new Point(30, 206),
+                Location = new Point(30, 184),
                 AutoSize = true,
                 Checked = true,
                 ForeColor = Color.FromArgb(240, 230, 211)
@@ -371,18 +371,55 @@ namespace LeagueOfCustoms.Installer
             _chkLaunch = new CheckBox
             {
                 Text = "Launch League of Customs when setup finishes",
-                Location = new Point(30, 234),
+                Location = new Point(30, 210),
                 AutoSize = true,
                 Checked = true,
                 ForeColor = Color.FromArgb(240, 230, 211)
             };
             this.Controls.Add(_chkLaunch);
 
+            // Riot Games Legal Disclaimer (Mandatory Boilerplate in Clear Red Font)
+            Panel pnlDisclaimer = new Panel
+            {
+                Location = new Point(30, 240),
+                Size = new Size(518, 76),
+                BackColor = Color.FromArgb(22, 7, 11)
+            };
+            pnlDisclaimer.Paint += delegate(object s, PaintEventArgs e)
+            {
+                using (var pen = new Pen(Color.FromArgb(220, 50, 65), 1))
+                {
+                    e.Graphics.DrawRectangle(pen, 0, 0, pnlDisclaimer.Width - 1, pnlDisclaimer.Height - 1);
+                }
+            };
+
+            Label lblDisclaimerTag = new Label
+            {
+                Text = "LEGAL & RIOT GAMES DISCLAIMER",
+                Font = new Font("Segoe UI", 8.25f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(255, 65, 65),
+                Location = new Point(8, 5),
+                AutoSize = true
+            };
+            pnlDisclaimer.Controls.Add(lblDisclaimerTag);
+
+            Label lblDisclaimerText = new Label
+            {
+                Text = "League of Customs isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.",
+                Font = new Font("Segoe UI", 8.0f, FontStyle.Regular),
+                ForeColor = Color.FromArgb(255, 95, 95),
+                Location = new Point(8, 23),
+                Size = new Size(502, 48),
+                TextAlign = ContentAlignment.TopLeft
+            };
+            pnlDisclaimer.Controls.Add(lblDisclaimerText);
+            this.Controls.Add(pnlDisclaimer);
+
             // Progress Bar & Status
             _lblStatus = new Label
             {
-                Text = isUpgrade ? "Existing installation detected. Click 'Update' to upgrade to v0.6.4." : "Ready to install. Click 'Install' to begin.",
-                Location = new Point(30, 276),
+                Text = isUpgrade ? "Existing installation detected. Click 'Update' to upgrade to v0.7.0." : "Ready to install. Click 'Install' to begin.",
+                Location = new Point(30, 328),
                 AutoSize = true,
                 ForeColor = Color.FromArgb(160, 155, 140)
             };
@@ -390,7 +427,7 @@ namespace LeagueOfCustoms.Installer
 
             _progBar = new ProgressBar
             {
-                Location = new Point(30, 302),
+                Location = new Point(30, 352),
                 Width = 518,
                 Height = 18,
                 Style = ProgressBarStyle.Blocks,

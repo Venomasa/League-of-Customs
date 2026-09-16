@@ -24,8 +24,8 @@ using Microsoft.Web.WebView2.WinForms;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
-[assembly: AssemblyVersion("0.6.4.0")]
-[assembly: AssemblyFileVersion("0.6.4.0")]
+[assembly: AssemblyVersion("0.7.0.0")]
+[assembly: AssemblyFileVersion("0.7.0.0")]
 
 namespace LoLRandomizer
 {
@@ -107,7 +107,7 @@ namespace LoLRandomizer
             }
             catch { }
 
-            this.Text = "League of Customs v0.6.4";
+            this.Text = "League of Customs v0.7.0";
             this.FormBorderStyle = FormBorderStyle.None;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Size = new Size(1260, 860);
@@ -483,8 +483,9 @@ namespace LoLRandomizer
                         catch { }
                     });
                 }
-                                else if (msg == "sync-live-data" || msg.StartsWith("sync-live-data:"))
+                else if (msg == "sync-live-data" || msg.StartsWith("sync-live-data:") || msg == "force-resync-cache" || msg.StartsWith("force-resync-cache:"))
                 {
+                    bool force = msg.StartsWith("force-resync-cache");
                     Task.Run(() =>
                     {
                         try
@@ -494,12 +495,44 @@ namespace LoLRandomizer
                             {
                                 currentVer = msg.Substring("sync-live-data:".Length).Trim();
                             }
+                            else if (msg.StartsWith("force-resync-cache:"))
+                            {
+                                currentVer = msg.Substring("force-resync-cache:".Length).Trim();
+                            }
+
+                            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                            string cacheFolder = Path.Combine(localAppData, "LeagueOfCustoms");
+                            if (!Directory.Exists(cacheFolder)) Directory.CreateDirectory(cacheFolder);
+
+                            if (force)
+                            {
+                                try
+                                {
+                                    string wikiDir = Path.Combine(cacheFolder, "wiki_cache");
+                                    if (Directory.Exists(wikiDir)) Directory.Delete(wikiDir, true);
+                                }
+                                catch { }
+                                try
+                                {
+                                    string patchDir = Path.Combine(cacheFolder, "patches");
+                                    if (Directory.Exists(patchDir)) Directory.Delete(patchDir, true);
+                                }
+                                catch { }
+                                try
+                                {
+                                    foreach (var f in Directory.GetFiles(cacheFolder, "*.json"))
+                                    {
+                                        try { File.Delete(f); } catch { }
+                                    }
+                                }
+                                catch { }
+                            }
 
                             // 1. Fetch latest patch version directly via .NET HttpWebRequest (no CORS)
                             HttpWebRequest req = (HttpWebRequest)WebRequest.Create("https://ddragon.leagueoflegends.com/api/versions.json");
                             req.Method = "GET";
-                            req.UserAgent = "LeagueOfCustoms/0.6";
-                            req.Timeout = 6000;
+                            req.UserAgent = "LeagueOfCustoms/0.7";
+                            req.Timeout = 7000;
                             req.Proxy = null;
                             string versionsText = "";
                             using (var resp = (HttpWebResponse)req.GetResponse())
@@ -519,50 +552,114 @@ namespace LoLRandomizer
                                 { "syncType", "live-data-sync" },
                                 { "success", true },
                                 { "latestPatch", latestPatch },
-                                { "patchChanged", latestPatch != currentVer }
+                                { "patchChanged", latestPatch != currentVer },
+                                { "forced", force }
                             };
 
-                            // Ensure live item catalog is always verified: check disk cache or fetch fresh from Riot
-                            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                            string cacheFolder = Path.Combine(localAppData, "LeagueOfCustoms");
-                            if (!Directory.Exists(cacheFolder)) Directory.CreateDirectory(cacheFolder);
-                            string cacheFile = Path.Combine(cacheFolder, "items_" + latestPatch + ".json");
-
-                            if (!File.Exists(cacheFile) || latestPatch != currentVer)
+                            // 2. Fetch or load Items
+                            string itemFile = Path.Combine(cacheFolder, "items_" + latestPatch + ".json");
+                            if (!File.Exists(itemFile) || force || latestPatch != currentVer)
                             {
                                 try
                                 {
-                                    HttpWebRequest itemReq = (HttpWebRequest)WebRequest.Create("https://ddragon.leagueoflegends.com/cdn/" + latestPatch + "/data/en_US/item.json");
-                                    itemReq.Method = "GET";
-                                    itemReq.UserAgent = "LeagueOfCustoms/0.6";
-                                    itemReq.Timeout = 7000;
-                                    itemReq.Proxy = null;
-                                    string itemsText = "";
-                                    using (var iResp = (HttpWebResponse)itemReq.GetResponse())
-                                    using (var iStream = iResp.GetResponseStream())
-                                    using (var iSr = new StreamReader(iStream, Encoding.UTF8))
+                                    string itemsText = DownloadHttpString("https://ddragon.leagueoflegends.com/cdn/" + latestPatch + "/data/en_US/item.json", 8000);
+                                    if (!string.IsNullOrEmpty(itemsText) && itemsText.StartsWith("{"))
                                     {
-                                        itemsText = iSr.ReadToEnd();
-                                    }
-                                    try { File.WriteAllText(cacheFile, itemsText, Encoding.UTF8); } catch { }
-                                    var itemDict = ser.Deserialize<Dictionary<string, object>>(itemsText);
-                                    if (itemDict != null && itemDict.ContainsKey("data"))
-                                    {
-                                        result["itemsData"] = itemDict["data"];
+                                        try { File.WriteAllText(itemFile, itemsText, Encoding.UTF8); } catch { }
+                                        var itemDict = ser.Deserialize<Dictionary<string, object>>(itemsText);
+                                        if (itemDict != null && itemDict.ContainsKey("data")) result["itemsData"] = itemDict["data"];
                                     }
                                 }
                                 catch { }
                             }
-                            else if (File.Exists(cacheFile))
+                            else if (File.Exists(itemFile))
                             {
                                 try
                                 {
-                                    string itemsText = File.ReadAllText(cacheFile, Encoding.UTF8);
+                                    string itemsText = File.ReadAllText(itemFile, Encoding.UTF8);
                                     var itemDict = ser.Deserialize<Dictionary<string, object>>(itemsText);
-                                    if (itemDict != null && itemDict.ContainsKey("data"))
+                                    if (itemDict != null && itemDict.ContainsKey("data")) result["itemsData"] = itemDict["data"];
+                                }
+                                catch { }
+                            }
+
+                            // 3. Fetch or load Champions
+                            string champFile = Path.Combine(cacheFolder, "champions_" + latestPatch + ".json");
+                            if (!File.Exists(champFile) || force || latestPatch != currentVer)
+                            {
+                                try
+                                {
+                                    string champText = DownloadHttpString("https://ddragon.leagueoflegends.com/cdn/" + latestPatch + "/data/en_US/champion.json", 8000);
+                                    if (!string.IsNullOrEmpty(champText) && champText.StartsWith("{"))
                                     {
-                                        result["itemsData"] = itemDict["data"];
+                                        try { File.WriteAllText(champFile, champText, Encoding.UTF8); } catch { }
+                                        var champDict = ser.Deserialize<Dictionary<string, object>>(champText);
+                                        if (champDict != null && champDict.ContainsKey("data")) result["championsData"] = champDict["data"];
                                     }
+                                }
+                                catch { }
+                            }
+                            else if (File.Exists(champFile))
+                            {
+                                try
+                                {
+                                    string champText = File.ReadAllText(champFile, Encoding.UTF8);
+                                    var champDict = ser.Deserialize<Dictionary<string, object>>(champText);
+                                    if (champDict != null && champDict.ContainsKey("data")) result["championsData"] = champDict["data"];
+                                }
+                                catch { }
+                            }
+
+                            // 4. Fetch or load Runes
+                            string runesFile = Path.Combine(cacheFolder, "runes_" + latestPatch + ".json");
+                            if (!File.Exists(runesFile) || force || latestPatch != currentVer)
+                            {
+                                try
+                                {
+                                    string runesText = DownloadHttpString("https://ddragon.leagueoflegends.com/cdn/" + latestPatch + "/data/en_US/runesReforged.json", 8000);
+                                    if (!string.IsNullOrEmpty(runesText) && runesText.StartsWith("["))
+                                    {
+                                        try { File.WriteAllText(runesFile, runesText, Encoding.UTF8); } catch { }
+                                        var runesObj = ser.Deserialize<object[]>(runesText);
+                                        if (runesObj != null) result["runesData"] = runesObj;
+                                    }
+                                }
+                                catch { }
+                            }
+                            else if (File.Exists(runesFile))
+                            {
+                                try
+                                {
+                                    string runesText = File.ReadAllText(runesFile, Encoding.UTF8);
+                                    var runesObj = ser.Deserialize<object[]>(runesText);
+                                    if (runesObj != null) result["runesData"] = runesObj;
+                                }
+                                catch { }
+                            }
+
+                            // 5. Fetch or load Summoner Spells
+                            string spellsFile = Path.Combine(cacheFolder, "spells_" + latestPatch + ".json");
+                            if (!File.Exists(spellsFile) || force || latestPatch != currentVer)
+                            {
+                                try
+                                {
+                                    string spellsText = DownloadHttpString("https://ddragon.leagueoflegends.com/cdn/" + latestPatch + "/data/en_US/summoner.json", 8000);
+                                    if (!string.IsNullOrEmpty(spellsText) && spellsText.StartsWith("{"))
+                                    {
+                                        try { File.WriteAllText(spellsFile, spellsText, Encoding.UTF8); } catch { }
+                                        var spellsDict = ser.Deserialize<Dictionary<string, object>>(spellsText);
+                                        if (spellsDict != null && spellsDict.ContainsKey("data")) result["spellsData"] = spellsDict["data"];
+                                    }
+                                }
+                                catch { }
+                            }
+                            else if (File.Exists(spellsFile))
+                            {
+                                try
+                                {
+                                    string spellsText = File.ReadAllText(spellsFile, Encoding.UTF8);
+                                    var spellsDict = ser.Deserialize<Dictionary<string, object>>(spellsText);
+                                    if (spellsDict != null && spellsDict.ContainsKey("data")) result["spellsData"] = spellsDict["data"];
                                 }
                                 catch { }
                             }
@@ -579,7 +676,8 @@ namespace LoLRandomizer
                             {
                                 { "syncType", "live-data-sync" },
                                 { "success", false },
-                                { "error", ex.Message }
+                                { "error", ex.Message },
+                                { "forced", force }
                             };
                             var ser = new JavaScriptSerializer();
                             string errJson = ser.Serialize(errResult);
@@ -598,7 +696,7 @@ namespace LoLRandomizer
                         {
                             HttpWebRequest req = (HttpWebRequest)WebRequest.Create("https://api.github.com/repos/Venomasa/League-of-Customs/releases/latest");
                             req.Method = "GET";
-                            req.UserAgent = "LeagueOfCustoms/0.6";
+                            req.UserAgent = "LeagueOfCustoms/0.7";
                             req.Timeout = 10000;
                             req.Proxy = null;
                             string respText = "";
@@ -611,7 +709,7 @@ namespace LoLRandomizer
                             var ser = new JavaScriptSerializer();
                             var dict = ser.Deserialize<Dictionary<string, object>>(respText);
                             string tagName = dict.ContainsKey("tag_name") ? dict["tag_name"].ToString() : "";
-                            string currentAppVersion = "v0.6.4";
+                            string currentAppVersion = "v0.7.0";
 
                             bool hasNewer = IsNewerVersion(tagName, currentAppVersion);
                             if (!hasNewer)
@@ -690,7 +788,7 @@ namespace LoLRandomizer
                             // Begin streaming download to temp file
                             string tempSetupPath = Path.Combine(Path.GetTempPath(), "LoC_Update_" + tagName + "_" + (string.IsNullOrEmpty(assetName) ? "Setup.exe" : assetName));
                             var wc = new WebClient();
-                            wc.Headers.Add("User-Agent", "LeagueOfCustoms/0.6");
+                            wc.Headers.Add("User-Agent", "LeagueOfCustoms/0.7");
                             wc.DownloadProgressChanged += (s, ev) =>
                             {
                                 var progRes = new Dictionary<string, object>
@@ -2316,7 +2414,7 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://mcp-api.op.gg/mcp");
             request.Method = "POST";
             request.ContentType = "application/json";
-            request.UserAgent = "LeagueOfCustoms/0.6";
+            request.UserAgent = "LeagueOfCustoms/0.7";
             request.Timeout = timeoutMs;
             request.Proxy = null;
             request.ServicePoint.Expect100Continue = false;
@@ -3640,7 +3738,7 @@ private static readonly Dictionary<string, int> _championNumericMap = new Dictio
         {
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
             req.Method = "GET";
-            req.UserAgent = "LeagueOfCustoms/0.6";
+            req.UserAgent = "LeagueOfCustoms/0.7";
             req.Timeout = timeoutMs;
             req.Proxy = null;
             using (var resp = (HttpWebResponse)req.GetResponse())
